@@ -5,6 +5,7 @@ from discord import Guild
 
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Training.TrainingManager import TrainingManager
+from Classes.Logger import Logger
 
 if TYPE_CHECKING:
     from Classes import TrainingBot
@@ -21,6 +22,7 @@ class GuildData:
         "_parent",
         "_pos_mgr",
         "_training_mgr",
+        "_logger",
     )
 
 ################################################################################
@@ -29,12 +31,15 @@ class GuildData:
         self._state: TrainingBot = bot
         self._parent: Guild = parent
         
+        self._logger: Logger = Logger(self)
+        
         self._pos_mgr: PositionManager = PositionManager(self)
         self._training_mgr: TrainingManager = TrainingManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
         
+        await self._logger.load(data["bot_config"][1])
         self._pos_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         
@@ -55,6 +60,12 @@ class GuildData:
     def guild_id(self) -> int:
         
         return self._parent.id
+    
+################################################################################
+    @property
+    def log(self) -> Logger:
+        
+        return self._logger
     
 ################################################################################
     @property

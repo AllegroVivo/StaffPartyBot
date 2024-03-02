@@ -16,13 +16,15 @@ __all__ = ("TrainerSignUpSelectView",)
 ################################################################################
 class TrainerSignUpSelectView(FroggeView):
 
-    def __init__(self,  user: User, msg: SignUpMessage, exclusions: List[Position] = None):
+    def __init__(self, user: User, msg: SignUpMessage, positions: List[Position] = None):
         
         super().__init__(user, close_on_complete=True)
         
         self.msg: SignUpMessage = msg
         
-        self.add_item(PositionSelect(msg.position_manager.select_options(exclusions)))
+        self.add_item(
+            PositionSelect(msg.position_manager.select_options(include=positions))
+        )
         self.add_item(CloseMessageButton())
         
 ################################################################################

@@ -62,6 +62,24 @@ class Admin(Cog):
         await guild.training_manager.post_signup_message(ctx.interaction, channel)
 
 ################################################################################
+    @admin.command(
+        name="set_log_channel",
+        description="Set the channel for bot logs.",
+    )
+    async def set_log_channel(
+        self,
+        ctx: ApplicationContext,
+        channel: Option(
+            SlashCommandOptionType.channel,
+            name="channel",
+            description="The channel to set as the log channel.",
+            required=True
+        )
+    ) -> None:
+
+        await self.bot[ctx.guild_id].log.set_log_channel(ctx.interaction, channel)
+
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Admin(bot))

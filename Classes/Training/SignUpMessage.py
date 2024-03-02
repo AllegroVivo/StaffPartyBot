@@ -233,6 +233,7 @@ class SignUpMessage:
         await training.set_trainer(trainer)
         
         await self.update_components()
+        await self._manager.guild.log.training_matched(training)
     
 ################################################################################
     

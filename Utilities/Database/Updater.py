@@ -54,7 +54,7 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         self.execute(
             "UPDATE tuser_config SET job_pings = %s WHERE user_id = %s;",
-            tuser.config.job_pings, tuser.user_id
+            tuser.config.trainee_pings, tuser.user_id
         )
         
 ################################################################################

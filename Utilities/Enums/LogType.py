@@ -4,6 +4,8 @@ class LogType(FroggeEnum):
     
     MemberJoin = 0
     MemberLeave = 1
-    PositionAdd = 2
+    TrainingSignup = 2
+    TrainingRemoved = 3
+    TrainerAssigned = 4
 
 ################################################################################

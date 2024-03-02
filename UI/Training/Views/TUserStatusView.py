@@ -26,6 +26,7 @@ class TUserStatusView(FroggeView):
         button_list = [
             EditNameButton(),
             ModifyScheduleButton(),
+            TogglePingsButton(),
             AddTrainingButton(),
             RemoveTrainingButton()
         ]
@@ -75,6 +76,23 @@ class ModifyScheduleButton(Button):
         await self.view.tuser.set_availability(interaction)
         await edit_message_helper(interaction, embed=self.view.tuser.user_status())
 
+################################################################################
+class TogglePingsButton(Button):
+    
+    def __init__(self) -> None:
+        
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Toggle Pings",
+            disabled=False,
+            row=0
+        )
+    
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.tuser.toggle_pings()
+        await interaction.respond("** **", delete_after=0.1)
+        await edit_message_helper(interaction, embed=self.view.tuser.user_status())
+        
 ################################################################################
 class AddTrainingButton(Button):
 

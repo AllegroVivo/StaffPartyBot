@@ -26,14 +26,14 @@ class UserConfiguration:
         The user to which this configuration belongs.
     _image: Optional[str]
         The image URL for the user's profile picture.
-    _job_pings: bool
+    _trainee_pings: bool
         Whether the user should be pinged when a job is available.
     """
 
     __slots__ = (
         "_parent",
         "_image",
-        "_job_pings",
+        "_trainee_pings",
     )
 
 ################################################################################
@@ -47,7 +47,7 @@ class UserConfiguration:
         self._parent: TUser = parent
 
         self._image: Optional[str] = image
-        self._job_pings: bool = job_pings
+        self._trainee_pings: bool = job_pings
 
 ################################################################################
     @classmethod
@@ -57,9 +57,9 @@ class UserConfiguration:
 
 ################################################################################
     @property
-    def job_pings(self) -> bool:
+    def trainee_pings(self) -> bool:
 
-        return self._job_pings
+        return self._trainee_pings
 
 ################################################################################
     @property
@@ -72,8 +72,8 @@ class UserConfiguration:
 
         fields = [
             EmbedField(
-                name="__Job Pings__",
-                value=f"{BotEmojis.Check if self._job_pings else BotEmojis.Cross}",
+                name="__Trainee Pings__",
+                value=f"{BotEmojis.Check if self._trainee_pings else BotEmojis.Cross}",
                 inline=True
             )
         ]
@@ -85,10 +85,9 @@ class UserConfiguration:
         )
 
 ################################################################################
-    def toggle_job_pings(self) -> None:
+    def toggle_trainee_pings(self) -> None:
 
-        self._job_pings = not self._job_pings
-        self._parent.update()
+        self._trainee_pings = not self._trainee_pings
 
 ################################################################################
     def update(self) -> None:

@@ -200,9 +200,11 @@ class TrainingManager:
         self._trainings.append(training)
         
         await self._message.update_components()
+        await self._guild.log.training_signup(training)
 
         for t in self.get_qualified_trainers(training.position.id):
-            await t.notify_of_training_signup(training)
+            if t.accepting_trainee_pings():
+                await t.notify_of_training_signup(training)
 
 ################################################################################
     def get_qualified_trainers(self, position_id: str) -> List[TUser]:
@@ -215,8 +217,9 @@ class TrainingManager:
         for t in self._trainings:
             if t.id == training_id:
                 self._trainings.remove(t)
+                await self._guild.log.training_removed(t)
                 t.delete()
-                return
+                break
 
         await self._message.update_components()
 

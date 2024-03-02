@@ -89,7 +89,7 @@ class PositionManager:
 ################################################################################    
     async def _add_position(self, interaction: Interaction, position_name: str) -> Position:
 
-        position = Position.new(self, position_name.title())
+        position = Position.new(self, position_name)
         self._positions.append(position)
 
         description = f"The position `{position.name}` has been added to the database."
@@ -285,19 +285,19 @@ class PositionManager:
                 return req
 
 ################################################################################
-    def select_options(self, exclusions: List[Position] = None) -> List[SelectOption]:
-        """Returns a list of SelectOption objects for the positions.
-        
-        Returns:
-        --------
-        List[:class:`SelectOption`]
-            A list of SelectOption objects.
-        """
+    def select_options(
+        self,
+        *,
+        exclude: List[Position] = None, 
+        include: List[Position] = None
+    ) -> List[SelectOption]:
 
         ret = [p.select_option for p in self.positions]
         
-        if exclusions:
-            ret = [p for p in ret if p.value not in [e.id for e in exclusions]]
+        if exclude:
+            ret = [p for p in ret if p.value not in [e.id for e in exclude]]
+        elif include:
+            ret = [p for p in ret if p.value in [i.id for i in include]]
         
         return ret
 

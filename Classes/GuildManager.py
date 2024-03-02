@@ -42,6 +42,8 @@ class GuildManager:
 ################################################################################
     def add_guild(self, guild: Guild) -> None:
         
-        self._fguilds.append(GuildData(self._state, guild))
+        g = self[guild.id]
+        if g is None:
+            self._fguilds.append(GuildData(self._state, guild))
         
 ################################################################################

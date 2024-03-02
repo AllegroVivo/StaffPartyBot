@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Dict, Any
 
 from discord import Attachment, Bot, TextChannel
 
+from .Logger import Logger
 from .GuildManager import GuildManager
 from Utilities.Database import Database
 
@@ -15,32 +16,6 @@ __all__ = ("TrainingBot",)
 
 ################################################################################
 class TrainingBot(Bot):
-    """The main bot instance.
-    
-    This class is a subclass of discord.Bot, and is the main bot instance for 
-    the Training Server. It contains all the managers and utilities required 
-    to run the server's operations.
-    
-    Attributes:
-    -----------
-    _img_dump : :class:`TextChannel`
-        The internal channel for dumping/storing user images long-term.
-    _db : :class:`Database`
-        The utility database class for the bot.
-    _log : :class:`Logger`
-        The utility logger class for the bot.
-    _pos_mgr : :class:`PositionManager`
-        The position manager for the bot.
-    _training_mgr : :class:`TrainingManager`
-        The training manager for the bot.
-        
-    Methods:
-    --------
-    load_all() -> None
-        Loads all the data from the database and sets up the bot.
-    dump_image(image: :class:`Attachment`) -> :class:`str`
-        Dumps an image into the image dump channel and returns the URL.
-    """
 
     __slots__ = (
         "_img_dump",
@@ -56,9 +31,7 @@ class TrainingBot(Bot):
 
         self._img_dump: TextChannel = None  # type: ignore
 
-        self._db: Database = Database(self)
-        # self._log: Logger = Logger(self)
-        
+        self._db: Database = Database(self)        
         self._guild_mgr: GuildManager = GuildManager(self)
 
 ################################################################################
@@ -73,8 +46,13 @@ class TrainingBot(Bot):
         return self._db
     
 ################################################################################
+    @property
+    def fguilds(self) -> GuildManager:
+        
+        return self._guild_mgr
+    
+################################################################################
     async def load_all(self) -> None:
-        """Loads all the data from the database and sets up the bot."""
 
         print("Fetching image dump...")
         # Image dump can be hard-coded since it's never going to be different.

@@ -21,6 +21,7 @@ from .Availability import Availability
 from .Qualification import Qualification
 from .UserConfig import UserConfiguration
 from .Training import Training
+from Assets import BotEmojis
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, TrainingManager, PositionManager, GuildData
@@ -353,6 +354,23 @@ class TUser:
         )
 
 ################################################################################
+    def _bot_pings_field(self) -> EmbedField:
+        
+        return EmbedField(
+            name="__New Trainee Pings__",
+            value=(
+                str(BotEmojis.Check if self.config.trainee_pings else BotEmojis.Cross)
+                + "\n" +
+                "*(If this is enabled, the\n"
+                "bot will send you a DM\n"
+                "if a new trainee signs up\n"
+                "for training in a job you\n"
+                "are qualified for.)*"
+            ),
+            inline=True
+        )
+    
+################################################################################
     def user_status(self) -> Embed:
 
         return U.make_embed(
@@ -362,6 +380,7 @@ class TUser:
             ),
             fields=[
                 self._training_requested_field(),
+                self._bot_pings_field(),
                 self._availability_field(),
             ],
         )
@@ -630,7 +649,7 @@ class TUser:
         )
 
         base_options = self.position_manager.select_options(
-            [q.position for q in self.qualifications]
+            exclude=[q.position for q in self.qualifications]
         )
         options = [
             o for o in base_options
@@ -719,3 +738,15 @@ class TUser:
             pass
 
 ################################################################################
+    def toggle_pings(self) -> None:
+        
+        self._config.toggle_trainee_pings()
+        self.update()
+        
+################################################################################
+    def accepting_trainee_pings(self) -> bool:
+        
+        return self._config.trainee_pings
+    
+################################################################################
+    
