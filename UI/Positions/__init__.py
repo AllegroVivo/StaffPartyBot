@@ -1,2 +1,3 @@
-from .Common import *
+from .Modals import *
+from .Views import *
 ################################################################################

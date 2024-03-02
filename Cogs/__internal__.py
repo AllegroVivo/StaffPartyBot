@@ -18,6 +18,8 @@ class Internal(Cog):
 
         print("Loading internals...")
         await self.bot.load_all()
+        
+        print("TrainingBot Online!")
 
 ################################################################################
 def setup(bot: TrainingBot) -> None:

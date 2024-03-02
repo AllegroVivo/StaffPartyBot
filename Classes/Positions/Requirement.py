@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from discord import SelectOption
+from typing import TYPE_CHECKING, TypeVar, Type, Tuple
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import TrainingBot, PositionManager
 ################################################################################
 
 __all__ = ("Requirement", )
@@ -43,6 +44,20 @@ class Requirement:
         self._description: str = description
     
 ################################################################################
+    @classmethod
+    def new(cls: Type[R], mgr: PositionManager, position: str, description: str) -> R:
+
+        new_id = mgr.bot.database.insert.requirement(mgr.guild_id, position, description)
+        return cls(mgr.bot, new_id, position, description)
+    
+################################################################################
+    @classmethod
+    def load(cls: Type[R], bot: TrainingBot, data: Tuple[str, int, str, str]) -> R:
+
+        # (data[1] is the guild_id, which we don't use here.)
+        return cls(bot, data[0], data[2], data[3])
+
+################################################################################
     @property
     def id(self) -> str:
         
@@ -61,3 +76,32 @@ class Requirement:
         return self._description
     
 ################################################################################
+    def select_option(self) -> SelectOption:
+        """Return a SelectOption object for this requirement.
+        
+        If the description is longer than 50 characters, it will be truncated to
+        47 characters and have "..." appended to the end.
+        
+        Returns:
+        --------
+        :class:`SelectOption`
+            The SelectOption object for this requirement.
+        """
+
+        label = self.description if len(self.description) <= 50 else f"{self.description[:47]}..."
+        return SelectOption(label=label, value=self.id)
+        
+################################################################################
+    def delete(self) -> None:
+        """Delete this requirement from the database."""
+
+        self._state.database.delete.requirement(self.id)
+
+################################################################################
+    def update(self) -> None:
+        """Update this requirement in the database."""
+
+        self._state.database.update.requirement(self)
+        
+################################################################################
+        

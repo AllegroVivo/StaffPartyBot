@@ -53,3 +53,8 @@ class DBWorkerBranch:
         return self.database.fetchall()
     
 ################################################################################
+    def fetchone(self) -> Tuple[Any, ...]:
+        
+        return self.database.fetchone()
+    
+################################################################################

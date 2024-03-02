@@ -3,44 +3,32 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
-from discord import Interaction, EmbedField, Embed
+from discord import Interaction, EmbedField, Embed, SelectOption
 
-from UI import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
-from Utilities import Utilities as U, PositionExistsError, PositionNotFoundError
+from UI.Positions import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
+from Utilities import Utilities as U, PositionExistsError
 from .Position import Position
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import TrainingBot, GuildData
 ################################################################################
 
 __all__ = ("PositionManager", )
 
 ################################################################################
 class PositionManager:
-    """A class to manage job positions and position training requirements.
-    
-    Attributes:
-    -----------
-    _state : :class:`TrainingBot`
-        The bot instance that the manager is associated with.
-    _positions : List[:class:`Position`]
-        A list of all the positions.
-    _requirements : List[:class:`Requirement`]
-        A list of all the global training requirements.
-
-    """
 
     __slots__ = (
-        "_state",
+        "_guild",
         "_positions",
         "_requirements",
     )
     
 ################################################################################
-    def __init__(self, state: TrainingBot) -> None:
+    def __init__(self, guild: GuildData) -> None:
     
-        self._state: TrainingBot = state
+        self._guild: GuildData = guild
     
         self._positions: List[Position] = []
         self._requirements: List[Requirement] = []
@@ -77,7 +65,7 @@ class PositionManager:
     @property
     def bot(self) -> TrainingBot:
         
-        return self._state
+        return self._guild.bot
     
 ################################################################################
     @property
@@ -85,20 +73,37 @@ class PositionManager:
         
         return self._requirements
     
+################################################################################
+    @property
+    def positions(self) -> List[Position]:
+        
+        self._positions.sort(key=lambda p: p.name)
+        return self._positions
+    
+################################################################################
+    @property
+    def guild_id(self) -> int:
+        
+        return self._guild.guild_id
+    
 ################################################################################    
     async def _add_position(self, interaction: Interaction, position_name: str) -> Position:
 
         position = Position.new(self, position_name.title())
         self._positions.append(position)
 
+        description = f"The position `{position.name}` has been added to the database."
         confirm = U.make_embed(
             title="Position Added",
             description=(
-                f"The position `{position.name}` has been added to the database.\n"
-                f"{U.draw_line(extra=34)}"
+                f"{description}\n"
+                f"{U.draw_line(text=description)}"
             )
         )
         await interaction.respond(embed=confirm, ephemeral=True)
+        
+        # Also update the currently posted SignUpMessage
+        await self._guild.training_manager.signup_message.update_components()
         
         return position
         
@@ -280,3 +285,35 @@ class PositionManager:
                 return req
 
 ################################################################################
+    def select_options(self, exclusions: List[Position] = None) -> List[SelectOption]:
+        """Returns a list of SelectOption objects for the positions.
+        
+        Returns:
+        --------
+        List[:class:`SelectOption`]
+            A list of SelectOption objects.
+        """
+
+        ret = [p.select_option for p in self.positions]
+        
+        if exclusions:
+            ret = [p for p in ret if p.value not in [e.id for e in exclusions]]
+        
+        return ret
+
+################################################################################
+    def get_position(self, pos_id: str) -> Optional[Position]:
+        """Get a position by its ID.
+        
+        Parameters:
+        -----------
+        pos_id : :class:`str`
+            The ID of the position to retrieve.
+        """
+        
+        for position in self._positions:
+            if position.id == pos_id:
+                return position
+            
+################################################################################
+            
