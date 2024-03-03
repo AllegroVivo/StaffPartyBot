@@ -96,6 +96,7 @@ class TrainingBot(Bot):
         
         load_dotenv()
         
+        print(data)
         for cfg in data["bot_config"]:
             if os.getenv("DEBUG") == "True":
                 if cfg[0] == 1104515062187708525:
