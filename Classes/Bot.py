@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+
+from dotenv import load_dotenv
 from typing import TYPE_CHECKING, Dict, Any
 
 from discord import Attachment, Bot, TextChannel
@@ -91,7 +94,12 @@ class TrainingBot(Bot):
             "requirement_overrides": [],
         } for g in self.guilds }
         
+        load_dotenv()
+        
         for cfg in data["bot_config"]:
+            if os.getenv("DEBUG") == "True":
+                if cfg[0] == 1104515062187708525:
+                    continue
             ret[cfg[0]]["bot_config"] = cfg
         for u in data["tusers"]:
             ret[u[1]]["tusers"].append(u)
