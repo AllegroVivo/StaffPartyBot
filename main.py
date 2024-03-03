@@ -23,6 +23,12 @@ for filename in os.listdir("Cogs"):
 ################################################################################
 
 load_dotenv()
-bot.run(os.getenv("DISCORD_TOKEN"))
+
+if os.getenv("DEBUG") == "True":
+    token = os.getenv("DEBUG_TOKEN")
+else:
+    token = os.getenv("DISCORD_TOKEN")
+    
+bot.run(token)
 
 ################################################################################

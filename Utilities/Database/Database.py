@@ -81,18 +81,25 @@ class Database:
         except (OperationalError, AttributeError):
             self._connect()
 
-        try:
-            self._cursor.execute(query, fmt_args)
-            self._connection.commit()
-            print(f"Database execution succeeded on query: '{query}', Args: {fmt_args}")
-        except:
-            print(f"Database execution failed on query: '{query}', Args: {fmt_args}")
+        load_dotenv()
+        if os.getenv("DEBUG") == "True":
+            try:
+                self._cursor.execute(query, fmt_args)
+                self._connection.commit()
+                print(f"Database execution succeeded on query: '{query}', Args: {fmt_args}")
+            except:
+                print(f"Database execution failed on query: '{query}', Args: {fmt_args}")
 
 ################################################################################
     def fetchall(self) -> Tuple[Tuple[Any, ...]]:
 
         return self._cursor.fetchall()
 
+################################################################################
+    def fetchone(self) -> Tuple[Any, ...]:
+
+        return self._cursor.fetchone()
+    
 ################################################################################
 
     @property
