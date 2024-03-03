@@ -82,13 +82,14 @@ class Database:
             self._connect()
 
         load_dotenv()
-        if os.getenv("DEBUG") == "True":
-            try:
-                self._cursor.execute(query, fmt_args)
-                self._connection.commit()
+        
+        try:
+            self._cursor.execute(query, fmt_args)
+            self._connection.commit()
+            if os.getenv("DEBUG") == "True":
                 print(f"Database execution succeeded on query: '{query}', Args: {fmt_args}")
-            except:
-                print(f"Database execution failed on query: '{query}', Args: {fmt_args}")
+        except:
+            print(f"Database execution failed on query: '{query}', Args: {fmt_args}")
 
 ################################################################################
     def fetchall(self) -> Tuple[Tuple[Any, ...]]:
