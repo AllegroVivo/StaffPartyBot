@@ -94,9 +94,7 @@ class Database:
 ################################################################################
     def fetchall(self) -> Tuple[Tuple[Any, ...]]:
 
-        ret = self._cursor.fetchall()
-        print(ret)
-        return ret
+        return self._cursor.fetchall()
 
 ################################################################################
     def fetchone(self) -> Tuple[Any, ...]:
