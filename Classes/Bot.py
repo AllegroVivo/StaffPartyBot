@@ -72,6 +72,7 @@ class TrainingBot(Bot):
         print("Loading data from database...")
         # Load all the data from the database.
         payload = self._db._load_all()
+        print(payload)
         data = self._parse_data(payload)
         
         for frogge in self._guild_mgr.fguilds:
@@ -96,7 +97,6 @@ class TrainingBot(Bot):
         
         load_dotenv()
         
-        print(data)
         for cfg in data["bot_config"]:
             if os.getenv("DEBUG") == "True":
                 if cfg[0] == 1104515062187708525:
