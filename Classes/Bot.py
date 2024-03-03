@@ -72,7 +72,6 @@ class TrainingBot(Bot):
         print("Loading data from database...")
         # Load all the data from the database.
         payload = self._db._load_all()
-        print(payload)
         data = self._parse_data(payload)
         
         for frogge in self._guild_mgr.fguilds:
