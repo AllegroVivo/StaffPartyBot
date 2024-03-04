@@ -11,7 +11,7 @@ from Classes.Bot import TrainingBot
 bot = TrainingBot(
     description="Toot toot, bitches!",
     intents=Intents.all(),
-    debug_guilds=[303742308874977280, 955933227372122173]  # , 1104515062187708525]
+    debug_guilds=[303742308874977280, 955933227372122173, 1104515062187708525]
 )
 
 ################################################################################
