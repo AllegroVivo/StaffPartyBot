@@ -258,7 +258,7 @@ class TUser:
                 (
                     "* " + "\n* ".join(
                         [
-                            f"{q.position.name}\n-- *({q.level.proper_name})*"
+                            f"{q.position.name} -- *({q.level.proper_name})*"
                             for q in self.qualifications
                         ]
                     ) if self.qualifications else "`None`"
