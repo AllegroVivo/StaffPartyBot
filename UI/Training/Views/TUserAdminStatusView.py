@@ -113,14 +113,9 @@ class AddQualificationButton(Button):
 
     async def callback(self, interaction: Interaction) -> None:
         await self.view.tuser.add_qualification(interaction)
-
         self.view.set_buttons()
 
-        await edit_message_helper(
-            interaction,
-            embed=self.view.tuser.admin_status(),
-            view=self.view
-        )
+        await interaction.edit(embed=self.view.tuser.admin_status(), view=self.view)
 
 ################################################################################
 class ModifyQualificationButton(Button):
@@ -137,11 +132,7 @@ class ModifyQualificationButton(Button):
         await self.view.tuser.modify_qualification(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(
-            interaction,
-            embed=self.view.tuser.admin_status(),
-            view=self.view
-        )
+        await interaction.edit(embed=self.view.tuser.admin_status(), view=self.view)
 
 ################################################################################
 class RemoveQualificationButton(Button):
@@ -158,11 +149,7 @@ class RemoveQualificationButton(Button):
         await self.view.tuser.remove_qualification(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(
-            interaction,
-            embed=self.view.tuser.admin_status(),
-            view=self.view
-        )
+        await interaction.edit(embed=self.view.tuser.admin_status(), view=self.view)
         
 ################################################################################
 class AddTrainingButton(Button):
