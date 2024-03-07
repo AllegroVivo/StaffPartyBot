@@ -42,7 +42,7 @@ class TUserStatusView(FroggeView):
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.
-        self.children[3].disabled = disable_buttons
+        self.children[4].disabled = disable_buttons
 
 ################################################################################
 class EditNameButton(Button):

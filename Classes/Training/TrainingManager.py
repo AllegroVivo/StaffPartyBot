@@ -237,6 +237,8 @@ class TrainingManager:
         if tuser is None:
             if not await self._add_tuser(interaction, interaction.user):
                 return
+            else:
+                tuser = self[interaction.user.id]
 
         status = tuser.user_status()
         view = TUserStatusView(interaction.user, tuser)
