@@ -2,10 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, TypeVar, Dict, Type, List, Any, Tuple
 
+from discord import EmbedField, Interaction, User, Embed, SelectOption
+from discord.ext.pages import Page
+
+from Assets import BotEmojis
+from UI.Training import TrainerDashboardButtonView, TrainingUpdateView
 from Utilities import Utilities as U, RequirementLevel
 
 if TYPE_CHECKING:
-    from Classes import Position, TUser, TrainingBot
+    from Classes import Position, TUser, TrainingBot, Requirement
 ################################################################################
 
 __all__ = ("Training", )
@@ -14,21 +19,6 @@ T = TypeVar("T", bound="Training")
 
 ################################################################################
 class Training:
-    """A class representing a training record in the system.
-    
-    Attributes:
-    -----------
-    _id : str
-        The unique identifier for the training record.
-    _position : :class:`Position`
-        The position being trained for.
-    _trainee : :class:`Trainee`
-        The trainee being trained.
-    _trainer : Optional[:class:`Trainer`]
-        The trainer for the training.
-    _overrides : Dict[:class:`str`, :class:`RequirementLevel`]
-        Any overrides for the training requirements.
-    """
 
     __slots__ = (
         "_id",
@@ -166,3 +156,109 @@ class Training:
             pass
         
 ################################################################################
+    def status_page(self, owner: User) -> Page:
+        
+        description = f"**Position:** `{self._position.name}`"
+        embed = U.make_embed(
+            title=f"Training Status for {self._trainee.name}",
+            description=(
+                f"{description}\n"
+                f"{U.draw_line(text=description)}\n"
+            ),
+            fields=[self.requirements_status(emoji=True)]
+        )
+        view = TrainerDashboardButtonView(owner, self)
+        
+        return Page(embeds=[embed], custom_view=view)
+    
+################################################################################
+    def requirements_status(self, emoji: bool = False) -> EmbedField:
+        
+        requirements = self._position.manager.global_requirements.copy()
+        requirements.extend(self._position.requirements)
+        
+        value = ""
+        for requirement in requirements:
+            value += self._requirement_line(emoji, requirement) + "\n"
+
+        return EmbedField(
+            name="__Requirements__",
+            value=value,
+            inline=False
+        )
+    
+################################################################################    
+    def _requirement_line(self, emoji: bool, requirement: Requirement) -> str:
+        
+        override = self.get_override(requirement.id)
+        
+        em = ""
+        if emoji:
+            match override:
+                case RequirementLevel.Complete:
+                    em = BotEmojis.Check
+                case RequirementLevel.InProgress:
+                    em = BotEmojis.Construction
+                case _:
+                    em = BotEmojis.Cross
+        
+        value = requirement.description
+        if override is RequirementLevel.Complete:
+            value = f"~~{value}~~"
+        
+        return f"{em}- {value}"
+
+################################################################################
+    async def set_requirements(self, interaction: Interaction) -> None:
+        
+        embed = self.status()
+        view = TrainingUpdateView(interaction.user, self)
+        
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        req_ids = view.value[0]
+        level = view.value[1]
+        
+        for _id in req_ids:
+            self._overrides[_id] = level
+        self.update()
+    
+################################################################################
+    def get_override(self, req_id: str) -> Optional[RequirementLevel]:
+        
+        return self._overrides.get(req_id, None)
+    
+################################################################################
+    def status(self) -> Embed:
+        
+        return U.make_embed(
+            title=f"Training Detail",
+            description=(
+                f"**Trainee:** {self._trainee.name}\n"
+                f"**Position:** `{self._position.name}`\n"
+                f"{U.draw_line(extra=25)}"
+            ),
+            fields=[self.requirements_status()]
+        )
+    
+################################################################################
+    def requirement_select_options(self) -> List[SelectOption]:
+        
+        ret = []
+        
+        for requirement in self._position.requirements:
+            # checked = (
+            #     requirement.id in self._overrides and 
+            #     self._overrides[requirement.id] == RequirementLevel.Complete
+            # )
+            checked = False
+            ret.append(requirement.select_option(checked))
+            
+        return ret
+    
+################################################################################
+    

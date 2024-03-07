@@ -10,6 +10,7 @@ class BotEmojis:
     ArrowDown = PartialEmoji.from_str("⬇️")
     ArrowLeft = PartialEmoji.from_str("⬅️")
     ArrowRight = PartialEmoji.from_str("➡️")
+    Asterisk = PartialEmoji.from_str("*️⃣")
     Camera = PartialEmoji.from_str("<:camera:958816462406033498>")
     Check = PartialEmoji.from_str("<:check:958615684869414962>")
     Construction = PartialEmoji.from_str("🚧")

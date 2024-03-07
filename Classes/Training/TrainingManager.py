@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING, List, Optional, Any, Dict
 from discord import User, Interaction, TextChannel
 
 from UI.Training import TUserAdminStatusView, TUserStatusView
-from Utilities import Utilities as U, ChannelTypeError, BotUserNotAllowedError
+from Utilities import (
+    Utilities as U,
+    ChannelTypeError,
+    BotUserNotAllowedError,
+    NotRegisteredError
+)
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
 from .Training import Training
@@ -107,9 +112,9 @@ class TrainingManager:
         overrides = {}
         for o in data["requirement_overrides"]:
             try:
-                overrides[o[1]].append((o[2], o[3]))
+                overrides[o[2]].append((o[3], o[4]))
             except KeyError:
-                overrides[o[1]] = [(o[2], o[3])]
+                overrides[o[2]] = [(o[3], o[4])]
         
         return {
             "tusers": tusers,
@@ -260,4 +265,15 @@ class TrainingManager:
                 return t
             
 ################################################################################
-            
+    async def trainer_dashboard(self, interaction: Interaction) -> None:
+        
+        trainer = self[interaction.user.id]
+        if trainer is None:
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        await trainer.trainer_dashboard(interaction)
+    
+################################################################################
+    

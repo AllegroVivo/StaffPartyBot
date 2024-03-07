@@ -34,7 +34,7 @@ class DatabaseInserter(DBWorkerBranch):
         
         self.execute(
             "INSERT INTO requirements (_id, guild_id, position_id, description) "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s);",
             new_id, guild_id, pos_id, description
         )
         
@@ -101,7 +101,7 @@ class DatabaseInserter(DBWorkerBranch):
 
 ################################################################################
     def add_requirement_override(
-        self, 
+        self,
         guild_id: int, 
         training_id: str, 
         req_id: str, 

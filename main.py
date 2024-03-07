@@ -8,10 +8,19 @@ from dotenv import load_dotenv
 from Classes.Bot import TrainingBot
 ################################################################################
 
+load_dotenv()
+
+################################################################################
+
+if os.getenv("DEBUG") == "True":
+    debug_guilds = [303742308874977280, 955933227372122173]
+else:
+    debug_guilds = None
+    
 bot = TrainingBot(
     description="Toot toot, bitches!",
     intents=Intents.all(),
-    debug_guilds=[303742308874977280, 955933227372122173, 1104515062187708525]
+    debug_guilds=debug_guilds
 )
 
 ################################################################################
@@ -21,8 +30,6 @@ for filename in os.listdir("Cogs"):
         bot.load_extension(f"Cogs.{filename[:-3]}")
 
 ################################################################################
-
-load_dotenv()
 
 if os.getenv("DEBUG") == "True":
     token = os.getenv("DEBUG_TOKEN")

@@ -3,6 +3,8 @@ from __future__ import annotations
 from discord import SelectOption
 from typing import TYPE_CHECKING, TypeVar, Type, Tuple
 
+from Assets import BotEmojis
+
 if TYPE_CHECKING:
     from Classes import TrainingBot, PositionManager
 ################################################################################
@@ -76,7 +78,7 @@ class Requirement:
         return self._description
     
 ################################################################################
-    def select_option(self) -> SelectOption:
+    def select_option(self, checked: bool = False) -> SelectOption:
         """Return a SelectOption object for this requirement.
         
         If the description is longer than 50 characters, it will be truncated to
@@ -89,7 +91,7 @@ class Requirement:
         """
 
         label = self.description if len(self.description) <= 50 else f"{self.description[:47]}..."
-        return SelectOption(label=label, value=self.id)
+        return SelectOption(label=label, value=self.id, default=checked)
         
 ################################################################################
     def delete(self) -> None:
@@ -104,4 +106,3 @@ class Requirement:
         self._state.database.update.requirement(self)
         
 ################################################################################
-        

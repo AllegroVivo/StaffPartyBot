@@ -122,6 +122,12 @@ class Position:
 
 ################################################################################
     @property
+    def manager(self) -> PositionManager:
+        
+        return self._manager
+    
+################################################################################
+    @property
     def id(self) -> str:
 
         return self._id
@@ -220,7 +226,7 @@ class Position:
         if not modal.complete:
             return
     
-        self._requirements.append(Requirement.new(self, self.id, modal.value))
+        self._requirements.append(Requirement.new(self._manager, self.id, modal.value))
 
 ################################################################################
     async def remove_requirement(self, interaction: Interaction) -> None:

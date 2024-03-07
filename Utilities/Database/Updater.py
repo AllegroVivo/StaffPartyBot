@@ -100,8 +100,11 @@ class DatabaseUpdater(DBWorkerBranch):
                 )
             else:
                 self.execute(
-                    "INSERT INTO requirement_overrides VALUES (%s, %s, %s, %s);",
-                    training.user_id, training.id, requirement_id, level.value
+                    "INSERT INTO requirement_overrides (user_id, guild_id, "
+                    "training_id, requirement_id, level) "
+                    "VALUES (%s, %s, %s, %s, %s);",
+                    training.user_id, training.trainee.guild_id, 
+                    training.id, requirement_id, level.value
                 )
         
 ################################################################################

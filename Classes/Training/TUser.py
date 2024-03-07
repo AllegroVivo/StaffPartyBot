@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict
 
 from discord import User, NotFound, Embed, EmbedField, Interaction, SelectOption
 
-from UI.Common import ConfirmCancelView
+from UI.Common import ConfirmCancelView, Frogginator
 from UI.Training import (
     AddTrainingView,
     AddQualificationView,
@@ -15,6 +15,7 @@ from UI.Training import (
     ModifyQualificationView,
     RemoveQualificationView,
     RemoveTrainingView,
+    TrainingUpdateView,
 )
 from Utilities import Utilities as U, TrainingLevel
 from .Availability import Availability
@@ -33,25 +34,6 @@ TU = TypeVar("TU", bound="TUser")
 
 ################################################################################
 class TUser:
-    """A class to represent a user in the training system.
-    
-    Attributes:
-    -----------
-    _manager : :class:`TrainingManager`
-        The training manager that this TUser is associated with.
-    _user : :class:`User`
-        The user that this TUser represents.
-    _name : :class:`str`
-        The name of this TUser.
-    _notes : :class:`str`
-        Internal notes for this TUser.
-    _availability : List[:class:`Availability`]
-        The availability of this TUser.
-    _config : :class:`UserConfiguration`
-        The configuration settings for this TUser.
-    _qualifications : List[:class:`Qualification`]
-        The qualifications that this TUser has.
-    """
 
     __slots__ = (
         "_manager",
@@ -88,20 +70,6 @@ class TUser:
 ################################################################################
     @classmethod
     def new(cls: Type[TU], manager: TrainingManager, user: User) -> TU:
-        """Create a new TUser instance.
-        
-        Parameters:
-        -----------
-        bot : :class:`TrainingBot`
-            The bot instance.
-        user : :class:`User`
-            The user to create a TUser instance for.
-            
-        Returns:
-        --------
-        :class:`TUser`
-            The new TUser instance.
-        """
 
         manager.bot.database.insert.tuser(manager.guild_id, user.id)
 
@@ -122,22 +90,6 @@ class TUser:
 ################################################################################
     @classmethod
     async def load(cls: Type[TU], mgr: TrainingManager, data: Dict[str, Any]) -> Optional[TU]:
-        """Load a TUser instance from a dictionary of data.
-        
-        This function is a coroutine.
-        
-        Parameters:
-        -----------
-        mgr : :class:`TrainingManager`
-            The training manager to associate with the new TUser.
-        data : Dict[:class:`str`, Any]
-            The database records to load the TUser from.
-            
-        Returns:
-        --------
-        Optional[:class:`TUser`]
-            The loaded TUser instance, or None if the user could not be found.
-        """
 
         tuser = data["tuser"]
         config = data["tconfig"]
@@ -165,6 +117,9 @@ class TUser:
 
 ################################################################################
     def __eq__(self, other: TUser) -> bool:
+        
+        if other is None:
+            return False
         
         return self.user == other.user
     
@@ -280,13 +235,6 @@ class TUser:
     
 ################################################################################
     def admin_status(self) -> Embed:
-        """Generate an embed to display to an admin regarding the status of this TUser.
-        
-        Returns:
-        --------
-        :class:`Embed`
-            The status embed to display.
-        """
 
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
@@ -387,15 +335,6 @@ class TUser:
 
 ################################################################################    
     async def set_name(self, interaction: Interaction) -> None:
-        """Set the name of this TUser.
-        
-        This function is a coroutine.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
 
         modal = TUserNameModal(self._name)
 
@@ -409,15 +348,6 @@ class TUser:
 
 ################################################################################
     async def set_notes(self, interaction: Interaction) -> None:
-        """Set the notes for this TUser.
-        
-        This function is a coroutine.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
 
         modal = TUserNotesModal(self._notes)
 
@@ -431,15 +361,6 @@ class TUser:
 
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
-        """Set the scheduling availability for this TUser.
-        
-        This function is a coroutine.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
 
         status = U.make_embed(
             title="Set Availability",
@@ -506,15 +427,6 @@ class TUser:
 
 ################################################################################
     async def add_qualification(self, interaction: Interaction) -> None:
-        """Add a new job training qualification to this TUser.
-        
-        This function is a coroutine.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
 
         embed = U.make_embed(
             title="Add Qualification",
@@ -749,4 +661,22 @@ class TUser:
         return self._config.trainee_pings
     
 ################################################################################
+    async def trainer_dashboard(self, interaction: Interaction, cur_page: int = 0) -> None:
+
+        pages = [
+            t.status_page(interaction.user) for t in self.training_manager.all_trainings
+            if t.trainer == self
+        ]
+        frogginator = Frogginator(pages)
+        
+        await frogginator.respond(interaction)
+        await frogginator.goto_page(cur_page)
+        await frogginator.wait()
     
+################################################################################
+    async def refresh_dashboard(self, interaction: Interaction, cur_page: int) -> None:
+
+        # await interaction.delete_original_response()
+        await self.trainer_dashboard(interaction, cur_page)
+        
+################################################################################

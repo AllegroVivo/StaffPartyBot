@@ -10,7 +10,6 @@ class RequirementLevel(FroggeEnum):
     Complete = 1
     InProgress = 2
     Incomplete = 3
-    Waived = 4
 
 ################################################################################
     @property

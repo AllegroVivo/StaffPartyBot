@@ -48,13 +48,14 @@ class PositionManager:
 
         requirements = {"0": []}
         for req in requirement_data:
-            if req[1] not in requirements.keys():
-                requirements[req[1]] = []
-            requirements[req[1]].append(req)
+            if req[2] not in requirements.keys():
+                requirements[req[2]] = []
+            requirements[req[2]].append(req)
 
+        global_reqs = requirements.get("0")
         # Global requirements
         self._requirements.extend(
-            [Requirement.load(self.bot, r) for r in requirements["0"]]
+            [Requirement.load(self.bot, r) for r in global_reqs]
         )
 
         for pos in position_data:
