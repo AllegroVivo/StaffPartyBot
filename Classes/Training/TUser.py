@@ -208,12 +208,6 @@ class TUser:
         return self._details.data_center
     
 ################################################################################
-    def update(self) -> None:
-        """Update this TUser's information in the database."""
-
-        self.bot.database.update.tuser(self)
-
-################################################################################
     def is_qualified(self, position_id: str) -> bool:
         
         return any(q.position.id == position_id for q in self.qualifications)
@@ -658,7 +652,6 @@ class TUser:
     def toggle_pings(self) -> None:
         
         self._config.toggle_trainee_pings()
-        self.update()
         
 ################################################################################
     def accepting_trainee_pings(self) -> bool:

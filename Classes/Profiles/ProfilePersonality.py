@@ -260,9 +260,9 @@ class ProfilePersonality(ProfileSection):
     ]:
 
         return (
-            self._likes_field(True) if self.likes is not None else None,
-            self._likes_field(False) if self.dislikes is not None else None,
-            self._personality_field() if self.personality is not None else None,
+            self._likes_field(True) if self.likes else None,
+            self._likes_field(False) if self.dislikes else None,
+            self._personality_field() if self.personality else None,
             self._compile_aboutme()
         )
 

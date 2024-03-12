@@ -94,6 +94,7 @@ class UserConfiguration:
     def toggle_trainee_pings(self) -> None:
 
         self._trainee_pings = not self._trainee_pings
+        self.update()
 
 ################################################################################
     def update(self) -> None:

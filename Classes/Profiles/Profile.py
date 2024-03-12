@@ -226,14 +226,14 @@ class Profile:
 
         if self.char_name == str(NS):
             error = CharNameNotSetError()
-            await interaction.response.send_message(embed=error, emphemeral=True)
+            await interaction.response.send_message(embed=error, ephemeral=True)
             return
 
         main_profile, aboutme = self.compile()
 
         if len(main_profile) > 5999:
             error = ExceedsMaxLengthError(len(main_profile))
-            await interaction.response.send_message(embed=error, emphemeral=True)
+            await interaction.response.send_message(embed=error, ephemeral=True)
             return
 
         embeds = [main_profile]
@@ -252,7 +252,7 @@ class Profile:
 
         if not isinstance(channel, TextChannel):
             error = ChannelTypeError(channel, "TextChannel")
-            await interaction.respond(embed=error, emphemeral=True)
+            await interaction.respond(embed=error, ephemeral=True)
             return
 
         try:
@@ -305,7 +305,7 @@ class Profile:
             fields.append(additional_imgs)
 
         main_profile = U.make_embed(
-            color=color,
+            color=color or FroggeColor.embed_background(),
             title=char_name,
             description=description,
             url=url,

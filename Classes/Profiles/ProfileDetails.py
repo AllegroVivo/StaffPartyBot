@@ -293,7 +293,7 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     def rates_field(self) -> Optional[EmbedField]:
 
-        if self.rates is NS:
+        if self.rates is None:
             return
 
         return EmbedField(
