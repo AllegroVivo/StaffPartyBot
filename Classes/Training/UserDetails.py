@@ -51,7 +51,7 @@ class UserDetails:
             name=data[0],
             notes=data[1],
             hiatus=data[2],
-            data_center=DataCenter(data[3])
+            data_center=DataCenter(data[3]) if data[3] else None
         )
     
 ################################################################################
