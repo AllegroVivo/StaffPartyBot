@@ -144,10 +144,23 @@ class Logger:
             title="Trainer Assigned!",
             description=(
                 f"{training.position.name} training for `{training.trainee.name}` has been\n"
-                f"matched to `{training.trainer.user.name}` ({training.trainer.user.mention})!"
+                f"matched to `{training.trainer.name}` ({training.trainer.user.mention})!"
             )
         )
 
         await self._log(embed, LogType.TrainerAssigned)
+        
+################################################################################
+    async def training_completed(self, training: Training) -> None:
+
+        embed = U.make_embed(
+            title="Training Completed!",
+            description=(
+                f"{training.position.name} training for `{training.trainee.name}` has been\n"
+                f"completed by `{training.trainer.name}`!"
+            )
+        )
+
+        await self._log(embed, LogType.TrainingCompleted)
         
 ################################################################################

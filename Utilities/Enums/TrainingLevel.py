@@ -16,7 +16,10 @@ class TrainingLevel(FroggeEnum):
     @property
     def proper_name(self) -> str:
 
-        return "On Hold" if self.value == 2 else self.name
+        if self.value == 2:
+            return "On Hold" 
+            
+        return self.name
 
 ################################################################################
     @staticmethod

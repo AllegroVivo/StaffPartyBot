@@ -51,6 +51,10 @@ class DatabaseInserter(DBWorkerBranch):
             "INSERT INTO tuser_config (user_id, guild_id) VALUES (%s, %s) ",
             user_id, guild_id
         )
+        self.execute(
+            "INSERT INTO tuser_details (user_id, guild_id) VALUES (%s, %s) ",
+            user_id, guild_id
+        )
         
 ################################################################################
     def _add_qualification(
@@ -87,7 +91,7 @@ class DatabaseInserter(DBWorkerBranch):
         )
         
 ################################################################################
-    def add_training(self, guild_id: int, user_id: int, pos_id: str) -> str:
+    def _add_training(self, guild_id: int, user_id: int, pos_id: str) -> str:
         
         new_id = self.generate_id()
         
@@ -100,7 +104,7 @@ class DatabaseInserter(DBWorkerBranch):
         return new_id
 
 ################################################################################
-    def add_requirement_override(
+    def _add_requirement_override(
         self,
         guild_id: int, 
         training_id: str, 
@@ -115,14 +119,45 @@ class DatabaseInserter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _add_profile(self, guild_id: int, user_id: int) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO profiles (_id, guild_id, user_id) VALUES (%s, %s, %s);",
+            new_id, guild_id, user_id
+        )
+        self.execute("INSERT INTO details (_id) VALUES (%s);", new_id)
+        self.execute("INSERT INTO ataglance (_id) VALUES (%s);", new_id)
+        self.execute("INSERT INTO personality (_id) VALUES (%s);", new_id)
+        self.execute("INSERT INTO images (_id) VALUES (%s);", new_id)
+        
+        return new_id
+    
+################################################################################
+    def _add_additional_image(self, profile_id: str, url: str, caption: Optional[str]) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO additional_images (_id, profile_id, url, caption) "
+            "VALUES (%s, %s, %s, %s);",
+            new_id, profile_id, url, caption
+        )
+        
+        return new_id
+        
+################################################################################
 
     position        = _add_position
     requirement     = _add_requirement
     tuser           = _add_tuser
     qualification   = _add_qualification
     availability    = _add_availability
-    training        = add_training
-    req_override    = add_requirement_override
+    training        = _add_training
+    req_override    = _add_requirement_override
+    profile         = _add_profile
+    addl_image      = _add_additional_image
     
 ################################################################################
     

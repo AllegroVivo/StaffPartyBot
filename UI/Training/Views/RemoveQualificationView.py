@@ -32,15 +32,13 @@ class PositionSelect(Select):
             placeholder="Select a position on this trainer to remove...",
             options=options,
             min_values=1,
-            max_values=1,
+            max_values=len(options),
             disabled=True if options[0].value == "-1" else False,
             row=0
         )
         
-        self.options = options
-        
     async def callback(self, interaction: Interaction):
-        self.view.value = self.values[0]
+        self.view.value = self.values
         self.view.complete = True
         
         await interaction.edit()

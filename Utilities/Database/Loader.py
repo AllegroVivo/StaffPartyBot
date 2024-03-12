@@ -21,12 +21,13 @@ class DatabaseLoader(DBWorkerBranch):
             "bot_config": self._load_bot_config(),
             "positions" : self._load_positions(),
             "requirements" : self._load_requirements(),
-            "tusers"    : self._load_tusers(),
-            "tconfig" : self._load_tuser_config(),
+            "tusers" : self._load_tusers(),
             "availability" : self._load_availability(),
             "qualifications" : self._load_qualifications(),
             "trainings" : self._load_trainings(),
             "requirement_overrides" : self._load_requirement_overrides(),
+            "profiles" : self._load_profiles(),
+            "additional_images" : self._load_additional_images()
         }
 
 ################################################################################
@@ -50,13 +51,7 @@ class DatabaseLoader(DBWorkerBranch):
 ################################################################################
     def _load_tusers(self) -> Tuple[Tuple[Any, ...], ...]:
         
-        self.execute("SELECT * FROM tusers;")
-        return self.fetchall()
-    
-################################################################################
-    def _load_tuser_config(self) -> Tuple[Tuple[Any, ...], ...]:
-        
-        self.execute("SELECT * FROM tuser_config;")
+        self.execute("SELECT * FROM tuser_master;")
         return self.fetchall()
     
 ################################################################################
@@ -81,6 +76,18 @@ class DatabaseLoader(DBWorkerBranch):
     def _load_requirement_overrides(self) -> Tuple[Tuple[Any, ...], ...]:
         
         self.execute("SELECT * FROM requirement_overrides;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_profiles(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM profile_master;")
+        return self.fetchall()
+
+################################################################################
+    def _load_additional_images(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM additional_images;")
         return self.fetchall()
     
 ################################################################################

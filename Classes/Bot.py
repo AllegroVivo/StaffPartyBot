@@ -85,26 +85,25 @@ class TrainingBot(Bot):
         ret = { g.id : {
             "bot_config": None,
             "tusers": [],
-            "tconfig": [],
             "availability": [],
             "qualifications": [],
             "positions": [],
             "requirements": [],
             "trainings": [],
             "requirement_overrides": [],
+            "profiles": [],
         } for g in self.guilds }
         
         load_dotenv()
         
         for cfg in data["bot_config"]:
             if os.getenv("DEBUG") == "True":
+                # Skip SPB server when running in debug.
                 if cfg[0] == 1104515062187708525:
                     continue
             ret[cfg[0]]["bot_config"] = cfg
         for u in data["tusers"]:
             ret[u[1]]["tusers"].append(u)
-        for tcfg in data["tconfig"]:
-            ret[tcfg[1]]["tconfig"].append(tcfg)
         for a in data["availability"]:
             ret[a[1]]["availability"].append(a)
         for q in data["qualifications"]:
@@ -117,6 +116,16 @@ class TrainingBot(Bot):
             ret[t[1]]["trainings"].append(t)
         for ro in data["requirement_overrides"]:
             ret[ro[1]]["requirement_overrides"].append(ro)
+            
+        for p in data["profiles"]:
+            ret[p[2]]["profiles"].append(
+                {
+                    "profile": p,
+                    "additional_images": [
+                        a for a in data["additional_images"] if a[1] == p[0]
+                    ]
+                }
+            )
             
         return ret
     

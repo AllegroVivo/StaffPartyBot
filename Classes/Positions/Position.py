@@ -153,6 +153,12 @@ class Position:
     
 ################################################################################
     @property
+    def all_requirements(self) -> List[Requirement]:
+        
+        return self._requirements + self._manager.global_requirements
+    
+################################################################################
+    @property
     def select_option(self) -> SelectOption:
         """Return the position as a select option where label=name & value=id."""
 

@@ -27,6 +27,8 @@ class TUserAdminStatusView(FroggeView):
             EditNameButton(),
             EditNotesButton(),
             ModifyScheduleButton(),
+            DataCenterButton(),
+            HiatusToggleButton(self.tuser.on_hiatus),
             AddQualificationButton(),
             ModifyQualificationButton(),
             RemoveQualificationButton(),
@@ -46,10 +48,10 @@ class TUserAdminStatusView(FroggeView):
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.
-        self.children[4].disabled = disable_qualification_btn
-        self.children[5].disabled = disable_qualification_btn
+        self.children[6].disabled = disable_qualification_btn
+        self.children[7].disabled = disable_qualification_btn
     
-        self.children[7].disabled = disable_training_btn
+        self.children[9].disabled = disable_training_btn
 
 ################################################################################
 class EditNameButton(Button):
@@ -58,7 +60,7 @@ class EditNameButton(Button):
 
         super().__init__(
             style=ButtonStyle.primary,
-            label="Change Name",
+            label="Name",
             disabled=False,
             row=0
         )
@@ -99,6 +101,50 @@ class ModifyScheduleButton(Button):
         await self.view.tuser.set_availability(interaction)
         await edit_message_helper(interaction, embed=self.view.tuser.admin_status())
 
+################################################################################
+class DataCenterButton(Button):
+    
+    def __init__(self) -> None:
+
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Data Center",
+            disabled=False,
+            row=0
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.set_data_center(interaction)
+        await edit_message_helper(interaction, embed=self.view.tuser.admin_status())
+        
+################################################################################
+class HiatusToggleButton(Button):
+    
+    def __init__(self, hiatus: bool) -> None:
+
+        super().__init__(
+            disabled=False,
+            row=0
+        )
+        
+        self._set_style(hiatus)
+
+    def _set_style(self, hiatus: bool) -> None:
+        if hiatus:
+            self.style = ButtonStyle.success
+            self.label = "End Hiatus"
+        else:
+            self.style = ButtonStyle.secondary
+            self.label = "Start Hiatus"
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.toggle_hiatus(interaction)
+        self._set_style(self.view.tuser.on_hiatus)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.tuser.admin_status(), view=self.view
+        )
+        
 ################################################################################
 class AddQualificationButton(Button):
 

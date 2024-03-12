@@ -8,4 +8,5 @@ if TYPE_CHECKING:
     from .TrainingManager import TrainingManager
     from .TUser import TUser
     from .UserConfig import UserConfiguration
+    from .UserDetails import UserDetails
 ################################################################################

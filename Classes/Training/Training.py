@@ -158,6 +158,9 @@ class Training:
 ################################################################################
     def status_page(self, owner: User) -> Page:
         
+        trainee_availability = self._trainee._availability_field(True)
+        trainee_availability.name = "__Trainee Availability__"
+        
         description = f"**Position:** `{self._position.name}`"
         embed = U.make_embed(
             title=f"Training Status for {self._trainee.name}",
@@ -165,7 +168,11 @@ class Training:
                 f"{description}\n"
                 f"{U.draw_line(text=description)}\n"
             ),
-            fields=[self.requirements_status(emoji=True)]
+            fields=[
+                trainee_availability,
+                self._trainee._dc_field(),
+                self.requirements_status(emoji=True),
+            ]
         )
         view = TrainerDashboardButtonView(owner, self)
         
@@ -182,7 +189,7 @@ class Training:
             value += self._requirement_line(emoji, requirement) + "\n"
 
         return EmbedField(
-            name="__Requirements__",
+            name="__Position Training Requirements__",
             value=value,
             inline=False
         )
@@ -250,15 +257,36 @@ class Training:
         
         ret = []
         
-        for requirement in self._position.requirements:
+        for requirement in self._position.all_requirements:
             # checked = (
             #     requirement.id in self._overrides and 
             #     self._overrides[requirement.id] == RequirementLevel.Complete
             # )
-            checked = False
-            ret.append(requirement.select_option(checked))
+            ret.append(requirement.select_option())
             
         return ret
     
 ################################################################################
-    
+    def will_complete(self, req_ids: List[str], level: RequirementLevel) -> bool:
+        
+        temp = self._overrides.copy()
+        for _id in req_ids:
+            temp[_id] = level
+            
+        if all(
+            req.is_complete(temp.get(req.id, None))
+            for req in self._position.all_requirements
+        ):
+            return True
+        
+        return self.is_complete()
+
+################################################################################
+    def reset(self) -> None:
+        
+        self._trainer = None
+        self._overrides = {}
+        
+        self.update()
+
+################################################################################

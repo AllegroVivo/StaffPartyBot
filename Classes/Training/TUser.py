@@ -2,27 +2,26 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict
 
-from discord import User, NotFound, Embed, EmbedField, Interaction, SelectOption
+from discord import User, Embed, EmbedField, Interaction, SelectOption
 
+from Assets import BotEmojis
 from UI.Common import ConfirmCancelView, Frogginator
 from UI.Training import (
     AddTrainingView,
     AddQualificationView,
-    TUserNameModal,
-    TUserNotesModal,
     WeekdaySelectView,
     TimeSelectView,
     ModifyQualificationView,
     RemoveQualificationView,
     RemoveTrainingView,
-    TrainingUpdateView,
 )
+from Utilities import DataCenter
 from Utilities import Utilities as U, TrainingLevel
 from .Availability import Availability
 from .Qualification import Qualification
-from .UserConfig import UserConfiguration
 from .Training import Training
-from Assets import BotEmojis
+from .UserConfig import UserConfiguration
+from .UserDetails import UserDetails
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, TrainingManager, PositionManager, GuildData
@@ -38,11 +37,11 @@ class TUser:
     __slots__ = (
         "_manager",
         "_user",
-        "_name",
-        "_notes",
         "_availability",
         "_config",
-        "_qualifications"
+        "_qualifications",
+        "_hiatus",
+        "_details",
     )
 
 ################################################################################
@@ -50,19 +49,17 @@ class TUser:
         self,
         mgr: TrainingManager,
         user: User,
-        name: Optional[str] = None,
-        notes: Optional[str] = None,
+        details: Optional[UserDetails] = None,
         availabilities: Optional[List[Availability]] = None,
         configuration: Optional[UserConfiguration] = None,
-        qualifications: Optional[List[Qualification]] = None
+        qualifications: Optional[List[Qualification]] = None,
     ) -> None:
 
         self._manager: TrainingManager = mgr
 
         self._user: User = user
-        self._name: str = name or user.name
-        self._notes: Optional[str] = notes
 
+        self._details: UserDetails = details or UserDetails(self)
         self._config: UserConfiguration = configuration or UserConfiguration(self)
         self._availability: List[Availability] = availabilities or []
         self._qualifications: List[Qualification] = qualifications or []
@@ -76,11 +73,9 @@ class TUser:
         self: TU = cls.__new__(cls)
 
         self._manager = manager
-
         self._user = user
-        self._name = user.name
-        self._notes = None
 
+        self._details = UserDetails(self)
         self._config = UserConfiguration(self)
         self._availability = []
         self._qualifications = []
@@ -89,27 +84,19 @@ class TUser:
 
 ################################################################################
     @classmethod
-    async def load(cls: Type[TU], mgr: TrainingManager, data: Dict[str, Any]) -> Optional[TU]:
+    def load(cls: Type[TU], mgr: TrainingManager, user: User, data: Dict[str, Any]) -> Optional[TU]:
 
         tuser = data["tuser"]
-        config = data["tconfig"]
         availability = data["availability"]
         qdata = data["qualifications"]
-
-        try:
-            user = await mgr.bot.fetch_user(tuser[0])
-        except NotFound:
-            return None
 
         self: TU = cls.__new__(cls)
 
         self._manager = mgr
         self._user = user
 
-        self._name = tuser[2]
-        self._notes = tuser[3]
-
-        self._config = UserConfiguration.load(self, config)
+        self._details = UserDetails.load(self, tuser[2:6])
+        self._config = UserConfiguration.load(self, tuser[6:8])
         self._availability = [Availability.load(self, a) for a in availability]
         self._qualifications = [Qualification.load(self, q) for q in qdata]
 
@@ -169,27 +156,13 @@ class TUser:
     @property
     def name(self) -> str:
 
-        return self._name or self.user.display_name
+        return self._details.name
 
-################################################################################
-    @name.setter
-    def name(self, value: str) -> None:
-
-        self._name = value
-        self.update()
-
-################################################################################    
+################################################################################ 
     @property
     def notes(self) -> Optional[str]:
 
-        return self._notes
-
-################################################################################
-    @notes.setter
-    def notes(self, value: Optional[str]) -> None:
-
-        self._notes = value
-        self.update()
+        return self._details.notes
 
 ################################################################################    
     @property
@@ -223,6 +196,18 @@ class TUser:
         return self._manager
     
 ################################################################################
+    @property
+    def on_hiatus(self) -> bool:
+        
+        return self._details.hiatus
+    
+################################################################################
+    @property
+    def data_center(self) -> Optional[DataCenter]:
+        
+        return self._details.data_center
+    
+################################################################################
     def update(self) -> None:
         """Update this TUser's information in the database."""
 
@@ -244,7 +229,8 @@ class TUser:
             fields=[
                 self._qualifications_field(),
                 self._training_requested_field(),
-                self._availability_field(),
+                self._availability_field(False),
+                self._dc_field(),
                 self._notes_field(),
             ]
         )
@@ -252,18 +238,15 @@ class TUser:
 ################################################################################
     def _qualifications_field(self) -> EmbedField:
 
+        value = "`None`" if not self.qualifications else ""
+        
+        for q in self.qualifications:
+            level = "On Hiatus" if self.on_hiatus else q.level.proper_name
+            value += f"* {q.position.name} -- *({level})*\n"
+        
         return EmbedField(
             name="__Trainer Qualifications__",
-            value=(
-                (
-                    "* " + "\n* ".join(
-                        [
-                            f"{q.position.name} -- *({q.level.proper_name})*"
-                            for q in self.qualifications
-                        ]
-                    ) if self.qualifications else "`None`"
-                )
-            ),
+            value=value,
             inline=True
         )
 
@@ -275,7 +258,10 @@ class TUser:
         if training_str == "":
             for t in self.trainings:
                 training_str += f"* {t.position.name}\n-- Trainer: "
-                training_str += f"`{t.trainer.name}`\n" if t.trainer else "None... (Yet!)\n"
+                if t.trainee.on_hiatus:
+                    training_str += "On Hiatus\n"
+                else:
+                    training_str += f"`{t.trainer.name}`\n" if t.trainer else "None... (Yet!)\n"
 
         return EmbedField(
             name="__Trainings Requested__",
@@ -284,12 +270,12 @@ class TUser:
         )
 
 ################################################################################
-    def _availability_field(self) -> EmbedField:
+    def _availability_field(self, inline: bool) -> EmbedField:
 
         return EmbedField(
             name="__Availability__",
             value=Availability.availability_status(self.availability),
-            inline=False
+            inline=inline
         )
 
 ################################################################################
@@ -302,12 +288,23 @@ class TUser:
         )
 
 ################################################################################
+    def _dc_field(self) -> EmbedField:
+
+        return EmbedField(
+            name="__Data Center__",
+            value=f"`{self.data_center.proper_name}`" if self.data_center else "`None`",
+            inline=False
+        )
+
+################################################################################
     def _bot_pings_field(self) -> EmbedField:
         
         return EmbedField(
             name="__New Trainee Pings__",
             value=(
-                str(BotEmojis.Check if self.config.trainee_pings else BotEmojis.Cross)
+                str(BotEmojis.Check 
+                    if (self.config.trainee_pings and not self.on_hiatus) 
+                    else BotEmojis.Cross)
                 + "\n" +
                 "*(If this is enabled, the\n"
                 "bot will send you a DM\n"
@@ -321,44 +318,40 @@ class TUser:
 ################################################################################
     def user_status(self) -> Embed:
 
+        fields = [
+            self._training_requested_field(),
+            EmbedField("** **", "** **", inline=False),
+            self._availability_field(True),
+            self._dc_field(),
+        ]
+        
+        if len(self.qualifications) > 0:
+            fields.insert(1, self._qualifications_field())
+            fields.insert(4, self._bot_pings_field())
+
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
             description=(
                 f"{U.draw_line(extra=25)}"
             ),
-            fields=[
-                self._training_requested_field(),
-                self._bot_pings_field(),
-                self._availability_field(),
-            ],
+            fields=fields,
         )
 
 ################################################################################    
     async def set_name(self, interaction: Interaction) -> None:
 
-        modal = TUserNameModal(self._name)
-
-        await interaction.response.send_modal(modal)
-        await modal.wait()
-
-        if not modal.complete:
-            return
-
-        self.name = modal.value
+        await self._details.set_name(interaction)
 
 ################################################################################
     async def set_notes(self, interaction: Interaction) -> None:
 
-        modal = TUserNotesModal(self._notes)
+        await self._details.set_notes(interaction)
 
-        await interaction.response.send_modal(modal)
-        await modal.wait()
+################################################################################
+    async def set_data_center(self, interaction: Interaction) -> None:
 
-        if not modal.complete:
-            return
-
-        self.notes = modal.value
-
+        await self._details.set_data_center(interaction)
+        
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
 
@@ -452,11 +445,12 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        position = self.position_manager.get_position(view.value[0])
+        positions = [self.position_manager.get_position(pos_id) for pos_id in view.value[0]]
         level = TrainingLevel(int(view.value[1]))
 
-        qualification = Qualification.new(self.training_manager, self.user, position, level)
-        self._qualifications.append(qualification)
+        for position in positions:
+            qualification = Qualification.new(self.training_manager, self.user, position, level)
+            self._qualifications.append(qualification)
 
 ################################################################################
     async def modify_qualification(self, interaction: Interaction) -> None:
@@ -478,9 +472,11 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        pos = self.position_manager.get_position(view.value[0])
-        qualification = self.get_qualification(pos.id)
-        qualification.update(TrainingLevel(int(view.value[1])))
+        positions = [self.position_manager.get_position(pos_id) for pos_id in view.value[0]]
+        
+        for pos in positions:
+            qualification = self.get_qualification(pos.id)
+            qualification.update(TrainingLevel(int(view.value[1])))
 
 ################################################################################
     def qualification_options(self) -> List[SelectOption]:
@@ -524,14 +520,23 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        qualification = self.get_qualification(view.value)
+        qualifications = [self.get_qualification(q_id) for q_id in view.value]
+        fields = [
+            EmbedField(
+                name="__Qualifications Pending Removal__",
+                value="\n".join([f"* {q.position.name}" for q in qualifications]),
+                inline=False
+            )
+        ]
 
         confirm = U.make_embed(
-            title="Remove Qualification",
+            title="Remove Qualification(s)",
             description=(
-                f"Are you sure you want to remove the qualification for\n"
-                f"the position of {qualification.position.name}?"
-            )
+                f"Are you sure you want to remove the following\n"
+                f"qualification(s) from {self.name}?\n"
+                f"{U.draw_line(extra=25)}"
+            ),
+            fields=fields
         )
         view = ConfirmCancelView(interaction.user)
 
@@ -541,8 +546,9 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        qualification.delete()
-        self._qualifications.remove(qualification)
+        for qualification in qualifications:
+            qualification.delete()
+            self._qualifications.remove(qualification)
 
 ################################################################################
     async def add_training(self, interaction: Interaction) -> None:
@@ -641,13 +647,12 @@ class TUser:
                 f"{U.draw_line(extra=43)}"
             )
         )
-
-        # If the user doesn't exist, isn't accepting DMs, or the bot simply 
-        # can't DM them, we'll just skip. Too bad, so sad.
-        try:
-            await self.user.send(embed=notification)
-        except:
-            pass
+        
+        if not self.on_hiatus:
+            try:
+                await self.user.send(embed=notification)
+            except:
+                pass
 
 ################################################################################
     def toggle_pings(self) -> None:
@@ -679,4 +684,78 @@ class TUser:
         # await interaction.delete_original_response()
         await self.trainer_dashboard(interaction, cur_page)
         
+################################################################################
+    async def toggle_hiatus(self, interaction: Interaction) -> None:
+
+        if not self.on_hiatus:
+            confirm = U.make_embed(
+                title="Toggle Hiatus",
+                description=(
+                    "Are you sure you want to toggle your hiatus status?\n\n"
+                    
+                    "The following things will happen:\n"
+                    "- All currently held trainees will be orphaned or reassigned.\n"
+                    "- All training qualifications will be marked 'On Hiatus'.\n"
+                    "- You will be unable to pick up new trainees.\n"
+                    "- Your name will be (temporarily) removed from the sign-up message (if applicable).\n"
+                    "- You will be given a hiatus role, hiding much of the juicy part of the server.\n\n"
+                    
+                    "**Are you sure you want to do this?**\n"
+                    f"{U.draw_line(extra=21)}"
+                ),
+            )
+        else:
+            confirm = U.make_embed(
+                title="Toggle Hiatus",
+                description=(
+                    "Are you sure you want to return from hiatus status?\n\n"
+                    
+                    "The following things will happen:\n"
+                    "- All training qualifications will be reverted to their original levels.\n"
+                    "- You will be removed from the hiatus role and have your previous role reassigned.\n"
+                    "- Your name will be added back to the sign-up message for trainings (if applicable).\n"
+                    "- You will be able to pick up trainees again.\n\n"
+                    
+                    "**Are you sure you want to do this?**\n"
+                    f"{U.draw_line(extra=21)}"
+                ),
+            )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=confirm, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+
+        self._details.toggle_hiatus()
+        
+        if self.on_hiatus:
+            for t in self.trainings:
+                await t.trainee.notify_of_trainer_hiatus(t)
+                t.reset()
+        
+        await self.training_manager.signup_message.update_components()
+        
+################################################################################
+    async def notify_of_trainer_hiatus(self, training: Training) -> None:
+
+        notification = U.make_embed(
+            title="Trainer On Hiatus",
+            description=(
+                f"{training.trainer.name} has gone on hiatus and is\n"
+                f"unable to continue training in `{training.position.name}`.\n\n"
+                
+                "Your name will be re-added to the pool of available\n"
+                "trainees and you'll be notified when you're picked up again.\n"
+                f"{U.draw_line(extra=43)}"
+            )
+        )
+
+        if not self.on_hiatus:
+            try:
+                await self.user.send(embed=notification)
+            except:
+                pass
+
 ################################################################################

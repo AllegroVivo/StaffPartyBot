@@ -134,13 +134,19 @@ class SignUpMessage:
             position_dict[training.position.name].append(training)
 
         fields = []
+        value = ""
         for position_name, trainings in position_dict.items():
             if len(trainings) == 0:
                 value = "`No trainees available.`\n"
             else:
-                value = "\n".join(
-                    [f"`{t.trainee.name}` - {t.trainee.user.mention}" for t in trainings]
-                )
+                for t in trainings:
+                    if t.trainee.on_hiatus:
+                        continue
+                    dc = (
+                        "" if t.trainee.data_center is None 
+                        else f" - *({t.trainee.data_center.proper_name})*"
+                    )
+                    value += f"`{t.trainee.name}`{dc} - {t.trainee.user.mention}\n"
 
             fields.append(EmbedField(name=position_name, value=value, inline=False))
 
@@ -148,15 +154,6 @@ class SignUpMessage:
 
 ################################################################################
     async def post(self, interaction: Interaction, channel: TextChannel) -> None:
-        """Post the trainer signup message in the specified channel.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction object.
-        channel : :class:`TextChannel`
-            The channel to post the message in.
-        """
 
         self._channel = channel
         self.update(interaction.guild_id)
@@ -175,7 +172,6 @@ class SignUpMessage:
         
 ################################################################################
     async def update_components(self) -> None:
-        """Update the components of the signup message."""
         
         if self._channel is None or self._message is None:
             return
@@ -210,7 +206,7 @@ class SignUpMessage:
             return
         
         training = self._manager.get_training(view.value[1])
-        confirm = U.make_embed(
+        acquire = U.make_embed(
             title=f"Acquire Trainee __{training.trainee.name}__",
             description=(
                 f"Are you sure you want to pick up {training.trainee.name}\n"
@@ -223,7 +219,7 @@ class SignUpMessage:
         )
         view = ConfirmCancelView(interaction.user)
         
-        await interaction.respond(embed=confirm, view=view, ephemeral=True)
+        await interaction.respond(embed=acquire, view=view, ephemeral=True)
         await view.wait()
         
         if not view.complete or view.value is False:
@@ -234,6 +230,18 @@ class SignUpMessage:
         
         await self.update_components()
         await self._manager.guild.log.training_matched(training)
+        
+        confirm = U.make_embed(
+            title="Trainee Acquired",
+            description=(
+                f"Congratulations! You have successfully acquired {training.trainee.name} "
+                f"as a trainee for the `{training.position.name}` position.\n\n"
+                
+                "Please reach out to them as soon as possible to begin the training process."
+            )
+        )
+        
+        await interaction.respond(embed=confirm, ephemeral=True)
     
 ################################################################################
     

@@ -53,8 +53,14 @@ class UserConfiguration:
     @classmethod
     def load(cls: Type[UC], parent: TUser, data: Tuple[Any, ...]) -> UC:
 
-        return cls(parent,  data[2],  data[3])
+        return cls(parent,  data[0],  data[1])
 
+################################################################################
+    @property
+    def user_id(self) -> int:
+        
+        return self._parent.user_id
+    
 ################################################################################
     @property
     def trainee_pings(self) -> bool:
@@ -92,6 +98,6 @@ class UserConfiguration:
 ################################################################################
     def update(self) -> None:
 
-        self._parent.bot.update_tuser(self._parent)
+        self._parent.bot.database.update.tuser_config(self)
 
 ################################################################################

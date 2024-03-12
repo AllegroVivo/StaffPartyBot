@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
-    from Classes import Availability, Qualification, Training
+    from Classes import Availability, Qualification, Training, AdditionalImage
 ################################################################################
 
 __all__ = ("DatabaseDeleter",)
@@ -22,7 +22,7 @@ class DatabaseDeleter(DBWorkerBranch):
         )
       
 ################################################################################  
-    def delete_availability(self, availability: Availability) -> None:
+    def _delete_availability(self, availability: Availability) -> None:
         
         self.execute(
             "DELETE FROM availability WHERE user_id = %s AND day = %s;",
@@ -30,7 +30,7 @@ class DatabaseDeleter(DBWorkerBranch):
         )
 
 ################################################################################
-    def delete_qualification(self, qualification: Qualification) -> None:
+    def _delete_qualification(self, qualification: Qualification) -> None:
         
         self.execute(
             "DELETE FROM qualifications WHERE _id = %s;",
@@ -38,7 +38,7 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################        
-    def delete_training(self, training: Training) -> None:
+    def _delete_training(self, training: Training) -> None:
         
         self.execute(
             "DELETE FROM trainings WHERE _id = %s;",
@@ -49,12 +49,21 @@ class DatabaseDeleter(DBWorkerBranch):
             training.id,
         )
         
+################################################################################        
+    def _delete_additional_image(self, additional: AdditionalImage) -> None:
+        
+        self.execute(
+            "DELETE FROM additional_images WHERE _id = %s;",
+            additional.id
+        )
+        
 ################################################################################
 
-    requirement    = _delete_requirement
-    availability   = delete_availability
-    qualification  = delete_qualification
-    training       = delete_training
+    requirement         = _delete_requirement
+    availability        = _delete_availability
+    qualification       = _delete_qualification
+    training            = _delete_training
+    profile_addl_image  = _delete_additional_image
     
 ################################################################################
     

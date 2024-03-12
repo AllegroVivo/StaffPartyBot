@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from discord import SelectOption
-from typing import TYPE_CHECKING, TypeVar, Type, Tuple
+from typing import TYPE_CHECKING, TypeVar, Type, Tuple, Optional
 
 from Assets import BotEmojis
+from Utilities import RequirementLevel
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, PositionManager
@@ -104,5 +105,13 @@ class Requirement:
         """Update this requirement in the database."""
 
         self._state.database.update.requirement(self)
+
+################################################################################
+    def is_complete(self, level: Optional[RequirementLevel]) -> bool:
         
+        if level is None:
+            return False
+        
+        pass
+
 ################################################################################

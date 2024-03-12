@@ -1,4 +1,5 @@
 import math
+import re
 from datetime import datetime, time
 from typing import Any, List, Optional, Tuple, Union, Literal
 
@@ -7,6 +8,7 @@ from discord import Colour, Embed, EmbedField
 
 from .Colors import CustomColor
 from .Enums import Timezone
+
 ################################################################################
 
 __all__ = ("Utilities", )
@@ -267,5 +269,15 @@ class Utilities:
             minute=_time.minute,
             second=_time.second
         )
+
+################################################################################
+    @staticmethod
+    def titleize(text: str) -> str:
+    
+        return re.sub(
+            r"[A-Za-z]+('[A-Za-z]+)?",
+            lambda word: word.group(0).capitalize(),
+            text
+        )   
 
 ################################################################################

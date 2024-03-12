@@ -36,7 +36,7 @@ class PositionSelect(Select):
             placeholder="Select a position to qualify this trainer for...",
             options=options,
             min_values=1,
-            max_values=1,
+            max_values=len(options),
             disabled=True if options[0].value == "-1" else False,
             row=0
         )
@@ -44,11 +44,7 @@ class PositionSelect(Select):
         self.options = options
         
     async def callback(self, interaction: Interaction):
-        self.view.add_item(TrainingSelect(self.values[0]))
-        
-        self.placeholder = [
-            option for option in self.options if option.value == self.values[0]
-        ][0].label
+        self.view.add_item(TrainingSelect(self.values))
         self.disabled = True
         
         await interaction.edit(view=self.view)
@@ -56,7 +52,7 @@ class PositionSelect(Select):
 ################################################################################
 class TrainingSelect(Select):
     
-    def __init__(self, pos_id: str):
+    def __init__(self, pos_ids: List[str]):
         
         super().__init__(
             placeholder="Select a qualification level...",
@@ -67,10 +63,10 @@ class TrainingSelect(Select):
             row=1
         )
 
-        self.pos_id: str = pos_id
+        self.pos_ids: List[str] = pos_ids
         
     async def callback(self, interaction: Interaction):
-        self.view.value = (self.pos_id, self.values[0])
+        self.view.value = (self.pos_ids, self.values[0])
         self.view.complete = True
         
         await interaction.edit()

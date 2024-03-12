@@ -12,7 +12,14 @@ if TYPE_CHECKING:
         Availability, 
         Qualification, 
         Training,
-        SignUpMessage
+        SignUpMessage,
+        ProfilePersonality,
+        ProfileImages,
+        ProfileDetails,
+        ProfileAtAGlance,
+        AdditionalImage,
+        UserConfiguration,
+        UserDetails,
     )
 ################################################################################
 
@@ -46,15 +53,22 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################        
-    def _update_tuser(self, tuser: TUser) -> None:
+    def _update_tuser_details(self, details: UserDetails) -> None:
         
         self.execute(
-            "UPDATE tusers SET name = %s, notes = %s WHERE user_id = %s;",
-            tuser.name, tuser.notes, tuser.user_id
+            "UPDATE tuser_details SET char_name = %s, notes = %s, hiatus = %s, "
+            "data_center = %s WHERE user_id = %s;",
+            details.name, details.notes, details.hiatus, 
+            details.data_center.value if details.data_center is not None else None,
+            details.user_id
         )
+        
+################################################################################
+    def _update_tuser_config(self, config: UserConfiguration) -> None:
+        
         self.execute(
             "UPDATE tuser_config SET job_pings = %s WHERE user_id = %s;",
-            tuser.config.trainee_pings, tuser.user_id
+            config.trainee_pings, config.user_id
         )
         
 ################################################################################
@@ -119,15 +133,84 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################
+    def _update_profile_details(self, details: ProfileDetails) -> None:
+        
+        self.execute(
+            "UPDATE details SET char_name = %s, url = %s, color = %s, jobs = %s, "
+            "rates = %s, post_url = %s WHERE _id = %s;",
+            details.name, details.url, 
+            details.color.value if details.color is not None else None,
+            details.jobs, details.rates, details.post_url, details.profile_id
+        )
     
-    log_channel     = _update_log_channel
-    position        = _update_position
-    requirement     = _update_requirement
-    tuser           = _update_tuser
-    availability    = _update_availability
-    qualification   = _update_qualification
-    training        = _update_training
-    signup_message  = _update_signup_message
+################################################################################    
+    def _update_profile_ataglance(self, aag: ProfileAtAGlance) -> None:
+        
+        gender = race = clan = orientation = None
+        if aag.gender is not None:
+            gender = aag.gender if isinstance(aag.gender, str) else aag.gender.value
+        if aag.race is not None:
+            race = aag.race if isinstance(aag.race, str) else aag.race.value
+        if aag.clan is not None:
+            clan = aag.clan if isinstance(aag.clan, str) else aag.clan.value
+        if aag.orientation is not None:
+            orientation = (
+                aag.orientation if isinstance(aag.orientation, str) 
+                else aag.orientation.value
+            )
+        
+        self.execute(
+            "UPDATE ataglance SET gender = %s, pronouns = %s, race = %s, "
+            "clan = %s, orientation = %s, height = %s, age = %s, mare = %s "
+            "WHERE _id = %s;",
+            str(gender), [p.value for p in aag.pronouns], str(race), 
+            str(clan), str(orientation), aag.height, str(aag.age), str(aag.mare), 
+            aag.profile_id
+        )
+       
+################################################################################ 
+    def _update_profile_personality(self, personality: ProfilePersonality) -> None:
+        
+        self.execute(
+            "UPDATE personality SET likes = %s, dislikes = %s, personality = %s, "
+            "aboutme = %s WHERE _id = %s;",
+            personality.likes, personality.dislikes, personality.personality,
+            personality.aboutme, personality.profile_id
+        )
+        
+################################################################################
+    def _update_profile_images(self, images: ProfileImages) -> None:
+        
+        self.execute(
+            "UPDATE images SET thumbnail = %s, main_image = %s WHERE _id = %s;",
+            images.thumbnail, images.main_image, images.profile_id
+        )
+    
+################################################################################        
+    def _update_profile_additional_image(self, image: AdditionalImage) -> None:
+        
+        self.execute(
+            "UPDATE additional_images SET url = %s, caption = %s "
+            "WHERE _id = %s;",
+            image.url, image.caption, image.id
+        )
+    
+################################################################################
+    
+    log_channel         = _update_log_channel
+    position            = _update_position
+    requirement         = _update_requirement
+    tuser_config        = _update_tuser_config
+    tuser_details       = _update_tuser_details
+    availability        = _update_availability
+    qualification       = _update_qualification
+    training            = _update_training
+    signup_message      = _update_signup_message
+    profile_details     = _update_profile_details
+    profile_ataglance   = _update_profile_ataglance
+    profile_personality = _update_profile_personality
+    profile_images      = _update_profile_images
+    profile_addl_image  = _update_profile_additional_image
     
 ################################################################################
     

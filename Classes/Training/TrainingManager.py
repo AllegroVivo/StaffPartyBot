@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, List, Optional, Any, Dict
 
-from discord import User, Interaction, TextChannel
+from discord import User, Interaction, TextChannel, NotFound
 
 from UI.Training import TUserAdminStatusView, TUserStatusView
 from Utilities import (
@@ -64,9 +64,13 @@ class TrainingManager:
         payload = self._parse_data(data)
 
         for _, record in payload["tusers"].items():
-            tuser = await TUser.load(self, record)
-            if tuser is not None:
-                self._tusers.append(tuser)
+            try:
+                user = await self.bot.fetch_user(record["tuser"][0])
+            except NotFound:
+                continue
+                
+            tuser = TUser.load(self, user, record)
+            self._tusers.append(tuser)
                 
         overrides = payload["overrides"]
         trainings = data["trainings"]
@@ -83,7 +87,6 @@ class TrainingManager:
 
         bot_config = data["bot_config"]
         tuser_data = data["tusers"]
-        config_data = data["tconfig"]
         availability_data = data["availability"]
         qdata = data["qualifications"]
         
@@ -96,8 +99,6 @@ class TrainingManager:
                 "qualifications": [],
             }
 
-        for config in config_data:
-            tusers[config[0]]["tconfig"] = config
         for a in availability_data:
             try:
                 tusers[a[0]]["availability"].append(a)
