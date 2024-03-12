@@ -162,5 +162,18 @@ class Logger:
         )
 
         await self._log(embed, LogType.TrainingCompleted)
+
+################################################################################
+    async def tuser_hiatus(self, tuser: TUser) -> None:
+        
+        embed = U.make_embed(
+            title="TUser Hiatus!",
+            description=(
+                f"{tuser.name} has __{'entered' if tuser.on_hiatus else 'exited'}__ "
+                f"hiatus status!"
+            )
+        )
+        
+        await self._log(embed, LogType.UserHiatus)
         
 ################################################################################

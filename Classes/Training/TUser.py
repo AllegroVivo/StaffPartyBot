@@ -735,6 +735,7 @@ class TUser:
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
         
+        await self.guild.log.tuser_hiatus(self)
         await self.training_manager.signup_message.update_components()
         
 ################################################################################
