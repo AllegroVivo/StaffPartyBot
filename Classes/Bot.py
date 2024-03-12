@@ -23,7 +23,6 @@ class TrainingBot(Bot):
     __slots__ = (
         "_img_dump",
         "_db",
-        "_log",
         "_guild_mgr",
     )
 

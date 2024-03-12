@@ -4,17 +4,9 @@ from typing import List
 ################################################################################
 class DataCenter(FroggeEnum):
     
-    Aether = 1
-    Chaos = 2
-    Crystal = 3
-    Dynamis = 4
-    Elemental = 5
-    Gaia = 6
-    Light = 7
-    Mana = 8
-    Materia = 9
-    Meteor = 10
-    Primal = 11
+    Americas = 1
+    Europe = 2
+    Oceania = 3
 
 ################################################################################
     @staticmethod
