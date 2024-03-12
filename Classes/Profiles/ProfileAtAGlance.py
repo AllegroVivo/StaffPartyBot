@@ -68,34 +68,27 @@ class ProfileAtAGlance(ProfileSection):
 ################################################################################
     @classmethod
     def load(cls: Type[AAG], parent: Profile, data: Tuple[Any, ...]) -> AAG:
-        
-        gender = (
-            (Gender(int(data[0])) if data[0].isdigit() else data[0])
-            if data[0] != "None" else None
-        )
-        race = (
-            (Race(int(data[2])) if data[2].isdigit() else data[2])
-            if data[2] != "None" else None
-        )
-        clan = (
-            (Clan(int(data[3])) if data[3].isdigit() else data[3])
-            if data[3] != "None" else None
-        )
-        orientation = (
-            (Orientation(int(data[4])) if data[4].isdigit() else data[4])
-            if data[4] != "None" else None
-        )
-        
+
+        gender = race = clan = orientation = None
+        if data[0] is not None:
+            gender = Gender(int(data[0])) if data[0].isdigit() else data[0]
+        if data[2] is not None:
+            race = Race(int(data[2])) if data[2].isdigit() else data[2]
+        if data[3] is not None:
+            clan = Clan(int(data[3])) if data[3].isdigit() else data[3]
+        if data[4] is not None:
+            orientation = Orientation(int(data[4])) if data[4].isdigit() else data[4]
+
         return cls(
             parent=parent,
             gender=gender,
-            pronouns=[Pronoun(int(x)) for x in data[1]],
+            pronouns=[Pronoun(int(x)) for x in data[1]] if data[1] else [],
             race=race,
             clan=clan,
             orientation=orientation,
             height=data[5],
-            age=data[6] if data[6] != "None" else None,
-            mare=data[7] if data[7] != "None" else None
+            age=data[6],
+            mare=data[7]
         )
     
 ################################################################################
