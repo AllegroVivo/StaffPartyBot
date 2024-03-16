@@ -29,7 +29,7 @@ class VenueStatusView(FroggeView):
             EditDescriptionButton(self.venue.description),
             OpenHoursButton(self.venue.fmt_hours()),
             LocationButton(self.venue.fmt_location()),
-            ToggleAcceptingButton(self.venue.accepting_internships),
+            ToggleAcceptingButton(self.venue.accepting_interns),
             RPLevelButton(self.venue.rp_level),
             NSFWToggleButton(self.venue.nsfw),
             VenueStyleButton(self.venue.style),
@@ -218,11 +218,11 @@ class ToggleAcceptingButton(Button):
         await self.view.venue.toggle_accepting(interaction)
         
         self.style = (
-            ButtonStyle.success if self.view.venue.accepting_internships 
+            ButtonStyle.success if self.view.venue.accepting_interns 
             else ButtonStyle.danger
         )
         self.emoji = (
-            BotEmojis.Check if self.view.venue.accepting_internships 
+            BotEmojis.Check if self.view.venue.accepting_interns 
             else BotEmojis.ThumbsDown
         )
         

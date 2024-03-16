@@ -1,23 +1,29 @@
 from __future__ import annotations
 
 import asyncio
+from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, Any, Dict
 
-from discord import User, Interaction, TextChannel, NotFound
+from discord import User, Interaction, TextChannel, NotFound, Embed
 
-from UI.Training import TUserAdminStatusView, TUserStatusView
+from UI.Common import ConfirmCancelView
+from UI.Training import TUserAdminStatusView, TUserStatusView, InternshipMatchingView
 from Utilities import (
     Utilities as U,
     ChannelTypeError,
     BotUserNotAllowedError,
-    NotRegisteredError
+    NotRegisteredError,
+    RPLevel,
+    NSFWPreference,
+    VenueSize,
+    VenueStyle,
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
 from .Training import Training
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, GuildData
+    from Classes import TrainingBot, GuildData, Venue
 ################################################################################
 
 __all__ = ("TrainingManager",)
@@ -279,6 +285,109 @@ class TrainingManager:
             return
         
         await trainer.trainer_dashboard(interaction)
+
+################################################################################
+    @staticmethod
+    def _match_prompt() -> Embed:
+        
+        return U.make_embed(
+            title="Internship Matching",
+            description=(
+                "This feature will help try to match you to a foster venue "
+                "for your internship.\n\n"
+
+                "You'll be asked your preference on the following four criteria:\n"
+                "1. **RP Level:**\n"
+                "*(The amount of roleplay used within the venue.)*\n\n"
+
+                "2. **NSFW Preference:**\n"
+                "*(Whether or not the venue is NSFW-safe.)*\n\n"
+
+                "3. **Venue Size:**\n"
+                "*(The size of the space the venue is located in.)*\n\n"
+
+                "4. **Venue Type:**\n"
+                "*(You can select up to three tags for the style of venue you "
+                "want to intern at.)*"
+            ),
+        )
     
 ################################################################################
+    async def match(self, interaction: Interaction) -> None:
+
+        initial_prompt = self._match_prompt()
+        initial_prompt.description += (
+            "\n\nSelect '`Continue`' below to proceed.\n"
+            f"{U.draw_line(extra=22)}"
+        )
+        
+        view = ConfirmCancelView(interaction.user)
+        view.children[0].label = "Continue"  # type: ignore
+        
+        await interaction.respond(embed=initial_prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        main_prompt = self._match_prompt()
+        main_prompt.description += (
+            f"\n\n{U.draw_line(extra=45)}"
+        )
+        view = InternshipMatchingView(interaction.user)
+        
+        await interaction.respond(embed=main_prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            return
+        
+        venues = self._matching_routine(*view.value)
+        report = U.make_embed(
+            title="Internship Matching Results",
+            description=(
+                "Here are the venues that best match your preferences:\n\n"
+                "1. **Venue Name:**\n"
+                "*(Venue Description)*\n\n"
+                "2. **Venue Name:**\n"
+                "*(Venue Description)*\n\n"
+                "3. **Venue Name:**\n"
+                "*(Venue Description)*\n\n"
+            ),
+        )
+        
+        await interaction.respond(embed=report)
+
+################################################################################
+    def _matching_routine(
+        self, 
+        rp_level: RPLevel, 
+        nsfw_pref: NSFWPreference,
+        size: VenueSize, 
+        styles: List[VenueStyle]
+    ) -> List[Venue]:
+        
+        ret = {}
+        
+        for venue in self.guild.venue_manager.venues:
+            if not venue.ataglance_complete or not venue.accepting_interns:
+                continue
     
+            rp_level_difference = self._calculate_distance(rp_level, venue.rp_level)
+            size_difference = self._calculate_distance(size, venue.size)
+            style_scalar = 0.5 if venue.style.value in [s.value for s in styles] else 1
+            nsfw_match = nsfw_pref == venue.nsfw
+    
+            overall_score = (rp_level_difference + size_difference) * style_scalar - nsfw_match
+    
+            ret[venue] = overall_score
+            
+        return [venue for venue, score in sorted(ret.items(), key=lambda x: x[1])]
+    
+################################################################################
+    @staticmethod
+    def _calculate_distance(user_preference: Enum, venue_attribute: Enum):
+        
+        return abs(user_preference.value - venue_attribute.value)
+    
+################################################################################

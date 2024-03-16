@@ -289,6 +289,21 @@ class Training:
 ################################################################################
     async def completion_procedure(self, interaction: Interaction) -> None:
 
+        trainer_embed = U.make_embed(
+            title="Training Complete",
+            description=(
+                f"Congratulations! Your trainee has completed their training\n"
+                f"for the position of `{self._position.name}`!\n\n"
+
+                f"This training will now be marked as closed and taken off "
+                f"your roster.\n\n"
+
+                "**Thank you for your hard work and dedication to the program!**\n\n"
+                f"{U.draw_line(extra=25)}\n"
+            ),
+        )
+        await interaction.respond(embed=trainer_embed)
+
         trainee_embed = U.make_embed(
             title="Training Complete",
             description=(
@@ -307,20 +322,5 @@ class Training:
             await self._trainee.user.send(embed=trainee_embed)
         except:
             pass
-        
-        trainer_embed = U.make_embed(
-            title="Training Complete",
-            description=(
-                f"Congratulations! Your trainee has completed their training\n"
-                f"for the position of `{self._position.name}`!\n\n"
-
-                f"This training will now be marked as closed and taken off "
-                f"your roster.\n\n"
-                
-                "**Thank you for your hard work and dedication to the program!**\n\n"
-                f"{U.draw_line(extra=25)}\n"
-            ),
-        )
-        await interaction.respond(embed=trainer_embed)
     
 ################################################################################

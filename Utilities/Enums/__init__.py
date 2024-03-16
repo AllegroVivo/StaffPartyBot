@@ -9,6 +9,7 @@ from .HousingZone import HousingZone
 from .ImageType import ImageType
 from .LogType import LogType
 from .Minutes import Minutes
+from .NSFWPreference import NSFWPreference
 from .Orientation import Orientation
 from .Pronoun import Pronoun
 from .Race import Race

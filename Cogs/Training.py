@@ -32,6 +32,16 @@ class Training(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.training_manager.tuser_status(ctx.interaction)
 
+################################################################################
+    @training.command(
+        name="match",
+        description="Match yourself post-training to a venue for internship."
+    )
+    async def training_match(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.match(ctx.interaction)
+        
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:
 

@@ -1,6 +1,7 @@
 from .AddQualificationView import AddQualificationView
 from .AddTrainingView import AddTrainingView
 from .DataCenterSelectView import DataCenterSelectView
+from .InternshipMatchingView import InternshipMatchingView
 from .ModifyQualificationView import ModifyQualificationView
 from .RemoveQualificationView import RemoveQualificationView
 from .RemoveTrainingView import RemoveTrainingView

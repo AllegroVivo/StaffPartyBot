@@ -74,6 +74,12 @@ class VenueManager:
         return self._channel
     
 ################################################################################
+    @property
+    def venues(self) -> List[Venue]:
+        
+        return self._venues
+    
+################################################################################
     def get_venue(self, name: str) -> Optional[Venue]:
         
         for venue in self._venues:

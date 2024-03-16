@@ -157,7 +157,7 @@ class Venue:
     
 ################################################################################
     @property
-    def accepting_internships(self) -> bool:
+    def accepting_interns(self) -> bool:
         
         return self._details.accepting
     
@@ -185,6 +185,16 @@ class Venue:
     def sponsored_positions(self) -> List[Position]:
         
         return self._intern_mgr.sponsored_positions
+
+################################################################################
+    @property
+    def ataglance_complete(self) -> bool:
+        
+        return (
+            self._details.aag.level is not None and
+            self._details.aag.style is not None and
+            self._details.aag.size is not None
+        ) 
     
 ################################################################################
     def status(self) -> Embed:
@@ -264,7 +274,7 @@ class Venue:
 ################################################################################
     def _sponsored_positions_field(self) -> EmbedField:
         
-        if self.accepting_internships:
+        if self.accepting_interns:
             value = (
                 (", ".join([f"`{pos.name}`" for pos in self.sponsored_positions]))
                 if self.sponsored_positions

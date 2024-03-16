@@ -302,7 +302,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "d.char_name,"
             "d.notes,"
             "d.hiatus,"
-            "d.data_center,"
+            "d.data_centers,"
             "c.image_url,"
             "c.job_pings "
             "FROM tusers t "
