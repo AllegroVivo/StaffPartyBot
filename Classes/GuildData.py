@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
+
 from discord import Guild, User
 
-from Classes.Profiles.ProfileManager import ProfileManager
-from Classes.Positions.PositionManager import PositionManager
-from Classes.Training.TrainingManager import TrainingManager
 from Classes.Logger import Logger
+from Classes.Positions.PositionManager import PositionManager
+from Classes.Profiles.ProfileManager import ProfileManager
+from Classes.Training.TrainingManager import TrainingManager
+from Classes.Venues.VenueManager import VenueManager
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -25,6 +27,7 @@ class GuildData:
         "_training_mgr",
         "_logger",
         "_profile_mgr",
+        "_venue_mgr",
     )
 
 ################################################################################
@@ -38,14 +41,17 @@ class GuildData:
         self._pos_mgr: PositionManager = PositionManager(self)
         self._training_mgr: TrainingManager = TrainingManager(self)
         self._profile_mgr: ProfileManager = ProfileManager(self)
+        self._venue_mgr: VenueManager = VenueManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
         
         await self._logger.load(data["bot_config"][1])
+        
         self._pos_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
+        await self._venue_mgr._load_all(data)
         
 ################################################################################
     @property
@@ -88,6 +94,12 @@ class GuildData:
     def profile_manager(self) -> ProfileManager:
 
         return self._profile_mgr
+    
+################################################################################
+    @property
+    def venue_manager(self) -> VenueManager:
+        
+        return self._venue_mgr
     
 ################################################################################
     def get_profile(self, user: User) -> Profile:

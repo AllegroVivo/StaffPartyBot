@@ -122,6 +122,15 @@ class Training:
         return self._trainer
 
 ################################################################################
+    @property
+    def is_complete(self) -> bool:
+        
+        return len(self._overrides) == len(self._position.all_requirements) and all(
+            level == RequirementLevel.Complete
+            for level in self._overrides.values()
+        )
+    
+################################################################################
     def delete(self) -> None:
 
         self.bot.database.delete.training(self)
@@ -233,6 +242,9 @@ class Training:
         for _id in req_ids:
             self._overrides[_id] = level
         self.update()
+        
+        if self.is_complete:
+            await self.completion_procedure(interaction)
     
 ################################################################################
     def get_override(self, req_id: str) -> Optional[RequirementLevel]:
@@ -267,21 +279,6 @@ class Training:
         return ret
     
 ################################################################################
-    def will_complete(self, req_ids: List[str], level: RequirementLevel) -> bool:
-        
-        temp = self._overrides.copy()
-        for _id in req_ids:
-            temp[_id] = level
-            
-        if all(
-            req.is_complete(temp.get(req.id, None))
-            for req in self._position.all_requirements
-        ):
-            return True
-        
-        return self.is_complete()
-
-################################################################################
     def reset(self) -> None:
         
         self._trainer = None
@@ -289,4 +286,41 @@ class Training:
         
         self.update()
 
+################################################################################
+    async def completion_procedure(self, interaction: Interaction) -> None:
+
+        trainee_embed = U.make_embed(
+            title="Training Complete",
+            description=(
+                f"Congratulations! You have completed your training for\n"
+                f"the position of `{self._position.name}`!\n\n"
+
+                "**You are now ready to take on your new role!**\n\n"
+                
+                "Visit the server and run the `/training match` command to\n"
+                "find what venues might be best suited to hire you!\n\n"
+                f"{U.draw_line(extra=25)}\n"
+            ),
+        )
+        
+        try:
+            await self._trainee.user.send(embed=trainee_embed)
+        except:
+            pass
+        
+        trainer_embed = U.make_embed(
+            title="Training Complete",
+            description=(
+                f"Congratulations! Your trainee has completed their training\n"
+                f"for the position of `{self._position.name}`!\n\n"
+
+                f"This training will now be marked as closed and taken off "
+                f"your roster.\n\n"
+                
+                "**Thank you for your hard work and dedication to the program!**\n\n"
+                f"{U.draw_line(extra=25)}\n"
+            ),
+        )
+        await interaction.respond(embed=trainer_embed)
+    
 ################################################################################

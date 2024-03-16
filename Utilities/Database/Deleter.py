@@ -5,7 +5,13 @@ from typing import TYPE_CHECKING
 from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
-    from Classes import Availability, Qualification, Training, AdditionalImage
+    from Classes import (
+        Availability, 
+        Qualification, 
+        Training, 
+        AdditionalImage,
+        VenueAvailability,
+    )
 ################################################################################
 
 __all__ = ("DatabaseDeleter",)
@@ -58,12 +64,21 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _delete_venue_availability(self, availability: VenueAvailability) -> None:
+        
+        self.execute(
+            "DELETE FROM venue_hours WHERE venue_id = %s AND weekday = %s;",
+            availability.venue_id, availability.day.value,
+        )
+        
+################################################################################
 
-    requirement         = _delete_requirement
-    availability        = _delete_availability
-    qualification       = _delete_qualification
-    training            = _delete_training
-    profile_addl_image  = _delete_additional_image
+    requirement             = _delete_requirement
+    availability            = _delete_availability
+    qualification           = _delete_qualification
+    training                = _delete_training
+    profile_addl_image      = _delete_additional_image
+    venue_availability      = _delete_venue_availability
     
 ################################################################################
     

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from discord import Embed, Interaction, User
 
 from UI.Training import TUserNameModal, TUserNotesModal, DataCenterSelectView
-from Utilities import Utilities as U, DataCenter
+from Utilities import Utilities as U, GlobalDataCenter
 
 if TYPE_CHECKING:
     from Classes import TUser, TrainingBot
@@ -21,7 +21,7 @@ class UserDetails:
         "_name",
         "_notes",
         "_hiatus",
-        "_data_center",
+        "_data_centers",
     )
     
 ################################################################################
@@ -31,7 +31,7 @@ class UserDetails:
         name: Optional[str] = None,
         notes: Optional[str] = None,
         hiatus: Optional[bool] = None,
-        data_center: Optional[DataCenter] = None
+        data_centers: Optional[List[GlobalDataCenter]] = None
     ):
         
         self._parent: TUser = parent
@@ -40,7 +40,7 @@ class UserDetails:
         self._notes: Optional[str] = notes
         self._hiatus: Optional[bool] = hiatus
         
-        self._data_center: Optional[DataCenter] = data_center
+        self._data_centers: List[GlobalDataCenter] = data_centers or []
         
 ################################################################################
     @classmethod
@@ -51,7 +51,7 @@ class UserDetails:
             name=data[0],
             notes=data[1],
             hiatus=data[2],
-            data_center=DataCenter(data[3]) if data[3] else None
+            data_centers=[GlobalDataCenter(int(dc)) for dc in data[3]] if data[3] else None
         )
     
 ################################################################################
@@ -104,14 +104,14 @@ class UserDetails:
         
 ################################################################################
     @property
-    def data_center(self) -> Optional[DataCenter]:
+    def data_centers(self) -> List[GlobalDataCenter]:
         
-        return self._data_center 
+        return self._data_centers 
     
-    @data_center.setter
-    def data_center(self, value: Optional[DataCenter]) -> None:
+    @data_centers.setter
+    def data_centers(self, value: Optional[List[GlobalDataCenter]]) -> None:
         
-        self._data_center = value
+        self._data_centers = value or []
         self.update()
         
 ################################################################################
@@ -151,12 +151,12 @@ class UserDetails:
         self.hiatus = not self.hiatus
 
 ################################################################################
-    async def set_data_center(self, interaction: Interaction) -> None:
+    async def set_data_centers(self, interaction: Interaction) -> None:
         
         embed = U.make_embed(
             title="Data Center",
             description=(
-                "Please select the data center you want to use for all "
+                "Please select the data center(s) you want to use for all "
                 "training activities."
             )
         )
@@ -168,6 +168,6 @@ class UserDetails:
         if not view.complete or view.value is False:
             return
         
-        self.data_center = view.value
+        self.data_centers = view.value
     
 ################################################################################

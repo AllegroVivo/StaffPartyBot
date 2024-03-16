@@ -1,12 +1,18 @@
-from ._Enum import FroggeEnum
-from discord import SelectOption
 from typing import List
+
+from discord import SelectOption
+
+from ._Enum import FroggeEnum
 ################################################################################
 class DataCenter(FroggeEnum):
     
-    Americas = 1
-    Europe = 2
-    Oceania = 3
+    Aether = 1
+    Crystal = 2
+    Dynamis = 3
+    Primal = 4
+    Light = 5
+    Chaos = 6
+    Materia = 7
 
 ################################################################################
     @staticmethod
@@ -15,4 +21,3 @@ class DataCenter(FroggeEnum):
         return [dc.select_option for dc in DataCenter]
     
 ################################################################################
-    

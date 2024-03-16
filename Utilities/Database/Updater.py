@@ -5,22 +5,7 @@ from typing import TYPE_CHECKING, Optional
 from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
-    from Classes import (
-        Position, 
-        Requirement, 
-        TUser,
-        Availability, 
-        Qualification, 
-        Training,
-        SignUpMessage,
-        ProfilePersonality,
-        ProfileImages,
-        ProfileDetails,
-        ProfileAtAGlance,
-        AdditionalImage,
-        UserConfiguration,
-        UserDetails,
-    )
+    from Classes import *
 ################################################################################
 
 __all__ = ("DatabaseUpdater",)
@@ -36,6 +21,14 @@ class DatabaseUpdater(DBWorkerBranch):
             channel_id, guild_id
         )
     
+################################################################################
+    def _update_venue_post_channel(self, guild_id: int, channel_id: Optional[int]) -> None:
+        
+        self.execute(
+            "UPDATE bot_config SET venue_post_channel = %s WHERE guild_id = %s;",
+            channel_id, guild_id
+        )
+        
 ################################################################################
     def _update_position(self, position: Position) -> None:
         
@@ -196,6 +189,60 @@ class DatabaseUpdater(DBWorkerBranch):
         )
     
 ################################################################################
+    def _update_venue_details(self, details: VenueDetails) -> None:
+        
+        self.execute(
+            "UPDATE venue_details SET name = %s, description = %s, accepting = %s, "
+            "post_url = %s, logo_url = %s WHERE venue_id = %s;",
+            details.name, details.description, details.accepting, 
+            details.post_message.jump_url if details.post_message else None,
+            details.logo_url, details.venue_id
+        )
+    
+################################################################################    
+    def _update_venue_location(self, location: VenueLocation) -> None:
+        
+        self.execute(
+            "UPDATE venue_locations SET data_center = %s, world = %s, "
+            "zone = %s, ward = %s, plot = %s WHERE venue_id = %s;",
+            location.data_center.value if location.data_center is not None else None,
+            location.world.value if location.world is not None else None,
+            location.zone.value if location.zone is not None else None,
+            location.ward, location.plot, location.venue_id
+        )
+      
+################################################################################        
+    def _update_venue_hours(self, hours: VenueAvailability) -> None:
+        
+        self.execute(
+            "UPDATE venue_hours SET open_time = %s, close_time = %s "
+            "WHERE venue_id = %s AND weekday = %s;",
+            hours.open_time, hours.close_time, hours.venue_id,
+            hours.day.value
+        )
+        
+################################################################################
+    def _update_venue(self, venue: Venue) -> None:
+        
+        self.execute(
+            "UPDATE venues SET users = %s, positions = %s WHERE _id = %s;",
+            [u.id for u in venue.authorized_users],
+            [p.id for p in venue.sponsored_positions],
+            venue.id
+        )
+        
+################################################################################
+    def _update_venue_aag(self, aag: VenueAtAGlance) -> None:
+        
+        self.execute(
+            "UPDATE venue_aag SET level = %s, nsfw = %s, style = %s, "
+            "size = %s WHERE venue_id = %s;",
+            aag.level.value if aag.level is not None else None, aag.nsfw,
+            aag.style.value if aag.style is not None else None,
+            aag.size.value if aag.size is not None else None, aag.venue_id
+        )
+        
+################################################################################
     
     log_channel         = _update_log_channel
     position            = _update_position
@@ -211,6 +258,12 @@ class DatabaseUpdater(DBWorkerBranch):
     profile_personality = _update_profile_personality
     profile_images      = _update_profile_images
     profile_addl_image  = _update_profile_additional_image
+    venue_details       = _update_venue_details
+    venue_location      = _update_venue_location
+    venue_hours         = _update_venue_hours
+    venue               = _update_venue
+    venue_aag           = _update_venue_aag
+    venue_post_channel  = _update_venue_post_channel
     
 ################################################################################
     

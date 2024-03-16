@@ -3,9 +3,10 @@ from __future__ import annotations
 import os
 
 from dotenv import load_dotenv
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Dict, Any, Optional
 
-from discord import Attachment, Bot, TextChannel
+from discord.abc import GuildChannel
+from discord import Attachment, Bot, TextChannel, HTTPException
 
 from .Logger import Logger
 from .GuildManager import GuildManager
@@ -91,14 +92,15 @@ class TrainingBot(Bot):
             "trainings": [],
             "requirement_overrides": [],
             "profiles": [],
+            "venues": {},
         } for g in self.guilds }
         
         load_dotenv()
         
         for cfg in data["bot_config"]:
             if os.getenv("DEBUG") == "True":
-                # Skip SPB server when running in debug.
-                if cfg[0] == 1104515062187708525:
+                # Skip other servers when running in debug.
+                if cfg[0] not in (955933227372122173, 303742308874977280):
                     continue
             ret[cfg[0]]["bot_config"] = cfg
         for u in data["tusers"]:
@@ -126,6 +128,24 @@ class TrainingBot(Bot):
                 }
             )
             
+        for v in data["venues"]:
+            ret[v[1]]["venues"][v[0]] = {
+                "user_ids": v[2],
+                "positions": v[3],
+                "details": None,
+                "aag": None,
+                "hours": [],
+                "location": None,
+            }
+        for vd in data["venue_details"]:
+            ret[vd[1]]["venues"][vd[0]]["details"] = vd
+        for vh in data["venue_hours"]:
+            ret[vh[1]]["venues"][vh[0]]["hours"].append(vh)
+        for vl in data["venue_locations"]:
+            ret[vl[1]]["venues"][vl[0]]["location"] = vl
+        for aag in data["venue_aag"]:
+            ret[aag[1]]["venues"][aag[0]]["aag"] = aag
+            
         return ret
     
 ################################################################################
@@ -148,4 +168,19 @@ class TrainingBot(Bot):
 
         return post.attachments[0].url
 
+################################################################################
+    async def get_or_fetch_channel(self, channel_id: int) -> Optional[GuildChannel]:
+        
+        if not channel_id:
+            return
+
+        ret = self.get_channel(channel_id)
+        if ret is None:
+            try:
+                ret = await self.fetch_channel(channel_id)
+            except:
+                pass
+            
+        return ret
+    
 ################################################################################

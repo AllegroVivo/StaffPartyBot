@@ -71,6 +71,12 @@ class Availability:
 
 ################################################################################
     @property
+    def user_id(self) -> int:
+        
+        return self._parent.user_id
+    
+################################################################################
+    @property
     def day(self) -> Weekday:
 
         return self._day

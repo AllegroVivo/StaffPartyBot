@@ -63,7 +63,7 @@ class Admin(Cog):
 
 ################################################################################
     @admin.command(
-        name="set_log_channel",
+        name="log_channel",
         description="Set the channel for bot logs.",
     )
     async def set_log_channel(
@@ -79,6 +79,88 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].log.set_log_channel(ctx.interaction, channel)
 
+################################################################################
+    @admin.command(
+        name="venue_channel",
+        description="Set the channel for venue postings.",
+    )
+    async def set_venue_channel(
+        self,
+        ctx: ApplicationContext,
+        channel: Option(
+            SlashCommandOptionType.channel,
+            name="channel",
+            description="The channel to set as the venue channel.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.set_venue_channel(ctx.interaction, channel)
+
+################################################################################
+    @admin.command(
+        name="add_venue",
+        description="Add a new venue to the system."
+    )
+    async def add_venue(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the venue.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.add_venue(ctx.interaction, name)
+        
+################################################################################
+    @admin.command(
+        name="venue_user",
+        description="Add a user to a venue's authorized user list."
+    )
+    async def venue_user(
+        self,
+        ctx: ApplicationContext,
+        venue: Option(
+            SlashCommandOptionType.string,
+            name="venue",
+            description="The name of the venue.",
+            required=True
+        ),
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to add to the venue's authorized user list.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.add_user(ctx.interaction, venue, user)
+        
+################################################################################
+    @admin.command(
+        name="venue_profile",
+        description="View and edit a venue's internship profile & status."
+    )
+    async def venue_profile(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the venue.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.venue_menu(ctx.interaction, name, admin=True)
+        
 ################################################################################
 def setup(bot: "TrainingBot") -> None:
 

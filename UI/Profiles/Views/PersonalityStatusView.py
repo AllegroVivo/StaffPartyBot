@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, List
 
 from discord import Interaction, User
 
-from UI.Common import FroggeView, CloseMessageButton, ProfileSectionButton
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 
 if TYPE_CHECKING:
     from Classes import ProfilePersonality
@@ -32,7 +32,7 @@ class PersonalityStatusView(FroggeView):
             self.add_item(btn)
 
 ################################################################################        
-class LikesButton(ProfileSectionButton):
+class LikesButton(FroggeButton):
 
     def __init__(self, likes: List[str]) -> None:
 
@@ -53,7 +53,7 @@ class LikesButton(ProfileSectionButton):
         await interaction.edit(embed=p.status(), view=self.view)
 
 ################################################################################
-class DislikesButton(ProfileSectionButton):
+class DislikesButton(FroggeButton):
 
     def __init__(self, dislikes: List[str]) -> None:
 
@@ -74,7 +74,7 @@ class DislikesButton(ProfileSectionButton):
         await interaction.edit(embed=p.status(), view=self.view)
 
 ################################################################################
-class PersonalityButton(ProfileSectionButton):
+class PersonalityButton(FroggeButton):
     
     def __init__(self, personality: Optional[str]) -> None:
 
@@ -95,7 +95,7 @@ class PersonalityButton(ProfileSectionButton):
         await interaction.edit(embed=p.status(), view=self.view)
         
 ################################################################################
-class AboutMeButton(ProfileSectionButton):
+class AboutMeButton(FroggeButton):
 
     def __init__(self, aboutme: Optional[str]) -> None:
 

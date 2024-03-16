@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, List
 
 from discord import Interaction, User
 
-from UI.Common import FroggeView, CloseMessageButton, ProfileSectionButton
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ class ProfileImageStatusView(FroggeView):
             self.add_item(btn)
 
 ################################################################################        
-class RemoveThumbnailButton(ProfileSectionButton):
+class RemoveThumbnailButton(FroggeButton):
 
     def __init__(self, thumbnail: Optional[str]) -> None:
 
@@ -59,7 +59,7 @@ class RemoveThumbnailButton(ProfileSectionButton):
         )
 
 ################################################################################
-class RemoveMainImageButton(ProfileSectionButton):
+class RemoveMainImageButton(FroggeButton):
     
     def __init__(self, main_img: Optional[str]) -> None:
         
@@ -86,7 +86,7 @@ class RemoveMainImageButton(ProfileSectionButton):
         )
         
 ################################################################################
-class PaginateAdditionalImagesButton(ProfileSectionButton):
+class PaginateAdditionalImagesButton(FroggeButton):
     
     def __init__(self, images: List[AdditionalImage]) -> None:
         

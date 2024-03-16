@@ -27,7 +27,7 @@ class TUserAdminStatusView(FroggeView):
             EditNameButton(),
             EditNotesButton(),
             ModifyScheduleButton(),
-            DataCenterButton(),
+            DataCentersButton(),
             HiatusToggleButton(self.tuser.on_hiatus),
             AddQualificationButton(),
             ModifyQualificationButton(),
@@ -44,7 +44,7 @@ class TUserAdminStatusView(FroggeView):
     def set_buttons(self) -> None:
 
         disable_qualification_btn = len(self.tuser.qualifications) == 0
-        disable_training_btn = len(self.tuser.trainings) == 0
+        disable_training_btn = len(self.tuser.trainings_as_trainee) == 0
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.
@@ -102,13 +102,13 @@ class ModifyScheduleButton(Button):
         await edit_message_helper(interaction, embed=self.view.tuser.admin_status())
 
 ################################################################################
-class DataCenterButton(Button):
+class DataCentersButton(Button):
     
     def __init__(self) -> None:
 
         super().__init__(
             style=ButtonStyle.primary,
-            label="Data Center",
+            label="Data Center(s)",
             disabled=False,
             row=0
         )

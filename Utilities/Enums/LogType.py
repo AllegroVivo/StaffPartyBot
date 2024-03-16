@@ -9,5 +9,8 @@ class LogType(FroggeEnum):
     TrainerAssigned = 4
     TrainingCompleted = 5
     UserHiatus = 6
+    VenueUserAdded = 7
+    VenueUserRemoved = 8
+    VenueCreated = 9
 
 ################################################################################

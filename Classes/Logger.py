@@ -2,12 +2,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from discord import Interaction, TextChannel, Embed, Colour, Member, NotFound, Forbidden
+from discord import (
+    Interaction,
+    TextChannel, 
+    Embed,
+    Colour,
+    Member, 
+    NotFound, 
+    Forbidden,
+    User
+)
 
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, Training, TUser, GuildData
+    from Classes import TrainingBot, Training, TUser, GuildData, Venue
 ################################################################################
 
 __all__ = ("Logger",)
@@ -87,7 +96,7 @@ class Logger:
         qualifications = trainings = "`None`"
         if tuser is not None:
             qualifications = "* " + "\n* ".join([f"{q.position.name}" for q in tuser.qualifications])
-            trainings = "* " + "\n* ".join([f"{t.position.name}" for t in tuser.trainings])
+            trainings = "* " + "\n* ".join([f"{t.position.name}" for t in tuser.trainings_as_trainee])
 
         word = "joined" if _type == LogType.MemberJoin else "left"
         embed = U.make_embed(
@@ -175,5 +184,42 @@ class Logger:
         )
         
         await self._log(embed, LogType.UserHiatus)
+        
+################################################################################
+    async def venue_user_added(self, venue: Venue, user: User) -> None:
+
+        embed = U.make_embed(
+            title="Venue User Added!",
+            description=(
+                f"{user.mention} is now authorized to access `{venue.name}`!"
+            )
+        )
+
+        await self._log(embed, LogType.VenueUserAdded)
+        
+################################################################################
+    async def venue_user_removed(self, venue: Venue, user: User) -> None:
+
+        embed = U.make_embed(
+            title="Venue User Removed!",
+            description=(
+                f"{user.mention} has been removed from the authorized "
+                f"list for `{venue.name}`!"
+            )
+        )
+
+        await self._log(embed, LogType.VenueUserRemoved)
+        
+################################################################################
+    async def venue_created(self, venue: Venue) -> None:
+
+        embed = U.make_embed(
+            title="Venue Created!",
+            description=(
+                f"New venue `{venue.name}` has been created!"
+            )
+        )
+
+        await self._log(embed, LogType.VenueCreated)
         
 ################################################################################

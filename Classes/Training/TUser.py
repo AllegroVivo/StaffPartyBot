@@ -15,7 +15,7 @@ from UI.Training import (
     RemoveQualificationView,
     RemoveTrainingView,
 )
-from Utilities import DataCenter
+from Utilities import GlobalDataCenter
 from Utilities import Utilities as U, TrainingLevel
 from .Availability import Availability
 from .Qualification import Qualification
@@ -179,10 +179,16 @@ class TUser:
 
 ################################################################################
     @property
-    def trainings(self) -> List[Training]:
+    def trainings_as_trainee(self) -> List[Training]:
 
         return [t for t in self.training_manager.all_trainings if t.trainee == self]
 
+################################################################################
+    @property
+    def trainings_as_trainer(self) -> List[Training]:
+        
+        return [t for t in self.training_manager.all_trainings if t.trainer == self]
+    
 ################################################################################    
     @property
     def position_manager(self) -> PositionManager:
@@ -203,9 +209,9 @@ class TUser:
     
 ################################################################################
     @property
-    def data_center(self) -> Optional[DataCenter]:
+    def data_centers(self) -> List[GlobalDataCenter]:
         
-        return self._details.data_center
+        return self._details.data_centers
     
 ################################################################################
     def is_qualified(self, position_id: str) -> bool:
@@ -218,7 +224,7 @@ class TUser:
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
             description=(
-                f"{U.draw_line(extra=25)}"
+                f"{U.draw_line(extra=30)}"
             ),
             fields=[
                 self._qualifications_field(),
@@ -247,10 +253,11 @@ class TUser:
 ################################################################################
     def _training_requested_field(self) -> EmbedField:
 
-        training_str = "`None`" if not self.trainings else ""
+        trainings = [t for t in self.trainings_as_trainee if not t.is_complete]
+        training_str = "`None`" if not trainings else ""
 
         if training_str == "":
-            for t in self.trainings:
+            for t in trainings:
                 training_str += f"* {t.position.name}\n-- Trainer: "
                 if t.trainee.on_hiatus:
                     training_str += "On Hiatus\n"
@@ -285,8 +292,12 @@ class TUser:
     def _dc_field(self) -> EmbedField:
 
         return EmbedField(
-            name="__Data Center__",
-            value=f"`{self.data_center.proper_name}`" if self.data_center else "`None`",
+            name="__Data Center(s)__",
+            value=(
+                ( "`" + ", ".join([dc.proper_name for dc in self.data_centers]) + "`")
+                if len(self.data_centers) > 0
+                else "`Not Set`"
+            ),
             inline=False
         )
 
@@ -565,7 +576,7 @@ class TUser:
         )
         options = [
             o for o in base_options
-            if o.value not in [t.position.id for t in self.trainings]
+            if o.value not in [t.position.id for t in self.trainings_as_trainee]
         ]
 
         view = AddTrainingView(interaction.user, options)
@@ -624,7 +635,7 @@ class TUser:
                 label=t.position.name,
                 value=str(t.id),
             )
-            for t in self.trainings
+            for t in self.trainings_as_trainee
         ]
 
 ################################################################################
@@ -662,8 +673,8 @@ class TUser:
     async def trainer_dashboard(self, interaction: Interaction, cur_page: int = 0) -> None:
 
         pages = [
-            t.status_page(interaction.user) for t in self.training_manager.all_trainings
-            if t.trainer == self
+            t.status_page(interaction.user) for t in self.trainings_as_trainer
+            if not t.is_complete
         ]
         frogginator = Frogginator(pages)
         
@@ -724,7 +735,7 @@ class TUser:
         self._details.toggle_hiatus()
         
         if self.on_hiatus:
-            for t in self.trainings:
+            for t in self.trainings_as_trainee:
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
         

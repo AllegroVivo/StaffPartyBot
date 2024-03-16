@@ -15,6 +15,7 @@ class DatabaseBuilder(DBWorkerBranch):
         self._build_position_tables()
         self._build_training_tables()
         self._build_profile_tables()
+        self._build_venue_tables()
         self._augment_tables()
         self._build_initial_records()
         
@@ -189,9 +190,65 @@ class DatabaseBuilder(DBWorkerBranch):
         self._refresh_profile_view()
     
 ################################################################################
+    def _build_venue_tables(self) -> None:
+        
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS venues ("
+            "_id TEXT PRIMARY KEY,"
+            "guild_id BIGINT,"
+            "users BIGINT[],"
+            "positions TEXT[]"
+            ");"
+        )
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS venue_details ("
+            "venue_id TEXT PRIMARY KEY,"
+            "guild_id BIGINT,"
+            "name TEXT,"
+            "description TEXT,"
+            "accepting BOOLEAN DEFAULT TRUE,"
+            "post_url TEXT,"
+            "logo_url TEXT"
+            ");"
+        )
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS venue_hours ("
+            "venue_id TEXT PRIMARY KEY,"
+            "guild_id BIGINT,"
+            "weekday INTEGER,"
+            "open_time TIME,"
+            "close_time TIME"
+            ");"
+        )
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS venue_locations ("
+            "venue_id TEXT PRIMARY KEY,"
+            "guild_id BIGINT,"
+            "data_center INTEGER,"
+            "world INTEGER,"
+            "zone INTEGER,"
+            "ward INTEGER,"
+            "plot INTEGER"
+            ");"
+        )
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS venue_aag ("
+            "venue_id TEXT PRIMARY KEY,"
+            "guild_id BIGINT,"
+            "level INTEGER,"
+            "nsfw BOOLEAN DEFAULT FALSE,"
+            "style INTEGER,"
+            "size INTEGER"
+            ");"
+        )
+    
+################################################################################
     def _augment_tables(self) -> None:
     
-        pass
+        self.execute(
+            "ALTER TABLE bot_config "
+            "ADD COLUMN IF NOT EXISTS venue_post_channel BIGINT;"
+        )
     
 ################################################################################
     def _refresh_profile_view(self) -> None:

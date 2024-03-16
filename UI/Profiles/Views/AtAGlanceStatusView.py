@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Any, Union
 
 from discord import Interaction, User
 
-from UI.Common import FroggeView, CloseMessageButton, ProfileSectionButton
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class AtAGlanceStatusView(FroggeView):
             self.add_item(btn)
 
 ################################################################################        
-class GenderPronounButton(ProfileSectionButton):
+class GenderPronounButton(FroggeButton):
 
     def __init__(self, gender: Optional[Any]) -> None:
 
@@ -58,7 +58,7 @@ class GenderPronounButton(ProfileSectionButton):
         )
 
 ################################################################################
-class RaceClanButton(ProfileSectionButton):
+class RaceClanButton(FroggeButton):
     
     def __init__(self, race: Optional[Any]) -> None:
         
@@ -81,7 +81,7 @@ class RaceClanButton(ProfileSectionButton):
         )
         
 ################################################################################
-class OrientationButton(ProfileSectionButton):
+class OrientationButton(FroggeButton):
     
     def __init__(self, orientation: Optional[Any]) -> None:
         
@@ -104,7 +104,7 @@ class OrientationButton(ProfileSectionButton):
         )
         
 ################################################################################
-class HeightButton(ProfileSectionButton):
+class HeightButton(FroggeButton):
     
     def __init__(self, height: Optional[int]) -> None:
         
@@ -123,7 +123,7 @@ class HeightButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.aag.status(), view=self.view)
         
 ################################################################################
-class AgeButton(ProfileSectionButton):
+class AgeButton(FroggeButton):
     
     def __init__(self, age: Optional[Union[str, int]]) -> None:
         
@@ -142,7 +142,7 @@ class AgeButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.aag.status(), view=self.view)
         
 ################################################################################
-class MareButton(ProfileSectionButton):
+class MareButton(FroggeButton):
 
     def __init__(self, mare: Optional[str]) -> None:
 

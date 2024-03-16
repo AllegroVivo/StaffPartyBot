@@ -27,7 +27,12 @@ class DatabaseLoader(DBWorkerBranch):
             "trainings" : self._load_trainings(),
             "requirement_overrides" : self._load_requirement_overrides(),
             "profiles" : self._load_profiles(),
-            "additional_images" : self._load_additional_images()
+            "additional_images" : self._load_additional_images(),
+            "venues" : self._load_venues(),
+            "venue_details" : self._load_venue_details(),
+            "venue_locations" : self._load_venue_locations(),
+            "venue_hours" : self._load_venue_hours(),
+            "venue_aag" : self._load_venue_ataglance(),
         }
 
 ################################################################################
@@ -91,3 +96,34 @@ class DatabaseLoader(DBWorkerBranch):
         return self.fetchall()
     
 ################################################################################
+    def _load_venues(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM venues;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_venue_details(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM venue_details;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_venue_locations(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM venue_locations;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_venue_hours(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM venue_hours;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_venue_ataglance(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM venue_aag;")
+        return self.fetchall()
+    
+################################################################################
+    

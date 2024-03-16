@@ -40,7 +40,7 @@ class TUserStatusView(FroggeView):
 ################################################################################        
     def set_buttons(self) -> None:
 
-        disable_buttons = len(self.tuser.trainings) == 0
+        disable_buttons = len(self.tuser.trainings_as_trainee) == 0
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.

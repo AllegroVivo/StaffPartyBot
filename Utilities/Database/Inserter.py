@@ -7,7 +7,7 @@ from Utilities import TrainingLevel, Weekday
 from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
-    from Classes import Position
+    from Classes import Position, VenueDetails
 ################################################################################
 
 __all__ = ("DatabaseInserter",)
@@ -148,16 +148,58 @@ class DatabaseInserter(DBWorkerBranch):
         return new_id
         
 ################################################################################
+    def _add_venue(self, guild_id: int, name: str) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO venues (_id, guild_id) VALUES (%s, %s);",
+            new_id, guild_id
+        )
+        self.execute(
+            "INSERT INTO venue_details (venue_id, guild_id, name) "
+            "VALUES (%s, %s, %s);",
+            new_id, guild_id, name
+        )
+        self.execute(
+            "INSERT INTO venue_locations (venue_id, guild_id) VALUES (%s, %s);",
+            new_id, guild_id
+        )
+        self.execute(
+            "INSERT INTO venue_aag (venue_id, guild_id) VALUES (%s, %s);",
+            new_id, guild_id
+        )
+        
+        return new_id
+    
+################################################################################
+    def _add_venue_availability(
+        self, 
+        details: VenueDetails,
+        day: Weekday, 
+        start: time, 
+        end: time
+    ) -> None:
+        
+        self.execute(
+            "INSERT INTO venue_hours (venue_id, guild_id, weekday, "
+            "open_time, close_time) VALUES (%s, %s, %s, %s, %s);",
+            details.venue_id, details.guild_id, day.value, start, end
+        )
+        
+################################################################################
 
-    position        = _add_position
-    requirement     = _add_requirement
-    tuser           = _add_tuser
-    qualification   = _add_qualification
-    availability    = _add_availability
-    training        = _add_training
-    req_override    = _add_requirement_override
-    profile         = _add_profile
-    addl_image      = _add_additional_image
+    position            = _add_position
+    requirement         = _add_requirement
+    tuser               = _add_tuser
+    qualification       = _add_qualification
+    availability        = _add_availability
+    training            = _add_training
+    req_override        = _add_requirement_override
+    profile             = _add_profile
+    addl_image          = _add_additional_image
+    venue               = _add_venue
+    venue_availability  = _add_venue_availability
     
 ################################################################################
     

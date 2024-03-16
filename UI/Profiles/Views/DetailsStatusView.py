@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, List
 
 from discord import Interaction, User
 
-from UI.Common import FroggeView, CloseMessageButton, ProfileSectionButton
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 
 if TYPE_CHECKING:
     from Classes import ProfileDetails
@@ -33,7 +33,7 @@ class ProfileDetailsStatusView(FroggeView):
             self.add_item(btn)
 
 ################################################################################        
-class NameButton(ProfileSectionButton):
+class NameButton(FroggeButton):
 
     def __init__(self, name: Optional[str]) -> None:
 
@@ -52,7 +52,7 @@ class NameButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.details.status(), view=self.view)
 
 ################################################################################
-class CustomURLButton(ProfileSectionButton):
+class CustomURLButton(FroggeButton):
     
     def __init__(self, url: Optional[str]) -> None:
         
@@ -71,7 +71,7 @@ class CustomURLButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.details.status(), view=self.view)
         
 ################################################################################
-class ColorButton(ProfileSectionButton):
+class ColorButton(FroggeButton):
     
     def __init__(self, color: Optional[str]) -> None:
         
@@ -90,7 +90,7 @@ class ColorButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.details.status(), view=self.view)
         
 ################################################################################
-class JobsButton(ProfileSectionButton):
+class JobsButton(FroggeButton):
     
     def __init__(self, jobs: Optional[List[str]]) -> None:
         
@@ -109,7 +109,7 @@ class JobsButton(ProfileSectionButton):
         await interaction.edit(embed=self.view.details.status(), view=self.view)
         
 ################################################################################
-class RatesButton(ProfileSectionButton):
+class RatesButton(FroggeButton):
     
     def __init__(self, rates: Optional[str]) -> None:
         

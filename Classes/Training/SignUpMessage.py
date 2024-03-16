@@ -143,8 +143,8 @@ class SignUpMessage:
                     if t.trainee.on_hiatus:
                         continue
                     dc = (
-                        "" if t.trainee.data_center is None 
-                        else f" - *({t.trainee.data_center.proper_name})*"
+                        "" if not t.trainee.data_centers 
+                        else f" - *({'/'.join([dc.abbreviation for dc in t.trainee.data_centers])})*"
                     )
                     value += f"`{t.trainee.name}`{dc} - {t.trainee.user.mention}\n"
 
