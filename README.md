@@ -1,3 +1,3 @@
 # TrainingBot
 
-`Version 1.1.3`
+`Version 1.3.0`
