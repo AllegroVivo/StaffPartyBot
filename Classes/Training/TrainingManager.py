@@ -343,17 +343,17 @@ class TrainingManager:
             return
         
         venues = self._matching_routine(*view.value)
+        description = ""
+        
+        for v in venues:
+            description += (
+                f"**{v.name}:**\n"
+                f"*({v.description})*\n\n"
+            )
+        
         report = U.make_embed(
             title="Internship Matching Results",
-            description=(
-                "Here are the venues that best match your preferences:\n\n"
-                "1. **Venue Name:**\n"
-                "*(Venue Description)*\n\n"
-                "2. **Venue Name:**\n"
-                "*(Venue Description)*\n\n"
-                "3. **Venue Name:**\n"
-                "*(Venue Description)*\n\n"
-            ),
+            description=description or "`No venues found.`",
         )
         
         await interaction.respond(embed=report)
@@ -373,12 +373,12 @@ class TrainingManager:
             if not venue.ataglance_complete or not venue.accepting_interns:
                 continue
     
-            rp_level_difference = self._calculate_distance(rp_level, venue.rp_level)
-            size_difference = self._calculate_distance(size, venue.size)
+            level_diff = self._calculate_distance(rp_level, venue.rp_level)
+            size_diff = self._calculate_distance(size, venue.size)
             style_scalar = 0.5 if venue.style.value in [s.value for s in styles] else 1
             nsfw_match = nsfw_pref == venue.nsfw
     
-            overall_score = (rp_level_difference + size_difference) * style_scalar - nsfw_match
+            overall_score = (level_diff + size_diff) * style_scalar - nsfw_match
     
             ret[venue] = overall_score
             

@@ -45,7 +45,10 @@ class InternshipManager:
         return cls(
             parent=parent,
             internships=[],
-            positions=[position_manager.get_position(pos_id) for pos_id in data]
+            positions=(
+                [position_manager.get_position(pos_id) for pos_id in data]
+                if data else []
+            )
         )
     
 ################################################################################

@@ -122,7 +122,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "char_name TEXT,"
             "notes TEXT,"
             "hiatus BOOLEAN DEFAULT FALSE,"
-            "data_center INTEGER"
+            "data_centers INTEGER[]"
             ");"
         )
         
