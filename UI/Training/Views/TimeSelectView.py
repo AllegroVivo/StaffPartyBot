@@ -75,8 +75,7 @@ class MinuteSelect(Select):
         minutes = int(Minutes(int(self.values[0])).proper_name[3:])
         self.view.value = time(
             hour=self.hour, 
-            minute=minutes, 
-            tzinfo=pytz.timezone("US/Pacific")
+            minute=minutes
         )
         self.view.complete = True
 
