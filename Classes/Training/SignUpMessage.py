@@ -134,8 +134,8 @@ class SignUpMessage:
             position_dict[training.position.name].append(training)
 
         fields = []
-        value = ""
         for position_name, trainings in position_dict.items():
+            value = ""
             if len(trainings) == 0:
                 value = "`No trainees available.`\n"
             else:
