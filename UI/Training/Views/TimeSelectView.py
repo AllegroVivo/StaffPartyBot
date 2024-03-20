@@ -76,7 +76,7 @@ class MinuteSelect(Select):
         self.view.value = time(
             hour=self.hour, 
             minute=minutes, 
-            # tzinfo=pytz.timezone("US/Eastern")
+            tzinfo=pytz.timezone("US/Eastern")
         )
         self.view.complete = True
 
