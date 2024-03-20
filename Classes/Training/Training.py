@@ -26,6 +26,7 @@ class Training:
         "_trainee",
         "_trainer",
         "_overrides",
+        "_paid",
     )
 
 ################################################################################
@@ -35,7 +36,8 @@ class Training:
         position: Position,
         trainee: TUser,
         trainer: Optional[TUser] = None,
-        overrides: Optional[Dict[str, RequirementLevel]] = None
+        overrides: Optional[Dict[str, RequirementLevel]] = None,
+        paid: bool = False
     ) -> None:
 
         self._id: str = _id
@@ -45,6 +47,7 @@ class Training:
         self._trainer: Optional[TUser] = trainer
 
         self._overrides: Dict[str, RequirementLevel] = overrides or {}
+        self._paid: bool = paid
 
 ################################################################################
     @classmethod
@@ -72,7 +75,7 @@ class Training:
             for requirement_id, level in override_data
         }
 
-        return cls(data[0], position, trainee, trainer, overrides)
+        return cls(data[0], position, trainee, trainer, overrides, data[5])
 
 ################################################################################
     def __eq__(self, other: Training) -> bool:
@@ -123,11 +126,26 @@ class Training:
 
 ################################################################################
     @property
+    def trainer_paid(self) -> bool:
+        
+        return self._paid
+    
+    @trainer_paid.setter
+    def trainer_paid(self, value: bool) -> None:
+        
+        self._paid = value
+        self.update()
+        
+################################################################################
+    @property
     def is_complete(self) -> bool:
         
-        return len(self._overrides) == len(self._position.all_requirements) and all(
-            level == RequirementLevel.Complete
-            for level in self._overrides.values()
+        return (
+            0 < len(self._position.all_requirements) == len(self._overrides)
+            and all(
+                level == RequirementLevel.Complete
+                for level in self._overrides.values()
+            )
         )
     
 ################################################################################

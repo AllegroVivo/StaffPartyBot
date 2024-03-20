@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Optional
 
 from discord import (
     Interaction,
-    TextChannel, 
+    TextChannel,
     Embed,
     Colour,
-    Member, 
-    NotFound, 
+    Member,
+    NotFound,
     Forbidden,
     User
 )
@@ -16,7 +16,7 @@ from discord import (
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, Training, TUser, GuildData, Venue
+    from Classes import Training, TUser, GuildData, Venue
 ################################################################################
 
 __all__ = ("Logger",)
@@ -105,7 +105,8 @@ class Logger:
             fields=[
                 ("__Owned Qualifications__", qualifications, True),
                 ("__Requested Trainings__", trainings, True)
-            ]
+            ],
+            timestamp=True
         )
 
         await self._log(embed, _type)
@@ -128,7 +129,8 @@ class Logger:
             description=(
                 f"{training.trainee.user.mention} has signed up for "
                 f"`{training.position.name}` training!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.TrainingSignup)
@@ -141,7 +143,8 @@ class Logger:
             description=(
                 f"{training.trainee.user.mention} has canceled their request for "
                 f"`{training.position.name}` training!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.TrainingRemoved)
@@ -154,7 +157,8 @@ class Logger:
             description=(
                 f"{training.position.name} training for `{training.trainee.name}` has been\n"
                 f"matched to `{training.trainer.name}` ({training.trainer.user.mention})!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.TrainerAssigned)
@@ -167,7 +171,8 @@ class Logger:
             description=(
                 f"{training.position.name} training for `{training.trainee.name}` has been\n"
                 f"completed by `{training.trainer.name}`!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.TrainingCompleted)
@@ -180,7 +185,8 @@ class Logger:
             description=(
                 f"{tuser.name} has __{'entered' if tuser.on_hiatus else 'exited'}__ "
                 f"hiatus status!"
-            )
+            ),
+            timestamp=True
         )
         
         await self._log(embed, LogType.UserHiatus)
@@ -192,7 +198,8 @@ class Logger:
             title="Venue User Added!",
             description=(
                 f"{user.mention} is now authorized to access `{venue.name}`!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.VenueUserAdded)
@@ -205,7 +212,8 @@ class Logger:
             description=(
                 f"{user.mention} has been removed from the authorized "
                 f"list for `{venue.name}`!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.VenueUserRemoved)
@@ -217,7 +225,8 @@ class Logger:
             title="Venue Created!",
             description=(
                 f"New venue `{venue.name}` has been created!"
-            )
+            ),
+            timestamp=True
         )
 
         await self._log(embed, LogType.VenueCreated)

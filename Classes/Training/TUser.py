@@ -599,9 +599,13 @@ class TUser:
 
         if not view.complete or view.value is False:
             return
+        
+        msg = await interaction.respond("Adding training(s)... Please Wait...")
 
         for pos_id in view.value:
             await self.training_manager.add_training(Training.new(self, pos_id))
+            
+        await msg.delete()
 
 ################################################################################
     async def remove_training(self, interaction: Interaction) -> None:

@@ -4,9 +4,9 @@ import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, Any, Dict
 
-from discord import User, Interaction, TextChannel, NotFound, Embed
+from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField
 
-from UI.Common import ConfirmCancelView
+from UI.Common import ConfirmCancelView, CloseMessageView
 from UI.Training import TUserAdminStatusView, TUserStatusView, InternshipMatchingView
 from Utilities import (
     Utilities as U,
@@ -389,5 +389,61 @@ class TrainingManager:
     def _calculate_distance(user_preference: Enum, venue_attribute: Enum):
         
         return abs(user_preference.value - venue_attribute.value)
+    
+################################################################################
+    async def unpaid_report(self, interaction: Interaction) -> None:
+
+        positions = {
+            p.name: {}
+            for p in self.guild.position_manager.positions
+        }
+        
+        for training in [
+            t for t in self._trainings if t.trainer is not None and not t.trainer_paid
+        ]:
+            try:
+                positions[training.position.name][training.trainer.user_id].append(training)
+            except KeyError:
+                positions[training.position.name][training.trainer.user_id] = [training]
+                
+        fields = []
+        for pos_name, records in positions.items():
+            if not records: 
+                continue
+                
+            value = ""
+            for trainer_id, trainings in records.items():
+                trainer = self[trainer_id]
+                value += f"{trainer.name} - {trainer.user.mention} - `{len(trainings)} unpaid`\n"
+
+            fields.append(
+                EmbedField(
+                    name=f"__{pos_name}__",
+                    value=value,
+                    inline=False
+                )
+            )
+            
+        if not fields:
+            fields.append(
+                EmbedField(
+                    name="__No Unpaid Trainings__",
+                    value="`All trainers have been paid.`",
+                    inline=False
+                )
+            )
+                
+        report = U.make_embed(
+            title="Unpaid Trainer Report",
+            description=(
+                "The following trainers have unpaid trainings:\n"
+                f"{U.draw_line(extra=27)}\n"
+            ),
+            fields=fields,
+        )
+        view = CloseMessageView(interaction.user)
+        
+        await interaction.respond(embed=report, view=view)
+        await view.wait()
     
 ################################################################################

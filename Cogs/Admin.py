@@ -162,6 +162,16 @@ class Admin(Cog):
         await guild.venue_manager.venue_menu(ctx.interaction, name, admin=True)
         
 ################################################################################
+    @admin.command(
+        name="unpaid_report",
+        description="Generate a report of all unpaid trainers."
+    )
+    async def unpaid_report(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.unpaid_report(ctx.interaction)
+        
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Admin(bot))

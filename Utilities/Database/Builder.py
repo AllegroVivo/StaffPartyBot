@@ -103,7 +103,8 @@ class DatabaseBuilder(DBWorkerBranch):
             "guild_id BIGINT,"
             "user_id BIGINT,"
             "position TEXT,"
-            "trainer BIGINT"
+            "trainer BIGINT,"
+            "trainer_paid BOOLEAN DEFAULT FALSE"
             ");"
         )
         self.execute(
