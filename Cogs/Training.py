@@ -17,13 +17,13 @@ class Training(Cog):
 
 ################################################################################
 
-    training = SlashCommandGroup(
-        name="training",
-        description="Commands for training-related tasks and queries."
+    trainees = SlashCommandGroup(
+        name="trainee",
+        description="Commands for trainee-related tasks and queries."
     )
 
 ################################################################################
-    @training.command(
+    @trainees.command(
         name="profile",
         description="View and edit your training registration profile & status."
     )
@@ -33,7 +33,7 @@ class Training(Cog):
         await guild.training_manager.tuser_status(ctx.interaction)
 
 ################################################################################
-    @training.command(
+    @trainees.command(
         name="match",
         description="Match yourself post-training to a venue for internship."
     )

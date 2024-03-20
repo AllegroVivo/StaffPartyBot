@@ -32,7 +32,17 @@ class Trainers(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.training_manager.trainer_dashboard(ctx.interaction)
 
-################################################################################  
+################################################################################
+    @trainer.command(
+        name="profile",
+        description="View and edit your training registration profile & status."
+    )
+    async def training_profile(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.tuser_status(ctx.interaction)
+
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Trainers(bot))

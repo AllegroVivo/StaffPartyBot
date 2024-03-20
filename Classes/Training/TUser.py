@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+import pytz
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict
 
 from discord import User, Embed, EmbedField, Interaction, SelectOption
@@ -359,6 +360,11 @@ class TUser:
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
 
+        footer = (
+            f"Current time EST: "
+            f"{datetime.now(tz=pytz.timezone('US/Eastern')).strftime('%I:%M %p')}\n"
+        )
+
         status = U.make_embed(
             title="Set Availability",
             description=(
@@ -367,7 +373,8 @@ class TUser:
 
                 "__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.\n"
                 f"{U.draw_line(extra=44)}"
-            )
+            ),
+            footer_text=footer
         )
         view = WeekdaySelectView(interaction.user)
 
@@ -386,7 +393,8 @@ class TUser:
                 f"for `{weekday.proper_name}`...\n\n"
 
                 "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-            )
+            ),
+            footer_text=footer
         )
         view = TimeSelectView(interaction.user)
 
@@ -407,7 +415,8 @@ class TUser:
                     f"for `{weekday.proper_name}`...\n\n"
 
                     "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                )
+                ),
+                footer_text=footer
             )
             view = TimeSelectView(interaction.user)
 
