@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import pytz
 from datetime import time
 
 from discord import Interaction, User
@@ -37,7 +37,6 @@ class HourSelect(Select):
         
     async def callback(self, interaction: Interaction):
         value = int(self.values[0])
-        self.view.value = value
         
         if value == 0:  # Unavailable
             self.view.value = -1
@@ -46,18 +45,20 @@ class HourSelect(Select):
             await self.view.stop()  # type: ignore
             return
 
+        # Adjust for null initial value
+        value -= 1
         self.placeholder = [
             option for option in self.options if option.value == self.values[0]
         ][0].label
         self.disabled = True
 
-        self.view.add_item(MinuteSelect())
+        self.view.add_item(MinuteSelect(value))
         await interaction.edit(view=self.view)
     
 ################################################################################
 class MinuteSelect(Select):
 
-    def __init__(self):
+    def __init__(self, hour: int):
 
         super().__init__(
             placeholder="Select the minutes...",
@@ -67,36 +68,16 @@ class MinuteSelect(Select):
             disabled=False,
             row=1
         )
+        
+        self.hour = hour
 
     async def callback(self, interaction: Interaction):
         minutes = int(Minutes(int(self.values[0])).proper_name[3:])
-        self.view.value = time(self.view.value - 1, minutes)  # type: ignore
-
-        self.placeholder = [
-            option for option in self.options if option.value == self.values[0]
-        ][0].label
-        self.disabled = True
-        
-        self.view.add_item(TimezoneSelect())
-        await interaction.edit(view=self.view)
-
-################################################################################
-class TimezoneSelect(Select):
-
-    def __init__(self):
-
-        super().__init__(
-            placeholder="Select your timezone...",
-            options=Timezone.select_options(),
-            min_values=1,
-            max_values=1,
-            disabled=False,
-            row=2
+        self.view.value = time(
+            hour=self.hour, 
+            minute=minutes, 
+            tzinfo=pytz.timezone("US/Eastern")
         )
-
-    async def callback(self, interaction: Interaction):
-        tz_info = U.TIMEZONE_OFFSETS[Timezone(int(self.values[0]))]
-        self.view.value = time(self.view.value.hour, self.view.value.minute, tzinfo=tz_info) 
         self.view.complete = True
 
         await interaction.edit()

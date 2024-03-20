@@ -365,9 +365,8 @@ class TUser:
                 "Please select the appropriate day from the initial\n"
                 "selector, followed by your available time frame.\n\n"
 
-                "Please note, you can set your timezone\n"
-                "by using the `/training config` command.\n"
-                f"{U.draw_line(extra=25)}"
+                "__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.\n"
+                f"{U.draw_line(extra=44)}"
             )
         )
         view = WeekdaySelectView(interaction.user)
@@ -383,7 +382,10 @@ class TUser:
         prompt = U.make_embed(
             title="Set Availability Start",
             description=(
-                f"Please select the beginning of your availability for `{weekday.proper_name}`..."
+                f"Please select the beginning of your availability "
+                f"for `{weekday.proper_name}`...\n\n"
+
+                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
             )
         )
         view = TimeSelectView(interaction.user)
@@ -401,7 +403,10 @@ class TUser:
             prompt = U.make_embed(
                 title="Set Availability End",
                 description=(
-                    f"Please select the end of your availability for `{weekday.proper_name}`..."
+                    f"Please select the end of your availability "
+                    f"for `{weekday.proper_name}`...\n\n"
+
+                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
                 )
             )
             view = TimeSelectView(interaction.user)
