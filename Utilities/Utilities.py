@@ -268,7 +268,6 @@ class Utilities:
             hour=_time.hour,
             minute=_time.minute,
             second=_time.second,
-            tzinfo=pytz.timezone("US/Eastern")
         )
 
 ################################################################################

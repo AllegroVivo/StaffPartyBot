@@ -91,8 +91,8 @@ class Database:
         try:
             self._cursor.execute(query, fmt_args)
             self._connection.commit()
-            # if os.getenv("DEBUG") == "True":
-            print(f"Database execution succeeded on query: '{query}', Args: {fmt_args}")
+            if os.getenv("DEBUG") == "True":
+                print(f"Database execution succeeded on query: '{query}', Args: {fmt_args}")
         except:
             print(f"Database execution failed on query: '{query}', Args: {fmt_args}")
 

@@ -52,6 +52,11 @@ class HourSelect(Select):
         ][0].label
         self.disabled = True
 
+        # Adjust for EST timezone
+        value += 4
+        if value > 23:
+            value -= 24
+            
         self.view.add_item(MinuteSelect(value))
         await interaction.edit(view=self.view)
     
