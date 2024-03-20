@@ -676,10 +676,9 @@ class TUser:
             t.status_page(interaction.user) for t in self.trainings_as_trainer
             if not t.is_complete
         ]
-        frogginator = Frogginator(pages)
+        frogginator = Frogginator(pages, show_menu=True, cur_page=cur_page)
         
         await frogginator.respond(interaction)
-        await frogginator.goto_page(cur_page)
         await frogginator.wait()
     
 ################################################################################
