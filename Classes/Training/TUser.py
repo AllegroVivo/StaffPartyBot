@@ -274,7 +274,10 @@ class TUser:
 
         return EmbedField(
             name="__Availability__",
-            value=Availability.availability_status(self.availability),
+            value=(
+                "*(Times are displayed in your local time zone.)*\n\n" +
+                Availability.availability_status(self.availability)
+            ),
             inline=inline
         )
 
