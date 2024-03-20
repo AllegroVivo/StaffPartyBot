@@ -50,9 +50,9 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE tuser_details SET char_name = %s, notes = %s, hiatus = %s, "
-            "data_center = %s WHERE user_id = %s;",
+            "data_centers = %s WHERE user_id = %s;",
             details.name, details.notes, details.hiatus, 
-            details.data_center.value if details.data_center is not None else None,
+            [dc.value for dc in details.data_centers] if details.data_centers else None,
             details.user_id
         )
         
