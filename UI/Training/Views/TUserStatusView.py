@@ -91,7 +91,7 @@ class DataCenterButton(Button):
         )
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.tuser.set_data_center(interaction)
+        await self.view.tuser.set_data_centers(interaction)
         await edit_message_helper(interaction, embed=self.view.tuser.admin_status())
 
 ################################################################################

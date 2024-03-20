@@ -47,7 +47,7 @@ class DataCenterButton(FroggeButton):
         self.set_style(dc)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.location.set_data_center(interaction)
+        await self.view.location.set_data_centers(interaction)
         self.set_style(self.view.location.data_center)
 
         self.view.children[1].disabled = self.view.location.data_center is None

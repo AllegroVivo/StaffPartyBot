@@ -353,9 +353,9 @@ class TUser:
         await self._details.set_notes(interaction)
 
 ################################################################################
-    async def set_data_center(self, interaction: Interaction) -> None:
+    async def set_data_centers(self, interaction: Interaction) -> None:
 
-        await self._details.set_data_center(interaction)
+        await self._details.set_data_centers(interaction)
         
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
