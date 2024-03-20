@@ -267,7 +267,8 @@ class Utilities:
             day=20,
             hour=_time.hour,
             minute=_time.minute,
-            second=_time.second
+            second=_time.second,
+            tzinfo=pytz.timezone("US/Eastern")
         )
 
 ################################################################################
