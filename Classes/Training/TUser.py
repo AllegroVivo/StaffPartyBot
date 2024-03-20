@@ -15,8 +15,7 @@ from UI.Training import (
     RemoveQualificationView,
     RemoveTrainingView,
 )
-from Utilities import GlobalDataCenter
-from Utilities import Utilities as U, TrainingLevel
+from Utilities import Utilities as U, TrainingLevel, GlobalDataCenter, NoTrainingsError
 from .Availability import Availability
 from .Qualification import Qualification
 from .Training import Training
@@ -676,7 +675,12 @@ class TUser:
             t.status_page(interaction.user) for t in self.trainings_as_trainer
             if not t.is_complete
         ]
-        frogginator = Frogginator(pages, show_menu=True, cur_page=cur_page)
+        if not pages:
+            error = NoTrainingsError()
+            await interaction.respond(embed=error.embed, ephemeral=True)
+            return
+        
+        frogginator = Frogginator(pages, cur_page=cur_page)
         
         await frogginator.respond(interaction)
         await frogginator.wait()

@@ -5,6 +5,7 @@ from .ExceedsMaxLength import ExceedsMaxLengthError
 from .HeightInput import HeightInputError
 from .InsufficientPermissions import InsufficientPermissionsError
 from .InvalidColor import InvalidColorError
+from .NoTrainingsError import NoTrainingsError
 from .NotRegistered import NotRegisteredError
 from .PositionExists import PositionExistsError
 from .PositionNotFound import PositionNotFoundError
