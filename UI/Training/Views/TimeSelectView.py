@@ -37,16 +37,16 @@ class HourSelect(Select):
         
     async def callback(self, interaction: Interaction):
         value = int(self.values[0])
+        # Adjust for null initial value
+        value -= 1
         
-        if value == 0:  # Unavailable
-            self.view.value = -1
+        if value == -1:  # Unavailable
+            self.view.value = value
             self.view.complete = True
             await interaction.edit()
             await self.view.stop()  # type: ignore
             return
 
-        # Adjust for null initial value
-        value -= 1
         self.placeholder = [
             option for option in self.options if option.value == self.values[0]
         ][0].label
@@ -76,7 +76,7 @@ class MinuteSelect(Select):
         self.view.value = time(
             hour=self.hour, 
             minute=minutes, 
-            tzinfo=pytz.timezone("US/Eastern")
+            # tzinfo=pytz.timezone("US/Eastern")
         )
         self.view.complete = True
 
