@@ -233,7 +233,7 @@ class PositionManager:
         if not modal.complete:
             return
 
-        requirement = Requirement.new(self.bot, "0", modal.value)
+        requirement = Requirement.new(self, "0", modal.value)
         self._requirements.append(requirement)
 
 ################################################################################
