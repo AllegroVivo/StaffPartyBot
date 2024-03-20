@@ -677,7 +677,7 @@ class TUser:
         ]
         if not pages:
             error = NoTrainingsError()
-            await interaction.respond(embed=error.embed, ephemeral=True)
+            await interaction.respond(embed=error, ephemeral=True)
             return
         
         frogginator = Frogginator(pages, cur_page=cur_page)
