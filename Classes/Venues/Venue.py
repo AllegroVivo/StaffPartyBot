@@ -56,7 +56,7 @@ class Venue:
         self._mgr: VenueManager = mgr
         self._id: str = venue_id
         
-        self._details = details or VenueDetails(self, name)
+        self._details = details or VenueDetails(self, name=name)
         self._users: List[User] = users or []
         self._intern_mgr: InternshipManager = intern_mgr or InternshipManager(self)
     
