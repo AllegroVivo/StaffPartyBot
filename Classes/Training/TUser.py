@@ -699,11 +699,10 @@ class TUser:
             timestamp=True
         )
         
-        try:
-            await self.user.send(embed=notification)
-        except Exception as ex:
-            print(ex)
-            pass
+        # try:
+        await self.user.send(embed=notification)
+        # except Exception as ex:
+        #     pass
 
 ################################################################################
     def toggle_pings(self) -> None:
