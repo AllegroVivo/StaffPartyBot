@@ -100,6 +100,12 @@ class SignUpMessage:
         return self._message
     
 ################################################################################
+    @property
+    def jump_url(self) -> Optional[str]:
+        
+        return self._message.jump_url if self._message is not None else None
+    
+################################################################################
     def update(self, guild_id: int) -> None:
         
         self.bot.database.update.signup_message(guild_id, self)

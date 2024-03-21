@@ -274,7 +274,7 @@ class VenueManager:
                 field.name = venue.name
                 fields.append(field)
                 
-                if len(fields) >= 9:
+                if len(fields) >= 12:
                     embed = U.make_embed(
                         title=f"Venues - {initial.upper()}",
                         fields=fields
@@ -300,7 +300,7 @@ class VenueManager:
                 field.name = venue.name
                 fields.append(field)
     
-                if len(fields) >= 9:
+                if len(fields) >= 12:
                     embed = U.make_embed(title="Venues - XYZ", fields=fields)
                     page = Page(embeds=[embed])
                     pages.append(page)

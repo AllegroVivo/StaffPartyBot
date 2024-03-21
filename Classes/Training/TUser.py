@@ -659,6 +659,30 @@ class TUser:
 ################################################################################
     async def notify_of_training_signup(self, training: Training) -> None:
 
+        if self.on_hiatus:
+            return
+
+        common_availability = Availability.combine_availability(training.trainee, self)
+        if not common_availability:
+            return
+        
+        value = "Your availability matches on the following days:\n\n"
+        for a, times in common_availability.items():
+            for t in times:
+                value += (
+                    f"* **{a.proper_name}:** "
+                    f"{U.format_dt(U.time_to_datetime(t[0]), 't')} - "
+                    f"{U.format_dt(U.time_to_datetime(t[1]), 't')}\n"
+                )
+                
+        url_value = ""
+        post_url = self._manager.signup_message.jump_url
+        if post_url:
+            url_value = (
+                f"{BotEmojis.ArrowRight} [Click here to pick up this trainee.]"
+                f"({post_url}) {BotEmojis.ArrowLeft}\n"
+            )
+        
         notification = U.make_embed(
             title="Training Signup",
             description=(
@@ -667,15 +691,17 @@ class TUser:
 
                 "Please make your way to the server to pick them up if "
                 "you're interested.\n"
-                f"{U.draw_line(extra=43)}"
+                f"{url_value}"
+                f"{U.draw_line(extra=43)}\n\n"
+                
+                f"{value}"
             )
         )
         
-        if not self.on_hiatus:
-            try:
-                await self.user.send(embed=notification)
-            except:
-                pass
+        try:
+            await self.user.send(embed=notification)
+        except:
+            pass
 
 ################################################################################
     def toggle_pings(self) -> None:

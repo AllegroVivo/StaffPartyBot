@@ -1,6 +1,10 @@
 from __future__ import annotations
+
+import os
+
 import pytz
 from datetime import time
+from dotenv import load_dotenv
 
 from discord import Interaction, User
 from discord.ui import Select
@@ -51,11 +55,13 @@ class HourSelect(Select):
             option for option in self.options if option.value == self.values[0]
         ][0].label
         self.disabled = True
-
-        # Adjust for EST timezone
-        value += 4
-        if value > 23:
-            value -= 24
+        
+        load_dotenv()
+        if os.getenv("DEBUG") == "False":
+            # Adjust for EST timezone if in production
+            value += 4
+            if value > 23:
+                value -= 24
             
         self.view.add_item(MinuteSelect(value))
         await interaction.edit(view=self.view)
