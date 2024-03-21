@@ -29,11 +29,13 @@ class VenueStatusView(FroggeView):
             EditDescriptionButton(self.venue.description),
             OpenHoursButton(self.venue.fmt_hours()),
             LocationButton(self.venue.fmt_location()),
+            DiscordURLButton(self.venue.discord_url),
             ToggleAcceptingButton(self.venue.accepting_interns),
             RPLevelButton(self.venue.rp_level),
             NSFWToggleButton(self.venue.nsfw),
             VenueStyleButton(self.venue.style),
             VenueSizeButton(self.venue.size),
+            WebsiteURLButton(self.venue.website_url),
             LogoButton(self.venue.logo_url),
             SponsorPositionsButton(self.venue.sponsored_positions),
             CloseMessageButton()
@@ -267,6 +269,48 @@ class SponsorPositionsButton(FroggeButton):
     async def callback(self, interaction: Interaction) -> None:
         await self.view.venue.set_sponsored_positions(interaction)
         self.set_style(self.view.venue.sponsored_positions)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.venue.status(), view=self.view
+        )
+        
+################################################################################
+class DiscordURLButton(FroggeButton):
+    
+    def __init__(self, url: Optional[str]) -> None:
+        
+        super().__init__(
+            label="Discord URL",
+            row=0,
+            disabled=False
+        )
+        
+        self.set_style(url)
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.venue.set_discord_url(interaction)
+        self.set_style(self.view.venue.discord_url)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.venue.status(), view=self.view
+        )
+        
+################################################################################
+class WebsiteURLButton(FroggeButton):
+    
+    def __init__(self, url: Optional[str]) -> None:
+        
+        super().__init__(
+            label="Website URL",
+            row=1,
+            disabled=False
+        )
+        
+        self.set_style(url)
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.venue.set_website_url(interaction)
+        self.set_style(self.view.venue.website_url)
         
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view

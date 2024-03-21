@@ -193,10 +193,12 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE venue_details SET name = %s, description = %s, accepting = %s, "
-            "post_url = %s, logo_url = %s WHERE venue_id = %s;",
+            "post_url = %s, logo_url = %s, discord_url = %s, website_url = %s "
+            "WHERE venue_id = %s;",
             details.name, details.description, details.accepting, 
             details.post_message.jump_url if details.post_message else None,
-            details.logo_url, details.venue_id
+            details.logo_url, details.discord_url, details.website_url, 
+            details.venue_id
         )
     
 ################################################################################    

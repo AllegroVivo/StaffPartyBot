@@ -197,13 +197,25 @@ class Venue:
         ) 
     
 ################################################################################
+    @property
+    def discord_url(self) -> Optional[str]:
+        
+        return self._details.discord_url
+    
+################################################################################
+    @property
+    def website_url(self) -> Optional[str]:
+        
+        return self._details.website_url
+    
+################################################################################
     def status(self) -> Embed:
         
         return U.make_embed(
             title=f"Venue Profile: __{self._details.name}__",
             description=(
                 (self._details.description or "`No description provided.`")
-                + f"\n{U.draw_line(extra=30)}"
+                + f"\n{U.draw_line(extra=33)}"
             ),
             thumbnail_url=self._details.logo_url if self._details.logo_url else None,
             fields=[
@@ -212,6 +224,7 @@ class Venue:
                 self._accepting_field(),
                 self._venue_location_field(),
                 self._ataglance_field(),
+                self._urls_field(),
                 self._sponsored_positions_field(),
             ]
         )
@@ -257,7 +270,7 @@ class Venue:
         return EmbedField(
             name=f"{BotEmojis.Eyes} __At a Glance__ {BotEmojis.Eyes}",
             value=self._details.aag.compile(),
-            inline=False,
+            inline=True,
         )
     
 ################################################################################
@@ -289,6 +302,20 @@ class Venue:
             inline=False,
         )
     
+################################################################################
+    def _urls_field(self, post: bool = False) -> EmbedField:
+        
+        value = (self._details.discord_url or '`No Discord server provided.`') + "\n\n"
+        if self._details.website_url or not post:
+            value += "__**Webpage**__\n"
+            value += (self._details.website_url or '`No webpage provided.`')
+                
+        return EmbedField(
+            name="__Discord Server__",
+            value=value,
+            inline=True,
+        )
+
 ################################################################################
     def add_user(self, user: User) -> None:
         
@@ -341,6 +368,16 @@ class Venue:
         await self._details.hours.set_availability(interaction)
 
 ################################################################################
+    async def set_discord_url(self, interaction: Interaction) -> None:
+            
+        await self._details.set_discord_url(interaction)
+        
+################################################################################
+    async def set_website_url(self, interaction: Interaction) -> None:
+    
+        await self._details.set_website_url(interaction)
+        
+################################################################################
     def fmt_location(self) -> str:
         
         return self._details._location.format()
@@ -392,21 +429,26 @@ class Venue:
         
 ################################################################################
     def compile(self) -> Embed:
+        
+        fields = [
+            self._venue_hours_field(),
+            self._accepting_field(),
+            self._venue_location_field(),
+            self._ataglance_field(),
+            self._sponsored_positions_field(),
+        ]
+        
+        if self._details.discord_url or self._details.website_url:
+            fields.insert(4, self._urls_field(post=True))
 
         return U.make_embed(
             title=f"__{self._details.name}__",
             description=(
-                    (self._details.description or "`No description provided.`")
-                    + f"\n{U.draw_line(extra=30)}"
+                (self._details.description or "`No description provided.`")
+                + f"\n{U.draw_line(extra=33)}"
             ),
             thumbnail_url=self._details.logo_url if self._details.logo_url else None,
-            fields=[
-                self._venue_hours_field(),
-                self._accepting_field(),
-                self._venue_location_field(),
-                self._ataglance_field(),
-                self._sponsored_positions_field(),
-            ]
+            fields=fields
         )
     
 ################################################################################

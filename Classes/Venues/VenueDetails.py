@@ -4,7 +4,12 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 
 from discord import Interaction, Message
 
-from UI.Venues import VenueNameModal, VenueDescriptionModal
+from UI.Venues import (
+    VenueNameModal, 
+    VenueDescriptionModal,
+    VenueDiscordURLModal,
+    VenueWebsiteURLModal
+)
 from Utilities import Utilities as U
 from .VenueAtAGlance import VenueAtAGlance
 from .VenueHours import VenueHours
@@ -31,33 +36,27 @@ class VenueDetails:
         "_accepting",
         "_post_msg",
         "_logo_url",
+        "_discord_url",
+        "_website_url",
     )
 
 ################################################################################
-    def __init__(
-        self, 
-        parent: Venue,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        location: Optional[VenueLocation] = None,
-        hours: Optional[VenueHours] = None,
-        aag: Optional[VenueAtAGlance] = None,
-        accepting: bool = True,
-        post_msg: Optional[Message] = None,
-        logo_url: Optional[str] = None
-    ) -> None:
+    def __init__(self,  parent: Venue, **kwargs) -> None:
         
         self._parent: Venue = parent
         
-        self._name: Optional[str] = name
-        self._description: Optional[str] = description
-        self._accepting: bool = accepting
-        self._post_msg: Optional[Message] = post_msg
-        self._logo_url: Optional[str] = logo_url
+        self._name: Optional[str] = kwargs.pop("name", None)
+        self._description: Optional[str] = kwargs.pop("description", None)
+        self._accepting: bool = kwargs.pop("accepting", True)
+        self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
+        self._logo_url: Optional[str] = kwargs.pop("logo_url", None)
         
-        self._location: VenueLocation = location or VenueLocation(self)
-        self._hours: VenueHours = hours or VenueHours(self)
-        self._aag: VenueAtAGlance = aag or VenueAtAGlance(self)
+        self._discord_url: Optional[str] = kwargs.pop("discord_url", None)
+        self._website_url: Optional[str] = kwargs.pop("website_url", None)
+        
+        self._location: VenueLocation = kwargs.pop("location", None) or VenueLocation(self)
+        self._hours: VenueHours = kwargs.pop("hours", None) or VenueHours(self)
+        self._aag: VenueAtAGlance = kwargs.pop("aag", None) or VenueAtAGlance(self)
     
 ################################################################################
     @classmethod
@@ -86,6 +85,9 @@ class VenueDetails:
         self._accepting = details[4]
         self._logo_url = details[6]
         self._post_msg = message
+        
+        self._discord_url = details[7]
+        self._website_url = details[8]
         
         self._hours = VenueHours.load(self, data["hours"])
         self._location = VenueLocation.load(self, data["location"])
@@ -196,6 +198,30 @@ class VenueDetails:
         self.update()
         
 ################################################################################
+    @property
+    def discord_url(self) -> Optional[str]:
+        
+        return self._discord_url
+    
+    @discord_url.setter
+    def discord_url(self, value: Optional[str]) -> None:
+        
+        self._discord_url = value
+        self.update()
+        
+################################################################################
+    @property
+    def website_url(self) -> Optional[str]:
+        
+        return self._website_url
+    
+    @website_url.setter
+    def website_url(self, value: Optional[str]) -> None:
+            
+        self._website_url = value
+        self.update()
+        
+################################################################################
     def update(self) -> None:
         
         self.bot.database.update.venue_details(self)
@@ -274,4 +300,29 @@ class VenueDetails:
         await response.delete_original_response()
         
 ################################################################################
+    async def set_discord_url(self, interaction: Interaction) -> None:
         
+        modal = VenueDiscordURLModal(self.discord_url)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.discord_url = modal.value
+        
+################################################################################
+    async def set_website_url(self, interaction: Interaction) -> None:
+        
+        modal = VenueWebsiteURLModal(self.website_url)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.website_url = modal.value
+        
+################################################################################
