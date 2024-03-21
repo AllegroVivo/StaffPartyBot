@@ -216,6 +216,7 @@ class TrainingManager:
         await self._message.update_components()
         await self._guild.log.training_signup(training)
 
+        print(self.get_qualified_trainers(training.position.id))
         for t in self.get_qualified_trainers(training.position.id):
             if t.accepting_trainee_pings():
                 await t.notify_of_training_signup(training)
