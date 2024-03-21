@@ -625,13 +625,13 @@ class TUser:
         if not view.complete or view.value is False:
             return
         
-        id_to_remove = view.value
+        ids_to_remove = view.value
 
         confirm = U.make_embed(
             title="Confirm Removal",
             description=(
-                "Are you sure you want to remove this training?\n"
-                f"{U.draw_line(extra=25)}"
+                "Are you sure you want to remove the selected training(s)?\n"
+                f"{U.draw_line(extra=28)}"
             ),
         )
         view = ConfirmCancelView(interaction.user)
@@ -642,7 +642,8 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        await self.training_manager.remove_training(id_to_remove)
+        for _id in ids_to_remove:
+            await self.training_manager.remove_training(_id)
 
 ################################################################################
     def training_select_options(self) -> List[SelectOption]:

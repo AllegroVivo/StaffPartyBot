@@ -247,7 +247,11 @@ class VenueManager:
             sorted_venues[initial].append(venue)
             
         page_groups = self._get_venue_page_groups(sorted_venues)
-        frogginator = Frogginator(pages=page_groups, show_menu=True)
+        frogginator = Frogginator(
+            pages=page_groups,
+            show_menu=True,
+            menu_placeholder="Select a Letter..."
+        )
         
         await frogginator.respond(interaction)
             

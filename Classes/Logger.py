@@ -106,6 +106,7 @@ class Logger:
                 ("__Owned Qualifications__", qualifications, True),
                 ("__Requested Trainings__", trainings, True)
             ],
+            thumbnail_url=member.display_avatar.url,
             timestamp=True
         )
 
