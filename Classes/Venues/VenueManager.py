@@ -310,6 +310,7 @@ class VenueManager:
             xyz_group = PageGroup(pages=pages, label="XYZ")
             ret.append(xyz_group)
         
+        ret.sort(key=lambda x: x.label)
         return ret
     
 ################################################################################

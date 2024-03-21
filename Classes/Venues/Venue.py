@@ -238,7 +238,7 @@ class Venue:
                 ("\n".join([f"• {user.mention}" for user in self._users]))
                 if self._users
                 else "`No authorized users.`"
-            ) + "\n" + U.draw_line(extra=15 if not inline else 20),
+            ) + "\n" + U.draw_line(extra=15),
             inline=inline,
         )
     
