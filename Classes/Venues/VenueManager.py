@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Any, Dict, Optional
 
 from discord import Interaction, User, TextChannel
+from discord.ext.pages import Page, PageGroup
 
-from UI.Common import ConfirmCancelView
+from UI.Common import ConfirmCancelView, Frogginator
 from UI.Venues import VenueStatusView
 from Utilities import (
     Utilities as U, VenueExistsError, 
@@ -227,3 +228,89 @@ class VenueManager:
         await venue.post(interaction, self._channel)
 
 ################################################################################
+    async def venue_report(self, interaction: Interaction) -> None:
+        
+        def _get_initial(name: str) -> str:
+            ignored_words = ['The', 'A', 'An']
+            words = name.split()
+            first_word = (
+                words[0] if words[0] not in ignored_words 
+                else words[1] if len(words) > 1 else words[0]
+            )
+            return first_word[0].upper()
+
+        sorted_venues = {}
+        for venue in self._venues:
+            initial = _get_initial(venue.name)
+            if initial not in sorted_venues:
+                sorted_venues[initial] = []
+            sorted_venues[initial].append(venue)
+            
+        page_groups = self._get_venue_page_groups(sorted_venues)
+        frogginator = Frogginator(pages=page_groups, show_menu=True)
+        
+        await frogginator.respond(interaction)
+            
+################################################################################
+    @staticmethod
+    def _get_venue_page_groups(venues: Dict[str, List[Venue]]) -> List[PageGroup]:
+        
+        ret = []
+        xyz_group = []
+        
+        for initial, venue_list in venues.items():
+            if initial in ['X', 'Y', 'Z']:
+                xyz_group.extend(venue_list)
+                continue
+            
+            pages = []
+            fields = []
+            for venue in venue_list:
+                field = venue._authorized_users_field(inline=True)
+                field.name = venue.name
+                fields.append(field)
+                
+                if len(fields) >= 9:
+                    embed = U.make_embed(
+                        title=f"Venues - {initial.upper()}",
+                        fields=fields
+                    )
+                    page = Page(embeds=[embed])
+                    pages.append(page)
+                    fields = []
+
+            embed = U.make_embed(
+                title=f"Venues - {initial.upper()}",
+                fields=fields
+            )
+            page = Page(embeds=[embed])
+            pages.append(page)            
+            group = PageGroup(pages=pages, label=initial.upper())
+            ret.append(group)
+    
+        if xyz_group:
+            pages = []
+            fields = []
+            for venue in xyz_group:
+                field = venue._authorized_users_field(inline=True)
+                field.name = venue.name
+                fields.append(field)
+    
+                if len(fields) >= 9:
+                    embed = U.make_embed(title="Venues - XYZ", fields=fields)
+                    page = Page(embeds=[embed])
+                    pages.append(page)
+                    fields = []
+    
+            if fields:  # Check if there are leftover fields not yet added to a page
+                embed = U.make_embed(title="Venues - XYZ", fields=fields)
+                page = Page(embeds=[embed])
+                pages.append(page)
+    
+            xyz_group = PageGroup(pages=pages, label="XYZ")
+            ret.append(xyz_group)
+        
+        return ret
+    
+################################################################################
+    

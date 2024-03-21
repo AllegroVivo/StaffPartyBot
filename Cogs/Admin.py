@@ -169,13 +169,12 @@ class Admin(Cog):
         
 ################################################################################
     @admin.command(
-        name="unpaid_report",
-        description="Generate a report of all unpaid trainers."
+        name="reports",
+        description="Generate reports for various system data."
     )
-    async def unpaid_report(self, ctx: ApplicationContext) -> None:
+    async def report_menu(self, ctx: ApplicationContext) -> None:
 
-        guild = self.bot[ctx.guild_id]
-        await guild.training_manager.unpaid_report(ctx.interaction)
+        await self.bot[ctx.guild_id].report_menu(ctx.interaction)
         
 ################################################################################
 def setup(bot: "TrainingBot") -> None:

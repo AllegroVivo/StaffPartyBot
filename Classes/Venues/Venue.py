@@ -230,7 +230,7 @@ class Venue:
         )
     
 ################################################################################
-    def _authorized_users_field(self) -> EmbedField:
+    def _authorized_users_field(self, inline: bool = False) -> EmbedField:
         
         return EmbedField(
             name="__Authorized Users__",
@@ -238,8 +238,8 @@ class Venue:
                 ("\n".join([f"• {user.mention}" for user in self._users]))
                 if self._users
                 else "`No authorized users.`"
-            ) + "\n" + U.draw_line(extra=15),
-            inline=False,
+            ) + "\n" + U.draw_line(extra=15 if not inline else 20),
+            inline=inline,
         )
     
 ################################################################################

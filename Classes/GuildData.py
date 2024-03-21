@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
-from discord import Guild, User
+from discord import Guild, User, Interaction
 
 from Classes.Logger import Logger
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
+from Utilities import Utilities as U
+from UI.Guild import ReportMenuView
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -109,5 +111,17 @@ class GuildData:
             profile = self._profile_mgr.create_profile(user)
             
         return profile
+    
+################################################################################
+    async def report_menu(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="TrainerBot Report Menu",
+            description="Please select a report to generate."
+        )
+        view = ReportMenuView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
     
 ################################################################################
