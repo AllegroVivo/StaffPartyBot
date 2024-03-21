@@ -111,11 +111,17 @@ class Admin(Cog):
             name="name",
             description="The name of the venue.",
             required=True
+        ),
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The initial user to add to the venue's authorized user list.",
+            required=True
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_venue(ctx.interaction, name)
+        await guild.venue_manager.add_venue(ctx.interaction, name, user)
         
 ################################################################################
     @admin.command(

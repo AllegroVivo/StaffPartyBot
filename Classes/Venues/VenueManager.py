@@ -94,7 +94,7 @@ class VenueManager:
         )
         
 ################################################################################
-    async def add_venue(self, interaction: Interaction, name: str) -> None:
+    async def add_venue(self, interaction: Interaction, name: str, user: User) -> None:
         
         venue = self.get_venue(name)
         if venue is not None:
@@ -103,6 +103,7 @@ class VenueManager:
             return
         
         venue = Venue.new(self, name)
+        venue.add_user(user)
         self._venues.append(venue)
         
         confirm = U.make_embed(
@@ -110,8 +111,8 @@ class VenueManager:
             description=(
                 f"Venue `{name}` has been added to the bot.\n\n"
                 
-                "You can now assign authorized users to this venue\n"
-                "using the `/admin venue_user` command."
+                "You can assign additional authorized users to this\n"
+                "venue using the `/admin venue_user` command."
             )
         )
         
