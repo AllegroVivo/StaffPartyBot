@@ -700,6 +700,7 @@ class TUser:
                 f"{url_value}"
                 f"{U.draw_line(extra=43)}\n\n"
                 
+                f"{value}\n"
                 f"{temp}"
             ),
             timestamp=True
