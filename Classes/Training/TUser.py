@@ -181,13 +181,17 @@ class TUser:
     @property
     def trainings_as_trainee(self) -> List[Training]:
 
-        return [t for t in self.training_manager.all_trainings if t.trainee == self]
+        ret = [t for t in self.training_manager.all_trainings if t.trainee == self]
+        ret.sort(key=lambda t: t.position.name)
+        return ret
 
 ################################################################################
     @property
     def trainings_as_trainer(self) -> List[Training]:
         
-        return [t for t in self.training_manager.all_trainings if t.trainer == self]
+        ret = [t for t in self.training_manager.all_trainings if t.trainer == self]
+        ret.sort(key=lambda t: t.position.name)
+        return ret
     
 ################################################################################    
     @property
@@ -659,8 +663,8 @@ class TUser:
 ################################################################################
     async def notify_of_training_signup(self, training: Training) -> None:
 
-        if self.on_hiatus:
-            return
+        # if self.on_hiatus:
+        #     return
 
         common_availability = Availability.combine_availability(training.trainee, self)
         if not common_availability:
@@ -699,10 +703,10 @@ class TUser:
             timestamp=True
         )
         
-        # try:
-        await self.user.send(embed=notification)
-        # except Exception as ex:
-        #     pass
+        try:
+            await self.user.send(embed=notification)
+        except:
+            pass
 
 ################################################################################
     def toggle_pings(self) -> None:
