@@ -663,12 +663,12 @@ class TUser:
 ################################################################################
     async def notify_of_training_signup(self, training: Training) -> None:
 
-        # if self.on_hiatus:
-        #     return
+        if self.on_hiatus:
+            return
 
         common_availability = Availability.combine_availability(training.trainee, self)
-        if not common_availability:
-            return
+        # if not common_availability:
+        #     return
         
         value = "Your availability matches on the following days:\n\n"
         for a, times in common_availability.items():
