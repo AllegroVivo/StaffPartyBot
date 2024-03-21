@@ -695,12 +695,14 @@ class TUser:
                 f"{U.draw_line(extra=43)}\n\n"
                 
                 f"{value}"
-            )
+            ),
+            timestamp=True
         )
         
         try:
             await self.user.send(embed=notification)
-        except:
+        except Exception as ex:
+            print(ex)
             pass
 
 ################################################################################
