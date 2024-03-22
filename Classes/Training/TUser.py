@@ -687,8 +687,6 @@ class TUser:
                 f"({post_url}) {BotEmojis.ArrowLeft}\n"
             )
 
-        temp = [(a.day.proper_name, a.start_time, a.end_time) for a in self.availability]
-        
         notification = U.make_embed(
             title="Training Signup",
             description=(
@@ -700,8 +698,7 @@ class TUser:
                 f"{url_value}"
                 f"{U.draw_line(extra=43)}\n\n"
                 
-                f"{value}\n"
-                f"{temp}"
+                f"{value}"
             ),
             timestamp=True
         )
