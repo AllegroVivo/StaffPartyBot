@@ -667,8 +667,8 @@ class TUser:
             return
 
         common_availability = Availability.combine_availability(training.trainee, self)
-        # if not common_availability:
-        #     return
+        if not common_availability:
+            return
         
         value = "Your availability matches on the following days:\n\n"
         for a, times in common_availability.items():
