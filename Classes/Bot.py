@@ -131,6 +131,8 @@ class TrainingBot(Bot):
         for v in data["venues"]:
             ret[v[1]]["venues"][v[0]] = {
                 "user_ids": v[2],
+                "owner_ids": v[4],
+                "pending": v[5],
                 "positions": v[3],
                 "details": None,
                 "aag": None,

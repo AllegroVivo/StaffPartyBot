@@ -227,10 +227,11 @@ class DatabaseUpdater(DBWorkerBranch):
     def _update_venue(self, venue: Venue) -> None:
         
         self.execute(
-            "UPDATE venues SET users = %s, positions = %s WHERE _id = %s;",
+            "UPDATE venues SET users = %s, positions = %s, owners = %s, "
+            "pending = %s WHERE _id = %s;",
             [u.id for u in venue.authorized_users],
             [p.id for p in venue.sponsored_positions],
-            venue.id
+            [o.id for o in venue.owners], venue.pending, venue.id
         )
         
 ################################################################################

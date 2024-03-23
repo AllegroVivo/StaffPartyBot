@@ -3,7 +3,8 @@ from discord import (
     Cog,
     SlashCommandGroup,
     Option,
-    SlashCommandOptionType
+    SlashCommandOptionType,
+    OptionChoice
 )
 from typing import TYPE_CHECKING
 
@@ -125,10 +126,10 @@ class Admin(Cog):
         
 ################################################################################
     @admin.command(
-        name="venue_user",
-        description="Add a user to a venue's authorized user list."
+        name="add_venue_user",
+        description="Add a user as a venue's owner or authorized user."
     )
-    async def venue_user(
+    async def add_venue_user(
         self,
         ctx: ApplicationContext,
         venue: Option(
@@ -142,11 +143,46 @@ class Admin(Cog):
             name="user",
             description="The user to add to the venue's authorized user list.",
             required=True
+        ),
+        _type: Option(
+            SlashCommandOptionType.string,
+            name="user_type",
+            description="The user type to assign the user as.",
+            required=True,
+            choices=[
+                OptionChoice(name="Owner", value="Owner"),
+                OptionChoice(name="Authorized User", value="AuthUser")
+            ]
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_user(ctx.interaction, venue, user)
+        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type)
+        
+################################################################################
+    @admin.command(
+        name="remove_venue_user",
+        description="Remove a user as a venue's owner or authorized user."
+    )
+    async def remove_venue_user(
+        self,
+        ctx: ApplicationContext,
+        venue: Option(
+            SlashCommandOptionType.string,
+            name="venue",
+            description="The name of the venue.",
+            required=True
+        ),
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to remove from the venue's authorized user list.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.remove_user(ctx.interaction, venue, user)
         
 ################################################################################
     @admin.command(

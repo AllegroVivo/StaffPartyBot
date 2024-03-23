@@ -38,6 +38,7 @@ class VenueStatusView(FroggeView):
             WebsiteURLButton(self.venue.website_url),
             LogoButton(self.venue.logo_url),
             SponsorPositionsButton(self.venue.sponsored_positions),
+            OwnerUsersButton(self.venue),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -317,3 +318,25 @@ class WebsiteURLButton(FroggeButton):
         )
         
 ################################################################################
+class OwnerUsersButton(FroggeButton):
+
+    def __init__(self, venue: Venue) -> None:
+
+        super().__init__(
+            label="Remove Owner/User",
+            row=2,
+            disabled=False
+        )
+        
+        self.set_style(venue.owners + venue.authorized_users)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.venue.manage_users(interaction)
+        self.set_style(self.view.venue.owners + self.view.venue.authorized_users)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.venue.status(), view=self.view
+        )
+            
+################################################################################
+            

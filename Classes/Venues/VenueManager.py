@@ -6,12 +6,15 @@ from discord import Interaction, User, TextChannel
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
-from UI.Venues import VenueStatusView
+from UI.Venues import VenueStatusView, VenueOwnerView
 from Utilities import (
     Utilities as U, VenueExistsError, 
     VenueDoesntExistError,
     UnauthorizedError,
     ChannelTypeError,
+    TooManyUsersError,
+    VenuePendingApprovalError,
+    CannotRemoveUserError,
 )
 from .Venue import Venue
 
@@ -28,6 +31,7 @@ class VenueManager:
         "_guild",
         "_venues",
         "_channel",
+        "_pending",
     )
 
 ################################################################################
@@ -104,7 +108,7 @@ class VenueManager:
             return
         
         venue = Venue.new(self, name)
-        venue.add_user(user)
+        venue.add_user(user, owner=True)
         self._venues.append(venue)
         
         confirm = U.make_embed(
@@ -121,7 +125,13 @@ class VenueManager:
         await self.guild.log.venue_created(venue)
 
 ################################################################################
-    async def add_user(self, interaction: Interaction, name: str, user: User) -> None:
+    async def add_user(
+        self, 
+        interaction: Interaction, 
+        name: str, 
+        user: User,
+        user_type: str
+    ) -> None:
 
         venue = self.get_venue(name)
         if venue is None:
@@ -129,7 +139,12 @@ class VenueManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if user in venue._users:
+        if len(venue.owners) >= 2 and len(venue.authorized_users) >= 3:
+            error = TooManyUsersError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if user in venue.authorized_users or user in venue.owners:
             embed = U.make_embed(
                 title="User Already Authorized",
                 description=(
@@ -145,8 +160,8 @@ class VenueManager:
                 f"Are you sure you want to authorize {user.mention} to\n"
                 f"access venue `{name}`?\n\n"
                 
-                "This will allow them to change all aspects of the venue\n"
-                "aside from authorized users."
+                "This will allow them to freely change all elements of the "
+                "venue's profile."
             )
         )
         view = ConfirmCancelView(interaction.user)
@@ -157,7 +172,15 @@ class VenueManager:
         if not view.complete or view.value is False:
             return
         
-        venue.add_user(user)
+        if (
+            len(venue.owners) >= 2 and user_type == "Owner" or
+            len(venue.authorized_users) >= 3 and user_type == "AuthUser"
+        ):
+            error = TooManyUsersError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        venue.add_user(user, owner=user_type == "Owner")
         
         confirm = U.make_embed(
             title="User Authorized",
@@ -177,6 +200,11 @@ class VenueManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
+        if venue.pending: 
+            error = VenuePendingApprovalError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
         if not admin:
             if not await self.authenticate(venue, interaction.user, interaction):
                 return
@@ -191,7 +219,7 @@ class VenueManager:
     @staticmethod
     async def authenticate(venue: Venue, user: User, interaction: Interaction) -> bool:
         
-        if user not in venue.authorized_users:
+        if user not in venue.owners + venue.authorized_users:
             error = UnauthorizedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
@@ -219,6 +247,11 @@ class VenueManager:
         venue = self.get_venue(name)
         if venue is None:
             error = VenueDoesntExistError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        if venue.pending:
+            error = VenuePendingApprovalError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
 
@@ -318,4 +351,116 @@ class VenueManager:
         return ret
     
 ################################################################################
+    async def signup(
+        self, 
+        interaction: Interaction,
+        name: str,
+        owner2: Optional[User],
+        user1: Optional[User],
+        user2: Optional[User],
+        user3: Optional[User]
+    ) -> None:
+
+        venue = self.get_venue(name)
+        if venue is not None:
+            error = VenueExistsError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        prompt = U.make_embed(
+            title="User Confirmation",
+            description=(
+                "Are you the owner of this venue, or are you making this\n"
+                "posting on behalf of the venue owner?"
+            )
+        )
+        view = VenueOwnerView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is None:
+            return
+        
+        if user1 and user2 and user3 and not view.value:
+            error = TooManyUsersError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        venue = Venue.new(self, name)
+        venue.add_user(interaction.user, owner=view.value)
+        self._venues.append(venue)
+        
+        if owner2 is not None:
+            venue.add_user(owner2, owner=True)
+        if user1 is not None:
+            venue.add_user(user1)
+        if user2 is not None:
+            venue.add_user(user2)
+        if user3 is not None:
+            venue.add_user(user3)
+
+        confirm = U.make_embed(
+            title="Venue Submitted",
+            description=(
+                f"Venue `{name}` has been submitted for approval.\n\n"
+
+                "Please wait for further instructions from staff on how to\n"
+                "proceed with the venue registration process."
+            )
+        )
+
+        await interaction.respond(embed=confirm, ephemeral=True)
+        await self.guild.log.venue_created(venue)
     
+################################################################################
+    async def remove_user(self, interaction: Interaction, name: str, user: User) -> None:
+
+        venue = self.get_venue(name)
+        if venue is None:
+            error = VenueDoesntExistError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        if not await self._remove_user_error_check(interaction, name, user, venue):
+            return
+        
+        venue.remove_user(user)
+        
+        confirm = U.make_embed(
+            title="User Removed",
+            description=(
+                f"User {user.mention} has been removed from venue `{name}`."
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
+        await self.guild.log.venue_user_removed(venue, user)
+        
+################################################################################
+    @staticmethod
+    async def _remove_user_error_check(
+        interaction: Interaction,
+        name: str,
+        user: User,
+        venue: Venue
+    ) -> bool:
+
+        if len(venue.all_authorized_users) == 0:
+            error = CannotRemoveUserError("There are no users on this venue.")
+            await interaction.respond(embed=error, ephemeral=True)
+            return False
+
+        if user not in venue.all_authorized_users:
+            error = CannotRemoveUserError(f"User {user.mention} is not authorized to access venue `{name}`.")
+            await interaction.respond(embed=error, ephemeral=True)
+            return False
+
+        if len(venue.all_authorized_users) == 1:
+            error = CannotRemoveUserError("You cannot remove the only user on a venue.")
+            await interaction.respond(embed=error, ephemeral=True)
+            return False
+        
+        return True
+        
+################################################################################
+        

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+
+from dotenv import load_dotenv
 from typing import TYPE_CHECKING, Optional
 
 from discord import (
@@ -27,13 +30,18 @@ class Logger:
     __slots__ = (
         "_guild",
         "_channel",
+        "_alyah",
     )
+    
+    ALYAH = 265695573527625731
 
 ################################################################################
     def __init__(self, state: GuildData) -> None:
 
         self._guild: GuildData = state
+        
         self._channel: Optional[TextChannel] = None
+        self._alyah: User = None  # type: ignore
 
 ################################################################################
     async def load(self, data: Optional[int]) -> None:
@@ -45,6 +53,8 @@ class Logger:
                 self._channel = await self._guild.bot.fetch_channel(data)
             except (NotFound, Forbidden):
                 self._channel = None
+
+        self._alyah = await self._guild.bot.fetch_user(self.ALYAH)
         
 ################################################################################
     @property
@@ -222,14 +232,43 @@ class Logger:
 ################################################################################
     async def venue_created(self, venue: Venue) -> None:
 
+        users = "\n".join(
+            [f"* {u.mention}" for u in venue.owners] +
+            [f"* {u.mention}" for u in venue.authorized_users]
+        )
+
         embed = U.make_embed(
             title="Venue Created!",
             description=(
-                f"New venue `{venue.name}` has been created!"
+                f"New venue `{venue.name}` has been created!\n\n"
+                
+                f"__Proposed Users:__\n"
+                f"{users}"
+                
             ),
             timestamp=True
         )
 
         await self._log(embed, LogType.VenueCreated)
+        if os.getenv("DEBUG") == "False":
+            await self._alyah.send(embed=embed)
+        
+################################################################################
+    async def owner_removal_flagged(self, venue: Venue, user: User, instigator: User) -> None:
+
+        embed = U.make_embed(
+            title="Owner Removal Flagged!",
+            description=(
+                f"{user.mention} has been flagged for removal as an "
+                f"owner of `{venue.name}` by {instigator.mention}!\n\n"
+                
+                "Please head to the server and review the request."
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.OwnerRemovalFlagged)
+        if os.getenv("DEBUG") == "False":
+            await self._alyah.send(embed=embed)
         
 ################################################################################

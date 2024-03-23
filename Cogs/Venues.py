@@ -62,6 +62,51 @@ class Venues(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.post_venue(ctx.interaction, name)
         
+################################################################################
+    @venues.command(
+        name="signup",
+        description="Sign up a new venue for the internship program."
+    )
+    async def signup_venue(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the new venue.",
+            required=True
+        ),
+        owner2: Option(
+            SlashCommandOptionType.user,
+            name="alt_owner",
+            description="A alternate user to register as owner of the venue.",
+            required=False
+        ),
+        user1: Option(
+            SlashCommandOptionType.user,
+            name="auth_user_1",
+            description="An alternate user that can make edits to the venue listing.",
+            required=False
+        ),
+        user2: Option(
+            SlashCommandOptionType.user,
+            name="auth_user_2",
+            description="An alternate user that can make edits to the venue listing.",
+            required=False
+        ),
+        user3: Option(
+            SlashCommandOptionType.user,
+            name="auth_user_3",
+            description="An alternate user that can make edits to the venue listing.",
+            required=False
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.signup(
+            ctx.interaction, name, owner2, user1, user2, user3
+        )
+        
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:
 

@@ -9,7 +9,8 @@ from discord import (
     Interaction,
     TextChannel,
     Message,
-    HTTPException
+    HTTPException,
+    SelectOption,
 )
 
 from Assets import BotEmojis
@@ -18,10 +19,12 @@ from Utilities import (
     RPLevel,
     VenueSize,
     VenueStyle,
-    VenueChannelNotSetError
+    VenueChannelNotSetError,
+    NoAvailableUsersRemovalError,
 )
 from .InternshipManager import InternshipManager
 from .VenueDetails import VenueDetails
+from UI.Venues import RemoveUserView
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, VenueManager, Position, GuildData
@@ -40,6 +43,8 @@ class Venue:
         "_details",
         "_users",
         "_intern_mgr",
+        "_owners",
+        "_pending",
     )
 
 ################################################################################
@@ -51,13 +56,19 @@ class Venue:
         details: Optional[VenueDetails] = None,
         users: Optional[List[User]] = None,
         intern_mgr: Optional[InternshipManager] = None,
+        pending: bool = True,
+        owners: Optional[List[User]] = None
     ) -> None:
         
         self._mgr: VenueManager = mgr
         self._id: str = venue_id
         
         self._details = details or VenueDetails(self, name=name)
+        self._pending: bool = pending
+        
+        self._owners: List[User] = owners or []
         self._users: List[User] = users or []
+        
         self._intern_mgr: InternshipManager = intern_mgr or InternshipManager(self)
     
 ################################################################################
@@ -77,6 +88,13 @@ class Venue:
                 user = await mgr.bot.get_or_fetch_user(user_id)
                 if user is not None:
                     users.append(user)
+
+        owners = []
+        if data["owner_ids"]:
+            for user_id in data["owner_ids"]:
+                user = await mgr.bot.get_or_fetch_user(user_id)
+                if user is not None:
+                    owners.append(user)
         
         self: V = cls.__new__(cls)
         
@@ -84,7 +102,11 @@ class Venue:
         self._id = data["details"][0]
         
         self._details = await VenueDetails.load(self, data)
+        self._pending = data["pending"]
+        
         self._users = users
+        self._owners = owners
+        
         self._intern_mgr = InternshipManager.load(self, data["positions"])
         
         return self
@@ -209,6 +231,30 @@ class Venue:
         return self._details.website_url
     
 ################################################################################
+    @property
+    def owners(self) -> List[User]:
+        
+        return self._owners
+    
+################################################################################
+    @property
+    def all_authorized_users(self) -> List[User]:
+        
+        return self._owners + self._users
+    
+################################################################################
+    @property
+    def pending(self) -> bool:
+        
+        return self._pending
+    
+    @pending.setter
+    def pending(self, value: bool) -> None:
+        
+        self._pending = value
+        self.update()
+        
+################################################################################
     def status(self) -> Embed:
         
         return U.make_embed(
@@ -232,12 +278,22 @@ class Venue:
 ################################################################################
     def _authorized_users_field(self, inline: bool = False) -> EmbedField:
         
+        owner_value = (
+            ("\n".join([f"• {user.mention}" for user in self._owners]))
+            if self._owners
+            else "`No owners.`"
+        )
+        auth_user_value = (
+            ("\n".join([f"• {user.mention}" for user in self._users]))
+            if self._users
+            else "`No authorized users.`"
+        )
+        
         return EmbedField(
-            name="__Authorized Users__",
+            name="__Owners__",
             value=(
-                ("\n".join([f"• {user.mention}" for user in self._users]))
-                if self._users
-                else "`No authorized users.`"
+                f"{owner_value}\n\n"
+                f"__**Authorized Users**__\n{auth_user_value}"
             ) + "\n" + U.draw_line(extra=15),
             inline=inline,
         )
@@ -317,9 +373,13 @@ class Venue:
         )
 
 ################################################################################
-    def add_user(self, user: User) -> None:
+    def add_user(self, user: User, owner: bool = False) -> None:
         
-        self._users.append(user)
+        if owner:
+            self._owners.append(user)
+        else:
+            self._users.append(user)
+            
         self.update()
 
 ################################################################################
@@ -431,6 +491,7 @@ class Venue:
     def compile(self) -> Embed:
         
         fields = [
+            self._ownership_field(),
             self._venue_hours_field(),
             self._accepting_field(),
             self._venue_location_field(),
@@ -439,7 +500,7 @@ class Venue:
         ]
         
         if self._details.discord_url or self._details.website_url:
-            fields.insert(4, self._urls_field(post=True))
+            fields.insert(5, self._urls_field(post=True))
 
         return U.make_embed(
             title=f"__{self._details.name}__",
@@ -455,5 +516,97 @@ class Venue:
     async def set_sponsored_positions(self, interaction: Interaction) -> None:
 
         await self._intern_mgr.set_sponsored_positions(interaction)
+        
+################################################################################
+    def _ownership_field(self) -> EmbedField:
+        
+        return EmbedField(
+            name="__Ownership__",
+            value=(
+                ("\n".join([f"• {user.mention}" for user in self._owners]))
+                if self._owners
+                else "`No owners listed.`"
+            ) + "\n" + U.draw_line(extra=15),
+            inline=False,
+        )
+    
+################################################################################
+    async def manage_users(self, interaction: Interaction) -> None:
+        
+        if len(self.all_authorized_users) == 1 and interaction.user in self.all_authorized_users:
+            error = NoAvailableUsersRemovalError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        prompt = U.make_embed(
+            title="Remove Owner/Authorized User",
+            description=(
+                "Please select the user you would like to remove from the venue.\n\n"
+                
+                "Please note that attempting to remove an owner will trigger an "
+                "administrative review process."
+            )
+        )
+        view = RemoveUserView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        user_ids = view.value
+        for user_id in user_ids:
+            user = await self.bot.get_or_fetch_user(user_id)
+            if user is None:
+                continue
+            
+            if user in self._owners:
+                await self.guild.log.owner_removal_flagged(self, user, interaction.user)
+                continue
+            else:
+                self._users.remove(user)    
+                
+        confirm = U.make_embed(
+            title="User(s) Removed",
+            description=(
+                f"The selected user(s) have been removed from the venue.\n\n"
+                
+                "If an owner was selected for removal, an administrative review\n"
+                "process has been triggered instead.\n"
+                f"{U.draw_line(extra=20)}"
+            )
+        )
+        
+        await interaction.respond(embed=confirm, ephemeral=True)
+        
+################################################################################
+    def user_select_options(self, user: Optional[User] = None) -> List[SelectOption]:
+
+        ret = []
+        
+        for u in self.all_authorized_users:
+            if user is not None and u.id == user.id:
+                continue
+        
+            ret += [
+                SelectOption(
+                    label=u.name,
+                    value=str(u.id),
+                    description="Owner" if u in self._owners else "Authorized User",
+                )
+            ]
+            
+        return ret
+    
+################################################################################
+    def remove_user(self, user: User) -> None:
+        
+        if user in self._owners:
+            self._owners.remove(user)
+        else:
+            self._users.remove(user)
+            
+        self.update()
         
 ################################################################################
