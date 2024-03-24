@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytz
-from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict
+from datetime import datetime, time
+from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple
 
 from discord import User, Embed, EmbedField, Interaction, SelectOption
 
@@ -16,7 +16,13 @@ from UI.Training import (
     RemoveQualificationView,
     RemoveTrainingView,
 )
-from Utilities import Utilities as U, TrainingLevel, GlobalDataCenter, NoTrainingsError
+from Utilities import (
+    Utilities as U,
+    TrainingLevel, 
+    GlobalDataCenter,
+    NoTrainingsError,
+    Weekday
+)
 from .Availability import Availability
 from .Qualification import Qualification
 from .Training import Training
@@ -164,6 +170,12 @@ class TUser:
 
         return self._details.notes
 
+################################################################################
+    @property
+    def data_centers(self) -> List[GlobalDataCenter]:
+        
+        return self._details.data_centers
+    
 ################################################################################    
     @property
     def qualifications(self) -> List[Qualification]:
@@ -440,6 +452,8 @@ class TUser:
             availability = Availability.new(self, weekday, start_time, end_time)
             self._availability.append(availability)
 
+        await self._manager.notify_of_availability_change(self)
+
 ################################################################################
     async def add_qualification(self, interaction: Interaction) -> None:
 
@@ -661,12 +675,20 @@ class TUser:
         ]
 
 ################################################################################
-    async def notify_of_training_signup(self, training: Training) -> None:
+    def _notify_check(self, training: Training) -> Optional[Dict[Weekday, List[Tuple[time, time]]]]:
 
         if self.on_hiatus:
             return
 
-        common_availability = Availability.combine_availability(training.trainee, self)
+        if not any(dc in training.trainee.data_centers for dc in self.data_centers):
+            return
+
+        return Availability.combine_availability(training.trainee, self)
+        
+################################################################################
+    async def notify_of_training_signup(self, training: Training) -> None:
+
+        common_availability = self._notify_check(training)
         if not common_availability:
             return
         
@@ -708,6 +730,47 @@ class TUser:
         except:
             pass
 
+################################################################################
+    async def notify_of_modified_schedule(self, training: Training) -> None:
+        
+        common_availability = self._notify_check(training)
+        if not common_availability:
+            return
+        
+        value = "Your availability matches on the following days:\n\n"
+        for a, times in common_availability.items():
+            for t in times:
+                value += (
+                    f"* **{a.proper_name}:** "
+                    f"{U.format_dt(U.time_to_datetime(t[0]), 't')} - "
+                    f"{U.format_dt(U.time_to_datetime(t[1]), 't')}\n"
+                )
+
+        url_value = ""
+        post_url = self._manager.signup_message.jump_url
+        if post_url:
+            url_value = (
+                f"{BotEmojis.ArrowRight} [Click here to pick up this trainee.]"
+                f"({post_url}) {BotEmojis.ArrowLeft}\n"
+            )
+        
+        notification = U.make_embed(
+            title="Trainee Availability Change",
+            description=(
+                f"{training.trainee.name}'s training schedule has been modified.\n\n"
+                f"{url_value}\n"
+                f"{U.draw_line(extra=24)}\n\n"
+                
+                f"{value}"
+            ),
+            timestamp=True
+        )
+        
+        try:
+            await self.user.send(embed=notification)
+        except:
+            pass
+        
 ################################################################################
     def toggle_pings(self) -> None:
         

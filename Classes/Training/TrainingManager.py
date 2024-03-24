@@ -219,7 +219,15 @@ class TrainingManager:
         for t in self.get_qualified_trainers(training.position.id):
             if t.accepting_trainee_pings():
                 await t.notify_of_training_signup(training)
-
+        
+################################################################################        
+    async def notify_of_availability_change(self, tuser: TUser) -> None:
+        
+        for training in tuser.trainings_as_trainee:
+            for t in self.get_qualified_trainers(training.position.id):
+                if t.accepting_trainee_pings():
+                    await t.notify_of_modified_schedule(training)
+                
 ################################################################################
     def get_qualified_trainers(self, position_id: str) -> List[TUser]:
         
