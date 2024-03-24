@@ -200,11 +200,15 @@ class VenueManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if venue.pending: 
-            error = VenuePendingApprovalError(name)
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
+        if venue.pending:
+            if admin:
+                if not await venue.approve(interaction):
+                    return
+            else:
+                error = VenuePendingApprovalError(name)
+                await interaction.respond(embed=error, ephemeral=True)
+                return
+            
         if not admin:
             if not await self.authenticate(venue, interaction.user, interaction):
                 return

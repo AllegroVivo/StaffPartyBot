@@ -24,6 +24,7 @@ from Utilities import (
 )
 from .InternshipManager import InternshipManager
 from .VenueDetails import VenueDetails
+from UI.Common import ConfirmCancelView
 from UI.Venues import RemoveUserView
 
 if TYPE_CHECKING:
@@ -608,5 +609,29 @@ class Venue:
             self._users.remove(user)
             
         self.update()
+        
+################################################################################
+    async def approve(self, interaction: Interaction) -> bool:
+
+        prompt = U.make_embed(
+            title="Approve Venue",
+            description=(
+                "Are you sure you want to approve this venue?\n\n"
+                
+                "Once approved, the venue will be publicly visible and\n"
+                "available for internships."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return False
+        
+        self.pending = False
+        
+        return True
         
 ################################################################################
