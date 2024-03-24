@@ -13,5 +13,6 @@ class LogType(FroggeEnum):
     VenueUserRemoved = 8
     VenueCreated = 9
     OwnerRemovalFlagged = 10
+    VenueRemoved = 11
 
 ################################################################################

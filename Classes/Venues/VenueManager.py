@@ -130,7 +130,8 @@ class VenueManager:
         interaction: Interaction, 
         name: str, 
         user: User,
-        user_type: str
+        user_type: str,
+        admin: bool = False
     ) -> None:
 
         venue = self.get_venue(name)
@@ -143,6 +144,10 @@ class VenueManager:
             error = TooManyUsersError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
+        
+        if not admin:
+            if not await self.authenticate(venue, interaction.user, interaction):
+                return
         
         if user in venue.authorized_users or user in venue.owners:
             embed = U.make_embed(
@@ -467,4 +472,40 @@ class VenueManager:
         return True
         
 ################################################################################
+    async def remove_venue(self, interaction: Interaction, name: str) -> None:
         
+        venue = self.get_venue(name)
+        if venue is None:
+            error = VenueDoesntExistError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        prompt = U.make_embed(
+            title="Remove Venue",
+            description=(
+                f"Are you __**sure**__ you want to remove venue `{name}` "
+                f"from the bot?\n\n"
+                
+                "__This action cannot be undone.__"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self._venues.remove(venue)
+        venue.delete()
+        
+        confirm = U.make_embed(
+            title="Venue Removed",
+            description=f"Venue `{name}` has been removed from the bot."
+        )
+        await interaction.followup.send(embed=confirm, ephemeral=True)
+        await self.guild.log.venue_removed(venue)
+    
+################################################################################
+    

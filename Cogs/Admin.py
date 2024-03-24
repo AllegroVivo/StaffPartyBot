@@ -157,7 +157,7 @@ class Admin(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type)
+        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type, True)
         
 ################################################################################
     @admin.command(
@@ -202,6 +202,25 @@ class Admin(Cog):
 
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.venue_menu(ctx.interaction, name, admin=True)
+        
+################################################################################
+    @admin.command(
+        name="yeet_venue",
+        description="Remove a venue from the system."
+    )
+    async def yeet_venue(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the venue to remove.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.remove_venue(ctx.interaction, name)
         
 ################################################################################
     @admin.command(

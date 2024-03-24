@@ -5,7 +5,8 @@ from discord import (
     Cog,
     SlashCommandGroup,
     Option,
-    SlashCommandOptionType
+    SlashCommandOptionType,
+    OptionChoice
 )
 
 if TYPE_CHECKING:
@@ -106,6 +107,41 @@ class Venues(Cog):
         await guild.venue_manager.signup(
             ctx.interaction, name, owner2, user1, user2, user3
         )
+        
+################################################################################
+    @venues.command(
+        name="add_user",
+        description="Add and Owner or Authorized User to a venue listing."
+    )
+    async def venue_add_user(
+        self,
+        ctx: ApplicationContext,
+        venue: Option(
+            SlashCommandOptionType.string,
+            name="venue",
+            description="The name of the venue.",
+            required=True
+        ),
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to add to the venue's authorized user list.",
+            required=True
+        ),
+        _type: Option(
+            SlashCommandOptionType.string,
+            name="user_type",
+            description="The user type to assign the user as.",
+            required=True,
+            choices=[
+                OptionChoice(name="Owner", value="Owner"),
+                OptionChoice(name="Authorized User", value="AuthUser")
+            ]
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type)
         
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:

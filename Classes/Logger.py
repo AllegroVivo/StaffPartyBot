@@ -272,3 +272,16 @@ class Logger:
             await self._alyah.send(embed=embed)
         
 ################################################################################
+    async def venue_removed(self, venue: Venue) -> None:
+
+        embed = U.make_embed(
+            title="Venue Removed!",
+            description=(
+                f"Venue `{venue.name}` has been removed from the system!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.VenueRemoved)
+            
+################################################################################

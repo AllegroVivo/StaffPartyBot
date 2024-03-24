@@ -389,6 +389,11 @@ class Venue:
         self.bot.database.update.venue(self)
         
 ################################################################################
+    def delete(self) -> None:
+    
+        self.bot.database.delete.venue(self)
+        
+################################################################################
     async def set_name(self, interaction: Interaction) -> None:
 
         await self._details.set_name(interaction)

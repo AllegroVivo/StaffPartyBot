@@ -15,5 +15,6 @@ LOG_COLORS: Dict[LogType, FroggeColor] = {
     LogType.VenueUserRemoved: FroggeColor.light_pink(),
     LogType.VenueCreated: FroggeColor.dark_orange_red(),
     LogType.OwnerRemovalFlagged: FroggeColor.greenish_yellow(),
+    LogType.VenueRemoved: FroggeColor.brick_red(),
 }
 ################################################################################

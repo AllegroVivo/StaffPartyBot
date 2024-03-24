@@ -11,6 +11,7 @@ if TYPE_CHECKING:
         Training, 
         AdditionalImage,
         VenueAvailability,
+        Venue,
     )
 ################################################################################
 
@@ -72,6 +73,15 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _delete_venue(self, venue: Venue) -> None:
+    
+        self.execute("DELETE FROM venues WHERE _id = %s;", venue.id)
+        self.execute("DELETE FROM venue_hours WHERE venue_id = %s;", venue.id)
+        self.execute("DELETE FROM venue_locations WHERE venue_id = %s;", venue.id)
+        self.execute("DELETE FROM venue_aag WHERE venue_id = %s;", venue.id)
+        self.execute("DELETE FROM venue_details WHERE venue_id = %s;", venue.id)
+        
+################################################################################
 
     requirement             = _delete_requirement
     availability            = _delete_availability
@@ -79,6 +89,7 @@ class DatabaseDeleter(DBWorkerBranch):
     training                = _delete_training
     profile_addl_image      = _delete_additional_image
     venue_availability      = _delete_venue_availability
+    venue                   = _delete_venue
     
 ################################################################################
     
