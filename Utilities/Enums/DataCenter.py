@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from discord import SelectOption
 
@@ -14,6 +14,19 @@ class DataCenter(FroggeEnum):
     Chaos = 6
     Materia = 7
 
+################################################################################
+    @classmethod
+    def from_xiv(cls, xiv_name: Optional[str]) -> Optional["DataCenter"]:
+        
+        if xiv_name is None:
+            return 
+        
+        for dc in cls:
+            if dc.proper_name == xiv_name:
+                return dc
+            
+        raise ValueError(f"Invalid XIV data center name: {xiv_name}")
+    
 ################################################################################
     @staticmethod
     def select_options() -> List[SelectOption]:

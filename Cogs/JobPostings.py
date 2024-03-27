@@ -11,7 +11,7 @@ from discord import (
 if TYPE_CHECKING:
     from Classes import TrainingBot
 ################################################################################
-class Classifieds(Cog):
+class JobPostings(Cog):
 
     def __init__(self, bot: "TrainingBot"):
 
@@ -26,10 +26,10 @@ class Classifieds(Cog):
 
 ################################################################################
     @jobs.command(
-        name="post",
-        description="Post a new job classified."
+        name="create_post",
+        description="Create a new job classified posting."
     )
-    async def jobs_post(
+    async def jobs_create_post(
         self,
         ctx: ApplicationContext,
         venue: Option(
@@ -41,11 +41,30 @@ class Classifieds(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.classified_manager.post_new(ctx.interaction, venue)
+        await guild.job_posting_manager.create_new(ctx.interaction, venue)
 
+################################################################################
+    @jobs.command(
+        name="post_status",
+        description="Check or modify the status of a job classified posting."
+    )
+    async def jobs_post_status(
+        self,
+        ctx: ApplicationContext,
+        post_id: Option(
+            SlashCommandOptionType.string,
+            name="post_id",
+            description="The ID of the job posting to check or modify.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.job_posting_manager.check_status(ctx.interaction, post_id)
+        
 ################################################################################
 def setup(bot: "TrainingBot") -> None:
 
-    bot.add_cog(Classifieds(bot))
+    bot.add_cog(JobPostings(bot))
 
 ################################################################################

@@ -2,3 +2,4 @@ psycopg2~=2.9.9
 py-cord @ git+https://github.com/Pycord-Development/pycord@52d771953e55861727d6913d955083de1cd9a1c6
 python-dotenv~=1.0.1
 pytz~=2024.1
+requests~=2.31.0

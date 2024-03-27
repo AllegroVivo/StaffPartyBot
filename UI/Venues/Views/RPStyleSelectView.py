@@ -6,7 +6,7 @@ from discord import Interaction, SelectOption, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel, VenueStyle, edit_message_helper
+from Utilities import TrainingLevel, edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import Venue
@@ -33,7 +33,7 @@ class RPStyleSelect(Select):
                                    
         super().__init__(
             placeholder="Select the RP Style for this venue...",
-            options=VenueStyle.select_options(),
+            options=VenueTag.select_options(),
             min_values=1,
             max_values=1,
             disabled=False,
@@ -41,7 +41,7 @@ class RPStyleSelect(Select):
         )
         
     async def callback(self, interaction: Interaction):
-        self.view.value = VenueStyle(int(self.values[0]))
+        self.view.value = VenueTag(int(self.values[0]))
         self.view.complete = True
         
         await edit_message_helper(interaction, embed=self.view.venue.status())

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from discord import SelectOption
 
@@ -8,10 +8,22 @@ class HousingZone(FroggeEnum):
 
     Mist = 1
     LavenderBeds = 2
-    TheGoblet = 3
+    Goblet = 3
     Shirogane = 4
     Empyreum = 5
 
+################################################################################
+    @classmethod
+    def from_xiv(cls, xiv_district: Optional[str]) -> Optional["HousingZone"]:
+        
+        if xiv_district is None:
+            return
+        
+        if xiv_district == "Lavender Beds":
+            return cls.LavenderBeds
+        
+        return cls[xiv_district]
+        
 ################################################################################
     @staticmethod
     def select_options() -> List[SelectOption]:
@@ -24,10 +36,8 @@ class HousingZone(FroggeEnum):
         
         if self.value == 2:
             return "Lavender Beds"
-        elif self.value == 3:
-            return "The Goblet"
-        else:
-            return self.name
+        
+        return self.name
         
 ################################################################################
         

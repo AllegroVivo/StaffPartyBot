@@ -7,28 +7,31 @@ from discord import (
     Embed,
     EmbedField,
     Interaction,
-    TextChannel,
     Message,
-    HTTPException,
-    SelectOption,
+    SelectOption
 )
 
 from Assets import BotEmojis
+from UI.Venues import (
+    VenueNameModal,
+    VenueDescriptionModal,
+    PositionSelectView,
+    RemoveUserView,
+)
 from Utilities import (
     Utilities as U,
     RPLevel,
     VenueSize,
-    VenueStyle,
-    VenueChannelNotSetError,
-    NoAvailableUsersRemovalError,
+    Weekday,
 )
-from .InternshipManager import InternshipManager
-from .VenueDetails import VenueDetails
-from UI.Common import ConfirmCancelView
-from UI.Venues import RemoveUserView
+from .VenueAtAGlance import VenueAtAGlance
+from .VenueHours import VenueHours
+from .VenueLocation import VenueLocation
+from .VenueTag import VenueTag
+from .VenueURLs import VenueURLs
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, VenueManager, Position, GuildData
+    from Classes import TrainingBot, VenueManager, Position, GuildData, XIVVenue
 ################################################################################
 
 __all__ = ("Venue",)
@@ -41,36 +44,54 @@ class Venue:
     __slots__ = (
         "_id",
         "_mgr",
-        "_details",
+        "_name",
+        "_description",
+        "_hiring",
         "_users",
-        "_intern_mgr",
-        "_owners",
+        "_location",
+        "_urls",
         "_pending",
+        "_schedule",
+        "_aag",
+        "_positions",
+        "_post_msg",
+        "_mare_id",
+        "_mare_pass",
     )
 
 ################################################################################
-    def __init__(
-        self,
-        mgr: VenueManager, 
-        venue_id: str,
-        name: str,
-        details: Optional[VenueDetails] = None,
-        users: Optional[List[User]] = None,
-        intern_mgr: Optional[InternshipManager] = None,
-        pending: bool = True,
-        owners: Optional[List[User]] = None
-    ) -> None:
+    def __init__(self, mgr: VenueManager,  venue_id: str, name: str, **kwargs) -> None:
         
         self._mgr: VenueManager = mgr
         self._id: str = venue_id
         
-        self._details = details or VenueDetails(self, name=name)
-        self._pending: bool = pending
+        self._name: str = name
+        self._description: List[str] = kwargs.get("description", [])
         
-        self._owners: List[User] = owners or []
-        self._users: List[User] = users or []
+        self._mare_id: Optional[str] = kwargs.get("mare_id", None)
+        self._mare_pass: Optional[str] = kwargs.get("mare_password", None)
         
-        self._intern_mgr: InternshipManager = intern_mgr or InternshipManager(self)
+        self._hiring: bool = kwargs.get("hiring", True)
+        self._pending: bool = kwargs.get("pending", True)
+        
+        self._location: VenueLocation = kwargs.get("location", VenueLocation(self))
+        self._aag: VenueAtAGlance = kwargs.get("ataglance", VenueAtAGlance(self))
+        
+        self._users: List[User] = kwargs.get("users", [])
+        self._schedule: List[VenueHours] = kwargs.get("schedule", [])
+        self._positions: List[Position] = kwargs.get("positions", [])
+        
+        self._urls: VenueURLs = VenueURLs.load(
+            self,
+            {
+                "discord": kwargs.get("discord", None),
+                "website": kwargs.get("website", None),
+                "banner": kwargs.get("banner", None),
+                "logo": kwargs.get("logo", None),
+            }
+        )
+        
+        self._post_msg: Optional[Message] = kwargs.get("post_message", None)
     
 ################################################################################
     @classmethod
@@ -83,32 +104,50 @@ class Venue:
     @classmethod
     async def load(cls: Type[V], mgr: VenueManager, data: Dict[str, Any]) -> V:
         
-        users = []
-        if data["user_ids"]:
-            for user_id in data["user_ids"]:
-                user = await mgr.bot.get_or_fetch_user(user_id)
-                if user is not None:
-                    users.append(user)
-
-        owners = []
-        if data["owner_ids"]:
-            for user_id in data["owner_ids"]:
-                user = await mgr.bot.get_or_fetch_user(user_id)
-                if user is not None:
-                    owners.append(user)
+        venue = data["venue"]
+        hours = data["hours"]
         
         self: V = cls.__new__(cls)
-        
+
         self._mgr = mgr
-        self._id = data["details"][0]
+        self._id = venue[0]
+
+        self._name = venue[6]
+        self._description = venue[7]
+
+        self._mare_id = venue[9]
+        self._mare_pass = venue[10]
+
+        self._hiring = venue[8]
+        self._pending = venue[4]
+
+        self._location = VenueLocation.load(self, venue[11:19])
+        self._aag = VenueAtAGlance.load(self, venue[19:23])
+
+        self._users = [
+            u for u in
+            [await mgr.bot.get_or_fetch_user(user_id) for user_id in venue[2]]
+            if u is not None
+        ]
+        self._schedule = [VenueHours.load(self, h) for h in hours]
+        self._positions = [mgr.guild.position_manager.get_position(p) for p in venue[3]]
+
+        self._urls = VenueURLs.load(
+            self,
+            {
+                "discord": venue[23],
+                "website": venue[24],
+                "banner": venue[25],
+                "logo": venue[26],
+            }
+        )
         
-        self._details = await VenueDetails.load(self, data)
-        self._pending = data["pending"]
-        
-        self._users = users
-        self._owners = owners
-        
-        self._intern_mgr = InternshipManager.load(self, data["positions"])
+        self._post_msg = None
+        post_url_parts = (venue[5].split("/")) if venue[5] else None
+        if post_url_parts:
+            channel = await mgr.bot.get_or_fetch_channel(post_url_parts[-2])
+            if channel:
+                self._post_msg = await channel.fetch_message(post_url_parts[-1])  # type: ignore
         
         return self
     
@@ -137,165 +176,232 @@ class Venue:
         return self._id
     
 ################################################################################
+
     @property
     def name(self) -> str:
-        
-        return self._details.name
-    
+
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+
+        self._name = value
+        self.update()
+
 ################################################################################
     @property
-    def authorized_users(self) -> List[User]:
-        
-        return self._users
-    
+    def description(self) -> List[str]:
+
+        return self._description
+
+    @description.setter
+    def description(self, value: List[str]) -> None:
+
+        self._description = value
+        self.update()
+
+################################################################################
+
+    @property
+    def mare_id(self) -> Optional[str]:
+
+        return self._mare_id
+
+    @mare_id.setter
+    def mare_id(self, value: Optional[str]) -> None:
+
+        self._mare_id = value
+        self.update()
+
 ################################################################################
     @property
-    def nsfw(self) -> bool:
-        
-        return self._details.aag.nsfw
-    
+    def mare_password(self) -> Optional[str]:
+
+        return self._mare_pass
+
+    @mare_password.setter
+    def mare_password(self, value: Optional[str]) -> None:
+
+        self._mare_pass = value
+        self.update()
+
+################################################################################
+
+    @property
+    def hiring(self) -> bool:
+
+        return self._hiring
+
+    @hiring.setter
+    def hiring(self, value: bool) -> None:
+
+        self._hiring = value
+        self.update()
+
 ################################################################################
     @property
-    def description(self) -> Optional[str]:
+    def pending(self) -> bool:
+
+        return self._pending
+
+    @pending.setter
+    def pending(self, value: bool) -> None:
+
+        self._pending = value
+        self.update()
+
+################################################################################
+    @property
+    def location(self) -> VenueLocation:
         
-        return self._details.description
+        return self._location
     
 ################################################################################
     @property
     def rp_level(self) -> Optional[RPLevel]:
-        
-        return self._details.aag.level
-    
+
+        return self._aag.level
+
 ################################################################################
     @property
-    def style(self) -> Optional[VenueStyle]:
+    def nsfw(self) -> bool:
         
-        return self._details.aag.style
+        return self._aag.nsfw
     
 ################################################################################
     @property
     def size(self) -> Optional[VenueSize]:
         
-        return self._details.aag.size
+        return self._aag.size
     
 ################################################################################
     @property
-    def accepting_interns(self) -> bool:
+    def tags(self) -> List[VenueTag]:
         
-        return self._details.accepting
+        return self._aag.tags
     
+################################################################################    
+    @property
+    def schedule(self) -> List[VenueHours]:
+
+        return self._schedule
+
 ################################################################################
     @property
-    def post_message(self) -> Optional[Message]:
-        
-        return self._details.post_message
+    def authorized_users(self) -> List[User]:
+
+        return self._users
     
-################################################################################
-    @post_message.setter
-    def post_message(self, value: Optional[Message]) -> None:
+    @authorized_users.setter
+    def authorized_users(self, value: List[User]) -> None:
         
-        self._details.post_message = value
-        self._details.update()
+        self._users = value
+        self.update()
+        
+################################################################################
+    @property
+    def positions(self) -> List[Position]:
+
+        return self._positions
+
+    @positions.setter
+    def positions(self, value: List[Position]) -> None:
+        
+        self._positions = value
+        self.update()
+        
+################################################################################
+    @property
+    def discord_url(self) -> Optional[str]:
+            
+        return self._urls["discord"]
+    
+    @discord_url.setter
+    def discord_url(self, value: Optional[str]) -> None:
+        
+        self._urls["discord"] = value
+        
+################################################################################
+    @property
+    def website_url(self) -> Optional[str]:
+        
+        return self._urls["website"]
+    
+    @website_url.setter
+    def website_url(self, value: Optional[str]) -> None:
+        
+        self._urls["website"] = value
+
+################################################################################
+    @property
+    def banner_url(self) -> Optional[str]:
+        
+        return self._urls["banner"]
+    
+    @banner_url.setter
+    def banner_url(self, value: Optional[str]) -> None:
+        
+        self._urls["banner"] = value
         
 ################################################################################
     @property
     def logo_url(self) -> Optional[str]:
         
-        return self._details.logo_url
+        return self._urls["logo"]
     
+    @logo_url.setter
+    def logo_url(self, value: Optional[str]) -> None:
+        
+        self._urls["logo"] = value
+        
 ################################################################################
     @property
-    def sponsored_positions(self) -> List[Position]:
-        
-        return self._intern_mgr.sponsored_positions
+    def post_url(self) -> Optional[str]:
 
-################################################################################
-    @property
-    def ataglance_complete(self) -> bool:
-        
-        return (
-            self._details.aag.level is not None and
-            self._details.aag.style is not None and
-            self._details.aag.size is not None
-        ) 
-    
-################################################################################
-    @property
-    def discord_url(self) -> Optional[str]:
-        
-        return self._details.discord_url
-    
-################################################################################
-    @property
-    def website_url(self) -> Optional[str]:
-        
-        return self._details.website_url
-    
-################################################################################
-    @property
-    def owners(self) -> List[User]:
-        
-        return self._owners
-    
-################################################################################
-    @property
-    def all_authorized_users(self) -> List[User]:
-        
-        return self._owners + self._users
-    
-################################################################################
-    @property
-    def pending(self) -> bool:
-        
-        return self._pending
-    
-    @pending.setter
-    def pending(self, value: bool) -> None:
-        
-        self._pending = value
-        self.update()
-        
+        if not self._post_msg:
+            return
+
+        return self._post_msg.jump_url
+
 ################################################################################
     def status(self) -> Embed:
         
         return U.make_embed(
-            title=f"Venue Profile: __{self._details.name}__",
+            title=f"Venue Profile: __{self.name}__",
             description=(
-                (self._details.description or "`No description provided.`")
+                (
+                    "\n\n".join(self.description) if self.description
+                    else "`No description provided.`"
+                )
                 + f"\n{U.draw_line(extra=33)}"
             ),
-            thumbnail_url=self._details.logo_url if self._details.logo_url else None,
+            thumbnail_url=self.logo_url,
             fields=[
                 self._authorized_users_field(),
                 self._venue_hours_field(),
                 self._accepting_field(),
                 self._venue_location_field(),
                 self._ataglance_field(),
-                self._urls_field(),
-                self._sponsored_positions_field(),
+                self._urls_status_field(),
+                self._positions_field(),
             ]
         )
     
 ################################################################################
     def _authorized_users_field(self, inline: bool = False) -> EmbedField:
-        
-        owner_value = (
-            ("\n".join([f"• {user.mention}" for user in self._owners]))
-            if self._owners
-            else "`No owners.`"
-        )
+
         auth_user_value = (
             ("\n".join([f"• {user.mention}" for user in self._users]))
             if self._users
-            else "`No authorized users.`"
+            else "`No Users Specified`"
         )
         
         return EmbedField(
-            name="__Owners__",
+            name="__Owners/Managers__",
             value=(
-                f"{owner_value}\n\n"
-                f"__**Authorized Users**__\n{auth_user_value}"
-            ) + "\n" + U.draw_line(extra=15),
+                f"{auth_user_value}\n"
+                + U.draw_line(extra=15)
+            ),
             inline=inline,
         )
     
@@ -304,20 +410,20 @@ class Venue:
         
         return EmbedField(
             name="__Location__",
-            value=self._details.location.format() + "\n" + U.draw_line(extra=15),
+            value=f"`{self._location.format()}`\n{U.draw_line(extra=15)}",
             inline=False,
         )
     
 ################################################################################
     def _venue_hours_field(self) -> EmbedField:
         
-        value = self._details.hours.format()
-        if not value.endswith("\n"):
-            value += "\n"
+        value = "`Not Implemented Yet`"
+        if self.schedule:
+            value = "* " + "\n* ".join([h.format() for h in self.schedule])
         
         return EmbedField(
             name="__Open Hours__",
-            value=value + U.draw_line(extra=15),
+            value=value + f"\n{U.draw_line(extra=15)}",
             inline=True,
         )
 
@@ -326,7 +432,7 @@ class Venue:
         
         return EmbedField(
             name=f"{BotEmojis.Eyes} __At a Glance__ {BotEmojis.Eyes}",
-            value=self._details.aag.compile(),
+            value=self._aag.compile(),
             inline=True,
         )
     
@@ -334,38 +440,41 @@ class Venue:
     def _accepting_field(self) -> EmbedField:
         
         return EmbedField(
-            name="__Accepting Internships__",
+            name="__Accepting Applications__",
             value=(
-                f"{BotEmojis.Check}" if self._details.accepting else f"{BotEmojis.Cross}"
+                f"{BotEmojis.Check}" if self.hiring else f"{BotEmojis.Cross}"
             ),
             inline=True,
         )
     
 ################################################################################
-    def _sponsored_positions_field(self) -> EmbedField:
-        
-        if self.accepting_interns:
-            value = (
-                (", ".join([f"`{pos.name}`" for pos in self.sponsored_positions]))
-                if self.sponsored_positions
-                else "`No sponsored positions.`"
-            )
+    def _positions_field(self) -> EmbedField:
+
+        if self.hiring:
+            if self.positions:
+                positions_list = [f"`{pos.name}`" for pos in self.positions]
+                positions_formatted = [
+                    ', '.join(positions_list[i:i+5]) 
+                    for i in range(0, len(positions_list), 5)
+                ]
+                value = '\n'.join(positions_formatted)
+            else:
+                value = "`No sponsored positions.`"
         else:
-            value = "`Not accepting internships.`"
+            value = "`Not accepting applications at this time`"
         
         return EmbedField(
-            name="__Sponsored Positions__",
+            name="__We Employ the Following Jobs__",
             value=value + "\n" + U.draw_line(extra=15),
             inline=False,
         )
     
 ################################################################################
-    def _urls_field(self, post: bool = False) -> EmbedField:
+    def _urls_status_field(self) -> EmbedField:
         
-        value = (self._details.discord_url or '`No Discord server provided.`') + "\n\n"
-        if self._details.website_url or not post:
-            value += "__**Webpage**__\n"
-            value += (self._details.website_url or '`No webpage provided.`')
+        value = (self.discord_url or '`Not Set`') + "\n\n"
+        value += "__**Webpage**__\n"
+        value += (self.website_url or '`Not Set`')
                 
         return EmbedField(
             name="__Discord Server__",
@@ -374,13 +483,9 @@ class Venue:
         )
 
 ################################################################################
-    def add_user(self, user: User, owner: bool = False) -> None:
-        
-        if owner:
-            self._owners.append(user)
-        else:
-            self._users.append(user)
-            
+    def add_user(self, user: User) -> None:
+
+        self._users.append(user)
         self.update()
 
 ################################################################################
@@ -394,249 +499,204 @@ class Venue:
         self.bot.database.delete.venue(self)
         
 ################################################################################
-    async def set_name(self, interaction: Interaction) -> None:
+    def update_from_xiv_venue(self, interaction: Interaction, venue: XIVVenue) -> None:
 
-        await self._details.set_name(interaction)
+        self._name: str = venue.name
+        self._description: List[str] = venue.description.copy() if venue.description else []
+
+        self._mare_id: Optional[str] = venue.mare_id
+        self._mare_pass: Optional[str] = venue.mare_pass
+        self._hiring: bool = venue.hiring
+
+        self._location.update_from_xiv_venue(venue.location)
+        self._aag.update_from_xiv_venue(venue)
+        self._urls.update_from_xiv_venue(venue)
+
+        managers = venue.managers.copy()
+        if interaction.user not in managers:
+            managers.append(interaction.user)
+        self._users: List[User] = managers
+        
+        for s in self._schedule:
+            s.delete()
+        self._schedule = [VenueHours.from_xiv_schedule(self, h) for h in venue.schedule]
+        
+        self.update()
+    
+################################################################################
+    async def approve(self, interaction: Interaction) -> None:
+        
+        if self.pending:
+            self.pending = False
+            embed = U.make_embed(
+                title=f"Venue Approved: __{self.name}__",
+                description=(
+                    f"The venue has been approved by {interaction.user.mention}!\n"
+                    "They can now begin accepting applications."
+                )
+            )
+            await interaction.respond(embed=embed, ephemeral=True)
+        
+################################################################################
+    async def set_name(self, interaction: Interaction) -> None:
+        
+        modal = VenueNameModal(self.name)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.name = modal.value
         
 ################################################################################
     async def set_description(self, interaction: Interaction) -> None:
-
-        await self._details.set_description(interaction)
+        
+        modal = VenueDescriptionModal(self.description)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.description = modal.value
         
 ################################################################################
-    async def set_level(self, interaction: Interaction) -> None:
-
-        await self._details.aag.set_level(interaction)
+    async def toggle_hiring(self, interaction: Interaction) -> None:
+        
+        self.hiring = not self.hiring
+        await interaction.respond("** **", delete_after=0.1)
         
 ################################################################################
-    async def toggle_nsfw(self, interaction: Interaction) -> None:
-
-        await self._details.aag.toggle_nsfw(interaction)
+    async def set_positions(self, interaction: Interaction) -> None:
         
-################################################################################
-    async def set_style(self, interaction: Interaction) -> None:
-
-        await self._details.aag.set_style(interaction)
+        prompt = U.make_embed(
+            title="Set Venue Positions",
+            description=(
+                "Please select the positions you currently employ for\n"
+                "from the selector below."
+            )
+        )
         
-################################################################################
-    async def set_size(self, interaction: Interaction) -> None:
-
-        await self._details.aag.set_size(interaction)
+        pos_options = self._mgr.guild.position_manager.select_options()
+        for opt in pos_options:
+            if opt.value in [p.id for p in self.positions]:
+                opt.default = True
+                
+        view = PositionSelectView(interaction.user, pos_options)
         
-################################################################################
-    async def set_location(self, interaction: Interaction) -> None:
-
-        await self._details.location.menu(interaction)
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
         
+        if not view.complete or view.value is False:
+            return
+        
+        self.positions = [
+            self._mgr.guild.position_manager.get_position(p) 
+            for p in view.value
+        ]
+    
 ################################################################################
-    async def set_hours(self, interaction: Interaction) -> None:
-
-        await self._details.hours.set_availability(interaction)
-
+    async def remove_authorized_user(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Remove Authorized User",
+            description=(
+                "Please select the user you would like to remove\n"
+                "from the authorized users list."
+            )
+        )
+        
+        user_options = [
+            SelectOption(label=user.display_name, value=str(user.id)) 
+            for user in self._users if user.id != interaction.user.id
+        ]
+        if not user_options:
+            user_options.append(
+                SelectOption(label="No users to remove", value="-1")
+            )
+        
+        view = RemoveUserView(interaction.user, user_options)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.authorized_users = [
+            u for u in self._users if u.id not in view.value
+        ]
+        
 ################################################################################
     async def set_discord_url(self, interaction: Interaction) -> None:
-            
-        await self._details.set_discord_url(interaction)
+        
+        await self._urls.set_discord_url(interaction)
         
 ################################################################################
     async def set_website_url(self, interaction: Interaction) -> None:
-    
-        await self._details.set_website_url(interaction)
         
-################################################################################
-    def fmt_location(self) -> str:
-        
-        return self._details._location.format()
-
-################################################################################
-    def fmt_hours(self) -> str:
-        
-        return self._details._hours.format()
-
-################################################################################
-    async def toggle_accepting(self, interaction: Interaction) -> None:
-
-        await self._details.toggle_accepting(interaction)
-        
-################################################################################
-    async def post(self, interaction: Interaction, post_channel: Optional[TextChannel]) -> None:
-
-        if not self.post_message and not post_channel:
-            error = VenueChannelNotSetError()
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
-        if self.post_message is None:
-            self.post_message = await post_channel.send(embed=self.compile())
-        else:
-            try:
-                await self.post_message.edit(embed=self.compile())
-            except HTTPException:
-                self.post_message = await post_channel.send(embed=self.compile())
-                
-        confirm = U.make_embed(
-            title="Venue Profile Posted",
-            description=(
-                f"The profile for `{self._details.name}` has been posted/updated!\n\n"
-
-                f"{BotEmojis.ArrowRight}  [Check It Out HERE!]"
-                f"({self.post_message.jump_url})  {BotEmojis.ArrowLeft}\n"
-                f"{U.draw_line(extra=16)}"
-            )
-        
-        )
-        
-        await interaction.respond(embed=confirm)
+        await self._urls.set_website_url(interaction)
         
 ################################################################################
     async def set_logo(self, interaction: Interaction) -> None:
-
-        await self._details.set_logo(interaction)
+        
+        await self._urls.set_logo(interaction)
         
 ################################################################################
-    def compile(self) -> Embed:
+    async def set_rp_level(self, interaction: Interaction) -> None:
         
-        fields = [
-            self._ownership_field(),
-            self._venue_hours_field(),
-            self._accepting_field(),
-            self._venue_location_field(),
-            self._ataglance_field(),
-            self._sponsored_positions_field(),
-        ]
-        
-        if self._details.discord_url or self._details.website_url:
-            fields.insert(5, self._urls_field(post=True))
-
-        return U.make_embed(
-            title=f"__{self._details.name}__",
-            description=(
-                (self._details.description or "`No description provided.`")
-                + f"\n{U.draw_line(extra=33)}"
-            ),
-            thumbnail_url=self._details.logo_url if self._details.logo_url else None,
-            fields=fields
-        )
-    
-################################################################################
-    async def set_sponsored_positions(self, interaction: Interaction) -> None:
-
-        await self._intern_mgr.set_sponsored_positions(interaction)
+        await self._aag.set_level(interaction)
         
 ################################################################################
-    def _ownership_field(self) -> EmbedField:
+    async def toggle_nsfw(self, interaction: Interaction) -> None:
         
-        return EmbedField(
-            name="__Ownership__",
-            value=(
-                ("\n".join([f"• {user.mention}" for user in self._owners]))
-                if self._owners
-                else "`No owners listed.`"
-            ) + "\n" + U.draw_line(extra=15),
-            inline=False,
-        )
-    
+        await self._aag.toggle_nsfw(interaction)
+        
 ################################################################################
-    async def manage_users(self, interaction: Interaction) -> None:
+    async def set_size(self, interaction: Interaction) -> None:
         
-        if len(self.all_authorized_users) == 1 and interaction.user in self.all_authorized_users:
-            error = NoAvailableUsersRemovalError()
-            await interaction.respond(embed=error, ephemeral=True)
-            return
+        await self._aag.set_size(interaction)
         
-        prompt = U.make_embed(
-            title="Remove Owner/Authorized User",
-            description=(
-                "Please select the user you would like to remove from the venue.\n\n"
-                
-                "Please note that attempting to remove an owner will trigger an "
-                "administrative review process."
-            )
-        )
-        view = RemoveUserView(interaction.user, self)
+################################################################################
+    async def set_location(self, interaction: Interaction) -> None:
         
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
+        await self._location.menu(interaction)
         
-        if not view.complete or view.value is False:
-            return
+################################################################################
+    async def _full_schedule(self) -> str:
         
-        user_ids = view.value
-        for user_id in user_ids:
-            user = await self.bot.get_or_fetch_user(user_id)
-            if user is None:
-                continue
+        ret = "* "
+        for day in Weekday:
+            ret += f"{day.proper_name}: "
             
-            if user in self._owners:
-                await self.guild.log.owner_removal_flagged(self, user, interaction.user)
-                continue
-            else:
-                self._users.remove(user)    
+            present = False
+            for s in self.schedule:
+                if s.day == day:
+                    ret += f"{s.open_ts} - {s.close_ts}"
+                    present = True
+                    break
+                    
+            if not present:
+                ret += "`Closed`"
                 
-        confirm = U.make_embed(
-            title="User(s) Removed",
-            description=(
-                f"The selected user(s) have been removed from the venue.\n\n"
-                
-                "If an owner was selected for removal, an administrative review\n"
-                "process has been triggered instead.\n"
-                f"{U.draw_line(extra=20)}"
-            )
-        )
-        
-        await interaction.respond(embed=confirm, ephemeral=True)
-        
-################################################################################
-    def user_select_options(self, user: Optional[User] = None) -> List[SelectOption]:
-
-        ret = []
-        
-        for u in self.all_authorized_users:
-            if user is not None and u.id == user.id:
-                continue
-        
-            ret += [
-                SelectOption(
-                    label=u.name,
-                    value=str(u.id),
-                    description="Owner" if u in self._owners else "Authorized User",
-                )
-            ]
-            
         return ret
-    
-################################################################################
-    def remove_user(self, user: User) -> None:
-        
-        if user in self._owners:
-            self._owners.remove(user)
-        else:
-            self._users.remove(user)
-            
-        self.update()
         
 ################################################################################
-    async def approve(self, interaction: Interaction) -> bool:
-
+    async def set_schedule(self, interaction: Interaction) -> None:
+        
         prompt = U.make_embed(
-            title="Approve Venue",
+            title="Set Venue Schedule",
             description=(
-                "Are you sure you want to approve this venue?\n\n"
+                "The following is your venue's current schedule.\n\n"
                 
-                "Once approved, the venue will be publicly visible and\n"
-                "available for internships."
+                f"{self._full_schedule()}\n\n"
+                
+                f"{U.draw_line(extra=25)}\n"
+                "Please select the day you would like to edit."
             )
         )
-        view = ConfirmCancelView(interaction.user)
-        
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
-        
-        if not view.complete or view.value is False:
-            return False
-        
-        self.pending = False
-        
-        return True
         
 ################################################################################

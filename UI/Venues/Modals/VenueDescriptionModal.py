@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import List
 
 from discord import Interaction, InputTextStyle
 from discord.ui import InputText
@@ -13,7 +13,7 @@ __all__ = ("VenueDescriptionModal",)
 ################################################################################
 class VenueDescriptionModal(FroggeModal):
     
-    def __init__(self, cur_val: Optional[str]):
+    def __init__(self, cur_val: List[str]):
         
         super().__init__(title="Edit Venue Description")
         
@@ -26,19 +26,26 @@ class VenueDescriptionModal(FroggeModal):
                 required=False
             )
         )
+        
+        value = "\n".join(cur_val) if cur_val else None
+        if value is not None and len(value) > 499:
+            value = value[:499]
+            
         self.add_item(
             InputText(
                 style=InputTextStyle.multiline,
                 label="Name",
                 placeholder="eg. 'The perfect place to lie back and relax with a good book.'",
-                value=cur_val,
+                value=value,
                 max_length=500,
                 required=False
             )
         )
         
     async def callback(self, interaction: Interaction):
-        self.value = self.children[1].value if self.children[1].value else None
+        self.value = [
+            i for i in self.children[1].value.split("\n") if i
+        ] if self.children[1].value else []
         self.complete = True
         
         await interaction.edit()

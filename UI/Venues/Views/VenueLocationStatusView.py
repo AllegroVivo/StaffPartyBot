@@ -25,9 +25,13 @@ class VenueLocationStatusView(FroggeView):
 
         button_list = [
             DataCenterButton(self.location.data_center),
-            WorldButton(self.location.world, self.location.data_center is None),
+            WorldButton(self.location.world),
             ZoneButton(self.location.zone),
-            WardPlotButton(self.location.plot),
+            SubdivisionToggleButton(self.location.subdivision),
+            WardButton(self.location.ward),
+            PlotButton(self.location.plot),
+            ApartmentButton(self.location.apartment),
+            RoomButton(self.location.room),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -50,8 +54,6 @@ class DataCenterButton(FroggeButton):
         await self.view.location.set_data_center(interaction)
         self.set_style(self.view.location.data_center)
 
-        self.view.children[1].disabled = self.view.location.data_center is None
-
         await edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
@@ -59,11 +61,11 @@ class DataCenterButton(FroggeButton):
 ################################################################################
 class WorldButton(FroggeButton):
 
-    def __init__(self, world: Optional[GameWorld], disabled: bool) -> None:
+    def __init__(self, world: Optional[GameWorld]) -> None:
 
         super().__init__(
             label="World",
-            disabled=disabled,
+            disabled=False,
             row=0
         )
         
@@ -99,24 +101,112 @@ class ZoneButton(FroggeButton):
         )
 
 ################################################################################
-class WardPlotButton(FroggeButton):
+class SubdivisionToggleButton(FroggeButton):
+    
+    def __init__(self, subdiv: bool) -> None:
+        
+        super().__init__(
+            label="Subdivision",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(subdiv)
+        
+    def set_style(self, attribute: Optional[Any]) -> None:
+        
+        self.style = ButtonStyle.success if attribute else ButtonStyle.danger
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.location.toggle_subdivision(interaction)
+        self.set_style(self.view.location.subdivision)
+
+        await edit_message_helper(
+            interaction, embed=self.view.location.status(), view=self.view
+        )
+        
+################################################################################
+class WardButton(FroggeButton):
+
+    def __init__(self, ward: Optional[int]) -> None:
+
+        super().__init__(
+            disabled=False,
+            label="Ward",
+            row=1
+        )
+        
+        self.set_style(ward)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.location.set_location_element(interaction, "Ward")
+        self.set_style(self.view.location.ward)
+
+        await edit_message_helper(
+            interaction, embed=self.view.location.status(), view=self.view
+        )
+
+################################################################################
+class PlotButton(FroggeButton):
 
     def __init__(self, plot: Optional[int]) -> None:
 
         super().__init__(
             disabled=False,
-            label="Ward/Plot",
-            row=0
+            label="Plot",
+            row=1
         )
         
         self.set_style(plot)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.location.set_ward_and_plot(interaction)
+        await self.view.location.set_location_element(interaction, "Plot")
         self.set_style(self.view.location.plot)
 
         await edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
+################################################################################
+class ApartmentButton(FroggeButton):
+
+    def __init__(self, apt: Optional[int]) -> None:
+
+        super().__init__(
+            disabled=False,
+            label="Apartment",
+            row=1
+        )
+        
+        self.set_style(apt)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.location.set_location_element(interaction, "Apartment")
+        self.set_style(self.view.location.apartment)
+
+        await edit_message_helper(
+            interaction, embed=self.view.location.status(), view=self.view
+        )
+        
+################################################################################
+class RoomButton(FroggeButton):
+
+    def __init__(self, room: Optional[int]) -> None:
+
+        super().__init__(
+            disabled=False,
+            label="Room",
+            row=1
+        )
+        
+        self.set_style(room)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.location.set_location_element(interaction, "Room")
+        self.set_style(self.view.location.room)
+
+        await edit_message_helper(
+            interaction, embed=self.view.location.status(), view=self.view
+        )
+        
 ################################################################################

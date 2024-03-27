@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Any, Dict
 
 from discord import Guild, User, Interaction
 
-from Classes.Classifieds.JobPostingManager import JobPostingManager
+from Classes.Jobs.JobPostingManager import JobPostingManager
 from Classes.Logger import Logger
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
-from Utilities import Utilities as U
 from UI.Guild import ReportMenuView
+from Utilities import Utilities as U
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -46,7 +46,7 @@ class GuildData:
         self._training_mgr: TrainingManager = TrainingManager(self)
         self._profile_mgr: ProfileManager = ProfileManager(self)
         self._venue_mgr: VenueManager = VenueManager(self)
-        # self._job_mgr: JobPostingManager = JobPostingManager(self)
+        self._job_mgr: JobPostingManager = JobPostingManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
@@ -57,6 +57,7 @@ class GuildData:
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
         await self._venue_mgr._load_all(data)
+        await self._job_mgr._load_all(data)
         
 ################################################################################
     @property
@@ -105,6 +106,12 @@ class GuildData:
     def venue_manager(self) -> VenueManager:
         
         return self._venue_mgr
+    
+################################################################################
+    @property
+    def job_posting_manager(self) -> JobPostingManager:
+        
+        return self._job_mgr
     
 ################################################################################
     def get_profile(self, user: User) -> Profile:

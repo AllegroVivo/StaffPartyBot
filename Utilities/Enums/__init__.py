@@ -20,6 +20,5 @@ from .RPLevel import RPLevel
 from .Timezone import Timezone
 from .TrainingLevel import TrainingLevel
 from .VenueSize import VenueSize
-from .VenueStyle import VenueStyle
 from .Weekday import Weekday
 ################################################################################

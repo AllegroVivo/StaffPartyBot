@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, TypeVar, Any, Tuple, List
+import pytz
+from datetime import time
+from typing import TYPE_CHECKING, TypeVar, Any, Tuple, Type
 
-from discord import Interaction
-
-from UI.Training import WeekdaySelectView, TimeSelectView
 from Utilities import Utilities as U, Weekday
-from .VenueAvailability import VenueAvailability
 
 if TYPE_CHECKING:
-    from Classes import VenueDetails
+    from Classes import Venue, XIVScheduleComponent
 ################################################################################
 
 __all__ = ("VenueHours",)
@@ -21,110 +19,97 @@ class VenueHours:
 
     __slots__ = (
         "_parent",
-        "_availability",
+        "_day",
+        "_open",
+        "_close",
     )
 
 ################################################################################
-    def __init__(self, parent: VenueDetails, availability: List[VenueAvailability] = None) -> None:
+    def __init__(self, parent: Venue, **kwargs) -> None:
         
-        self._parent: VenueDetails = parent
-        self._availability: List[VenueAvailability] = availability or []
+        self._parent: Venue = parent
         
+        self._day: Weekday = kwargs.pop("day")
+        self._open: time = kwargs.pop("open")
+        self._close: time = kwargs.pop("close")
+    
 ################################################################################
     @classmethod
-    def load(cls: Type[VH], parent: VenueDetails, data: List[Tuple[Any, ...]]) -> VH:
+    def new(cls: Type[VH], parent: Venue, day: Weekday, open_time: time, close_time: time) -> VH:
         
-        self = cls.__new__(cls)
+        parent.bot.database.insert.venue_hours(parent, day, open_time, close_time)
+        return cls(parent, day=day, open=open_time, close=close_time)
+    
+################################################################################
+    @classmethod
+    def load(cls: Type[VH], parent: Venue, data: Tuple[Any, ...]) -> VH:
         
-        self._parent = parent
-        self._availability = [VenueAvailability.load(self, i) for i in data]
+        return cls(
+            parent,
+            day=Weekday(data[2]),
+            open=data[3],
+            close=data[4]
+        )
+    
+################################################################################
+    @classmethod
+    def from_xiv_schedule(cls: Type[VH], parent: Venue, xiv: XIVScheduleComponent) -> VH:
+
+        day = Weekday(xiv.day)
+        open_time = time(xiv.start.hour, xiv.start.minute, tzinfo=pytz.timezone(xiv.start.timezone))
+        close_time = time(xiv.end.hour, xiv.end.minute, tzinfo=pytz.timezone(xiv.end.timezone))
         
-        return self
+        return VenueHours.new(parent, day, open_time, close_time)
+    
+################################################################################
+    @property
+    def venue_id(self) -> str:
         
+        return self._parent.id
+    
+################################################################################
+    @property
+    def day(self) -> Weekday:
+        
+        return self._day
+    
+################################################################################    
+    @property
+    def open_time(self) -> time:
+        
+        return self._open
+    
+################################################################################    
+    @property
+    def close_time(self) -> time:
+        
+        return self._close
+    
+################################################################################
+    @property
+    def open_ts(self) -> str: 
+        
+        return U.format_dt(U.time_to_datetime(self.open_time), "t")
+    
+################################################################################
+    @property
+    def close_ts(self) -> str:
+        
+        return U.format_dt(U.time_to_datetime(self.close_time), "t")
+    
+################################################################################
+    def update(self) -> None:
+        
+        self._parent.bot.database.update.venue_hours(self)
+        
+################################################################################
+    def delete(self) -> None:
+        
+        self._parent.bot.database.delete.venue_hours(self)
+
 ################################################################################
     def format(self) -> str:
-
-        if not self._availability:
-            return "`Not Set`"
-
-        ret = ""
-
-        for i in [w for w in Weekday if w.value != 0]:
-            if i.value not in [a.day.value for a in self._availability]:
-                ret += f"{i.proper_name}: `Not Open`\n"
-            else:
-                a = [a for a in self._availability if a.day == i][0]
-                ret += (
-                    f"{a.day.proper_name}: "
-                    f"{a.start_timestamp} - {a.end_timestamp}\n"
-                )
-
-        return ret
-
-################################################################################
-    async def set_availability(self, interaction: Interaction) -> None:
-
-        status = U.make_embed(
-            title="Set Availability",
-            description=(
-                "Please select the appropriate day from the initial\n"
-                "selector, followed by your available time frame.\n\n"
-
-                "Please note, you can set your timezone\n"
-                "by using the `/training config` command.\n"
-                f"{U.draw_line(extra=25)}"
-            )
-        )
-        view = WeekdaySelectView(interaction.user)
-
-        await interaction.respond(embed=status, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            return
-
-        weekday = view.value
-
-        prompt = U.make_embed(
-            title="Set Availability Start",
-            description=(
-                f"Please select the beginning of your availability for `{weekday.proper_name}`..."
-            )
-        )
-        view = TimeSelectView(interaction.user)
-
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            return
-
-        start_time = view.value if view.value != -1 else None
-        end_time = None
-
-        if start_time is not None:
-            prompt = U.make_embed(
-                title="Set Availability End",
-                description=(
-                    f"Please select the end of your availability for `{weekday.proper_name}`..."
-                )
-            )
-            view = TimeSelectView(interaction.user)
-
-            await interaction.respond(embed=prompt, view=view)
-            await view.wait()
-
-            if not view.complete or view.value is False:
-                return
-
-            end_time = view.value
-
-        for i, a in enumerate(self._availability):
-            if a.day == weekday:
-                self._availability.pop(i).delete()
-
-        if start_time is not None:
-            availability = VenueAvailability.new(self._parent, weekday, start_time, end_time)
-            self._availability.append(availability)
+        
+        return f"{self.day.proper_name}: {self.open_ts} - {self.close_ts}"
 
 ################################################################################

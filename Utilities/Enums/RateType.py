@@ -6,11 +6,9 @@ from ._Enum import FroggeEnum
 ################################################################################
 class RateType(FroggeEnum):
 
+    Null = 0
     PerHour = 1
     PerShift = 2
-    PerRep = 3
-    PerNight = 4
-    Once = 5
 
 ################################################################################
     @property
@@ -20,10 +18,6 @@ class RateType(FroggeEnum):
             return "Per Hour"
         elif self.value == 2:
             return "Per Shift"
-        elif self.value == 3:
-            return "Per Repetition"
-        elif self.value == 4:
-            return "Per Night"
 
         return self.name
     
@@ -31,7 +25,7 @@ class RateType(FroggeEnum):
     @staticmethod
     def select_options() -> List[SelectOption]:
         
-        return [r.select_option for r in RateType]
+        return [r.select_option for r in RateType if r != RateType.Null]
     
 ################################################################################
     

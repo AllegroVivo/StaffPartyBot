@@ -7,10 +7,10 @@ from discord.ui import Button
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper, RPLevel, VenueStyle, VenueSize
+from Utilities import edit_message_helper, RPLevel, VenueSize
 
 if TYPE_CHECKING:
-    from Classes import Venue, Position
+    from Classes import Venue, Position, VenueHours, VenueTag
 ################################################################################
 
 __all__ = ("VenueStatusView",)
@@ -27,18 +27,18 @@ class VenueStatusView(FroggeView):
         button_list = [
             EditNameButton(),
             EditDescriptionButton(self.venue.description),
-            OpenHoursButton(self.venue.fmt_hours()),
-            LocationButton(self.venue.fmt_location()),
+            SetScheduleButton(self.venue.schedule),
+            LocationButton(self.venue.location.format()),
             DiscordURLButton(self.venue.discord_url),
-            ToggleAcceptingButton(self.venue.accepting_interns),
+            ToggleHiringButton(self.venue.hiring),
             RPLevelButton(self.venue.rp_level),
             NSFWToggleButton(self.venue.nsfw),
-            VenueStyleButton(self.venue.style),
+            VenueTagsButton(self.venue.tags),
             VenueSizeButton(self.venue.size),
             WebsiteURLButton(self.venue.website_url),
             LogoButton(self.venue.logo_url),
-            SponsorPositionsButton(self.venue.sponsored_positions),
-            OwnerUsersButton(self.venue),
+            SetPositionsButton(self.venue.positions),
+            RemoveManagerButton(self.venue),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -63,7 +63,7 @@ class EditNameButton(FroggeButton):
 ################################################################################
 class EditDescriptionButton(FroggeButton):
 
-    def __init__(self, desc: Optional[str]) -> None:
+    def __init__(self, desc: List[str]) -> None:
 
         super().__init__(
             label="Description",
@@ -93,7 +93,7 @@ class RPLevelButton(FroggeButton):
         self.set_style(level)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.set_level(interaction)
+        await self.view.venue.set_rp_level(interaction)
         self.set_style(self.view.venue.rp_level)
         
         await edit_message_helper(
@@ -125,21 +125,21 @@ class NSFWToggleButton(FroggeButton):
         )
 
 ################################################################################
-class VenueStyleButton(FroggeButton):
+class VenueTagsButton(FroggeButton):
     
-    def __init__(self, style: Optional[VenueStyle]) -> None:
+    def __init__(self, tags: List[VenueTag]) -> None:
         
         super().__init__(
-            label="Venue Style",
+            label="Venue Tags",
             disabled=False,
             row=1
         )
         
-        self.set_style(style)
+        self.set_style(tags)
     
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.set_style(interaction)       
-        self.set_style(self.view.venue.style)
+        await self.view.venue.set_tags(interaction)       
+        self.set_style(self.view.venue.tags)
         
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
@@ -167,20 +167,21 @@ class VenueSizeButton(FroggeButton):
         )
 
 ################################################################################
-class OpenHoursButton(FroggeButton):
+class SetScheduleButton(FroggeButton):
 
-    def __init__(self, hours: str) -> None:
+    def __init__(self, hours: List[VenueHours]) -> None:
 
         super().__init__(
-            label="Open Hours",
-            row=0
+            label="Schedule",
+            row=0,
+            disabled=False
         )
         
         self.set_style(hours)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.set_hours(interaction)
-        self.set_style(self.view.venue.fmt_hours())
+        await self.view.venue.set_schedule(interaction)
+        self.set_style(self.view.venue.schedule)
         
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
@@ -193,40 +194,41 @@ class LocationButton(FroggeButton):
 
         super().__init__(
             label="Location",
-            row=0
+            row=0,
+            disabled=False
         )
         
         self.set_style(loc)
 
     async def callback(self, interaction: Interaction) -> None:
         await self.view.venue.set_location(interaction)
+        self.set_style(self.view.venue.location.format())
+        
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
 
 ################################################################################
-class ToggleAcceptingButton(Button):
+class ToggleHiringButton(Button):
     
     def __init__(self, accepting: bool) -> None:
         
         super().__init__(
             style=ButtonStyle.success if accepting else ButtonStyle.danger,
-            label="Internships",
+            label="Hiring",
             disabled=False,
             row=2,
             emoji=BotEmojis.Check if accepting else BotEmojis.ThumbsDown
         )
         
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.toggle_accepting(interaction)
+        await self.view.venue.toggle_hiring(interaction)
         
         self.style = (
-            ButtonStyle.success if self.view.venue.accepting_interns 
-            else ButtonStyle.danger
+            ButtonStyle.success if self.view.venue.hiring else ButtonStyle.danger
         )
         self.emoji = (
-            BotEmojis.Check if self.view.venue.accepting_interns 
-            else BotEmojis.ThumbsDown
+            BotEmojis.Check if self.view.venue.hiring else BotEmojis.ThumbsDown
         )
         
         await edit_message_helper(
@@ -255,12 +257,12 @@ class LogoButton(FroggeButton):
         )
         
 ################################################################################
-class SponsorPositionsButton(FroggeButton):
+class SetPositionsButton(FroggeButton):
 
     def __init__(self, positions: List[Position]) -> None:
 
         super().__init__(
-            label="Sponsor Position(s)",
+            label="Employed Jobs",
             row=2,
             disabled=False
         )
@@ -268,8 +270,8 @@ class SponsorPositionsButton(FroggeButton):
         self.set_style(positions)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.set_sponsored_positions(interaction)
-        self.set_style(self.view.venue.sponsored_positions)
+        await self.view.venue.set_positions(interaction)
+        self.set_style(self.view.venue.positions)
         
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
@@ -318,21 +320,21 @@ class WebsiteURLButton(FroggeButton):
         )
         
 ################################################################################
-class OwnerUsersButton(FroggeButton):
+class RemoveManagerButton(FroggeButton):
 
     def __init__(self, venue: Venue) -> None:
 
         super().__init__(
-            label="Remove Owner/User",
+            label="Remove Manager",
             row=2,
             disabled=False
         )
         
-        self.set_style(venue.owners + venue.authorized_users)
+        self.set_style(venue.authorized_users)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.manage_users(interaction)
-        self.set_style(self.view.venue.owners + self.view.venue.authorized_users)
+        await self.view.venue.remove_authorized_user(interaction)
+        self.set_style(self.view.venue.authorized_users)
         
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view

@@ -11,12 +11,12 @@ class DatabaseBuilder(DBWorkerBranch):
 
     def build_all(self) -> None:
 
-        self._build_bot_tables()
-        self._build_position_tables()
-        self._build_training_tables()
-        self._build_profile_tables()
-        self._build_venue_tables()
-        self._augment_tables()
+        # self._build_bot_tables()
+        # self._build_position_tables()
+        # self._build_training_tables()
+        # self._build_profile_tables()
+        # self._build_venue_tables()
+        self._build_views()
         self._build_initial_records()
         
         print("Database lookin' good!")
@@ -244,15 +244,7 @@ class DatabaseBuilder(DBWorkerBranch):
         )
     
 ################################################################################
-    def _augment_tables(self) -> None:
-    
-        self.execute(
-            "ALTER TABLE bot_config "
-            "ADD COLUMN IF NOT EXISTS venue_post_channel BIGINT;"
-        )
-    
-################################################################################
-    def _refresh_profile_view(self) -> None:
+    def _build_views(self) -> None:
 
         self.execute(
             "CREATE OR REPLACE VIEW profile_master "
@@ -292,9 +284,6 @@ class DatabaseBuilder(DBWorkerBranch):
             "JOIN images i on p._id = i._id;"
         )
         
-################################################################################
-    def _refresh_tuser_view(self) -> None:
-        
         self.execute(
             "CREATE OR REPLACE VIEW tuser_master "
             "AS "
@@ -309,6 +298,42 @@ class DatabaseBuilder(DBWorkerBranch):
             "FROM tusers t "
             "JOIN tuser_config c ON t.user_id = c.user_id "
             "JOIN tuser_details d ON t.user_id = d.user_id;"
+        )
+        
+        self.execute(
+            "CREATE OR REPLACE VIEW venue_master "
+            "AS "
+            "SELECT v._id," 
+            "v.guild_id,"
+            "v.users,"
+            "v.positions,"
+            "v.pending,"
+            "v.post_url,"
+            "v.name,"
+            "v.description,"
+            "v.hiring,"
+            "v.mare_id,"
+            "v.mare_pass,"
+            "l.data_center,"
+            "l.world,"
+            "l.zone,"
+            "l.ward,"
+            "l.plot,"
+            "l.apartment,"
+            "l.room,"
+            "l.subdivision,"
+            "a.level,"
+            "a.nsfw,"
+            "a.size,"
+            "a.tags,"
+            "u.discord_url,"
+            "u.website_url,"
+            "u.banner_url,"
+            "u.logo_url "
+            "FROM venues v "
+            "JOIN venue_locations l ON v._id = l.venue_id "
+            "JOIN venue_aag a ON v._id = a.venue_id "
+            "JOIN venue_urls u ON v._id = u.venue_id;"
         )
     
 ################################################################################

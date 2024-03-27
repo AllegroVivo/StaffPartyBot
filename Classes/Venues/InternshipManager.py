@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, Type, TypeVar, Optional, Any, Tuple
 from discord import Interaction
 from .Internship import Internship
 from Utilities import Utilities as U
-from UI.Venues.Views import SponsoredPositionSelectView
+from UI.Venues.Views import PositionSelectView
 
 if TYPE_CHECKING:
     from Classes import Venue, Position
@@ -70,7 +70,7 @@ class InternshipManager:
             title="Sponsor Positions",
             description="Select the positions you want to sponsor...",
         )
-        view = SponsoredPositionSelectView(interaction.user, options)
+        view = PositionSelectView(interaction.user, options)
         
         await interaction.respond(embed=prompt, view=view)
         await view.wait()

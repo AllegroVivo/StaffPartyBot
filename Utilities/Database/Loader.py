@@ -29,10 +29,9 @@ class DatabaseLoader(DBWorkerBranch):
             "profiles" : self._load_profiles(),
             "additional_images" : self._load_additional_images(),
             "venues" : self._load_venues(),
-            "venue_details" : self._load_venue_details(),
-            "venue_locations" : self._load_venue_locations(),
             "venue_hours" : self._load_venue_hours(),
-            "venue_aag" : self._load_venue_ataglance(),
+            "job_postings" : self._load_job_postings(),
+            "hours" : self._load_job_hours(),
         }
 
 ################################################################################
@@ -98,19 +97,7 @@ class DatabaseLoader(DBWorkerBranch):
 ################################################################################
     def _load_venues(self) -> Tuple[Tuple[Any, ...], ...]:
 
-        self.execute("SELECT * FROM venues;")
-        return self.fetchall()
-    
-################################################################################
-    def _load_venue_details(self) -> Tuple[Tuple[Any, ...], ...]:
-
-        self.execute("SELECT * FROM venue_details;")
-        return self.fetchall()
-    
-################################################################################
-    def _load_venue_locations(self) -> Tuple[Tuple[Any, ...], ...]:
-
-        self.execute("SELECT * FROM venue_locations;")
+        self.execute("SELECT * FROM venue_master;")
         return self.fetchall()
     
 ################################################################################
@@ -120,10 +107,15 @@ class DatabaseLoader(DBWorkerBranch):
         return self.fetchall()
     
 ################################################################################
-    def _load_venue_ataglance(self) -> Tuple[Tuple[Any, ...], ...]:
+    def _load_job_postings(self) -> Tuple[Tuple[Any, ...], ...]:
 
-        self.execute("SELECT * FROM venue_aag;")
+        self.execute("SELECT * FROM job_postings;")
         return self.fetchall()
     
 ################################################################################
+    def _load_job_hours(self) -> Tuple[Tuple[Any, ...], ...]:
+
+        self.execute("SELECT * FROM job_hours;")
+        return self.fetchall()
     
+################################################################################

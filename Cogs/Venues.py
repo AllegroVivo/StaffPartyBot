@@ -143,6 +143,25 @@ class Venues(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.add_user(ctx.interaction, venue, user, _type)
         
+################################################################################
+    @venues.command(
+        name="import",
+        description="Import a venue from the XIV Venues API."
+    )
+    async def venue_import(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the venue to import.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.import_venue(ctx.interaction, name)
+        
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:
 

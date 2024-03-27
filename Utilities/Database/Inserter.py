@@ -7,7 +7,7 @@ from Utilities import TrainingLevel, Weekday
 from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
-    from Classes import Position, VenueDetails
+    from Classes import *
 ################################################################################
 
 __all__ = ("DatabaseInserter",)
@@ -77,7 +77,8 @@ class DatabaseInserter(DBWorkerBranch):
 
 ################################################################################
     def _add_availability(
-        self, user_id: int,
+        self, 
+        user_id: int,
         guild_id: int, 
         day: Weekday,
         start: time, 
@@ -153,29 +154,28 @@ class DatabaseInserter(DBWorkerBranch):
         new_id = self.generate_id()
         
         self.execute(
-            "INSERT INTO venues (_id, guild_id) VALUES (%s, %s);",
-            new_id, guild_id
-        )
-        self.execute(
-            "INSERT INTO venue_details (venue_id, guild_id, name) "
-            "VALUES (%s, %s, %s);",
+            "INSERT INTO venues (_id, guild_id, name) VALUES (%s, %s, %s);",
             new_id, guild_id, name
         )
         self.execute(
-            "INSERT INTO venue_locations (venue_id, guild_id) VALUES (%s, %s);",
-            new_id, guild_id
+            "INSERT INTO venue_urls (venue_id) VALUES (%s);",
+            new_id
         )
         self.execute(
-            "INSERT INTO venue_aag (venue_id, guild_id) VALUES (%s, %s);",
-            new_id, guild_id
+            "INSERT INTO venue_locations (venue_id) VALUES (%s);",
+            new_id
+        )
+        self.execute(
+            "INSERT INTO venue_aag (venue_id) VALUES (%s);",
+            new_id
         )
         
         return new_id
     
 ################################################################################
-    def _add_venue_availability(
+    def _add_venue_hours(
         self, 
-        details: VenueDetails,
+        venue: Venue,
         day: Weekday, 
         start: time, 
         end: time
@@ -184,9 +184,38 @@ class DatabaseInserter(DBWorkerBranch):
         self.execute(
             "INSERT INTO venue_hours (venue_id, guild_id, weekday, "
             "open_time, close_time) VALUES (%s, %s, %s, %s, %s);",
-            details.venue_id, details.guild_id, day.value, start, end
+            venue.id, venue.guild_id, day.value, start, end
         )
         
+################################################################################
+    def _add_job_hours(
+        self, 
+        job_id: str,
+        guild_id: int,
+        day: Weekday,
+        start: time,
+        end: time
+    ) -> None:
+
+        self.execute(
+            "INSERT INTO job_hours (job_id, guild_id, day, start_time, end_time) "
+            "VALUES (%s, %s, %s, %s, %s);",
+            job_id, guild_id, day.value, start, end
+        )
+
+################################################################################
+    def _add_job_posting(self, guild_id: int, venue_id: str, user_id: int) -> str:
+        
+        new_id = self.generate_id()[:10]
+        
+        self.execute(
+            "INSERT INTO job_postings (_id, guild_id, venue_id, user_id) "
+            "VALUES (%s, %s, %s, %s);",
+            new_id, guild_id, venue_id, user_id
+        )
+        
+        return new_id
+    
 ################################################################################
 
     position            = _add_position
@@ -199,7 +228,9 @@ class DatabaseInserter(DBWorkerBranch):
     profile             = _add_profile
     addl_image          = _add_additional_image
     venue               = _add_venue
-    venue_availability  = _add_venue_availability
+    venue_hours         = _add_venue_hours
+    job_hours           = _add_job_hours
+    job_posting         = _add_job_posting
     
 ################################################################################
     

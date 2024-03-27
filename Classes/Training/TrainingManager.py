@@ -15,8 +15,7 @@ from Utilities import (
     NotRegisteredError,
     RPLevel,
     NSFWPreference,
-    VenueSize,
-    VenueStyle,
+    VenueSize
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
@@ -372,7 +371,7 @@ class TrainingManager:
         rp_level: RPLevel, 
         nsfw_pref: NSFWPreference,
         size: VenueSize, 
-        styles: List[VenueStyle]
+        styles: List[VenueTag]
     ) -> List[Venue]:
         
         ret = {}

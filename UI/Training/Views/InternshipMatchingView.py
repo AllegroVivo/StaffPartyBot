@@ -6,7 +6,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import RPLevel, NSFWPreference, VenueSize, VenueStyle
+from Utilities import RPLevel, NSFWPreference, VenueSize
 
 if TYPE_CHECKING:
     pass
@@ -100,7 +100,7 @@ class VenueTagSelect(Select):
 
         super().__init__(
             placeholder="Select up to three venue style tags...",
-            options=VenueStyle.select_options(),
+            options=VenueTag.select_options(),
             min_values=1,
             max_values=3,
             disabled=False,
@@ -108,7 +108,7 @@ class VenueTagSelect(Select):
         )
 
     async def callback(self, interaction: Interaction):
-        self.view.value.append([VenueStyle(int(v)) for v in self.values])
+        self.view.value.append([VenueTag(int(v)) for v in self.values])
         self.view.complete = True
 
         await interaction.edit()

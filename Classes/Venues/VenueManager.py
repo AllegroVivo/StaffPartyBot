@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Any, Dict, Optional
 
-from discord import Interaction, User, TextChannel
+from discord import Interaction, User, TextChannel, SelectOption
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
@@ -15,11 +15,13 @@ from Utilities import (
     TooManyUsersError,
     VenuePendingApprovalError,
     CannotRemoveUserError,
+    VenueImportNotFoundError,
+    VenueImportError,
 )
 from .Venue import Venue
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot
+    from Classes import GuildData, TrainingBot, XIVVenue
 ################################################################################
 
 __all__ = ("VenueManager",)
@@ -31,7 +33,6 @@ class VenueManager:
         "_guild",
         "_venues",
         "_channel",
-        "_pending",
     )
 
 ################################################################################
@@ -51,9 +52,16 @@ class VenueManager:
 
         self._channel = venue_channel
 
-        for _, venue_data in data["venues"].items():
-            self._venues.append(await Venue.load(self, venue_data))
+        for vdata in data["venues"]:
+            self._venues.append(await Venue.load(self, vdata))
         
+################################################################################
+    def __getitem__(self, venue_id: str) -> Venue:
+        
+        for venue in self._venues:
+            if venue.id == venue_id:
+                return venue
+    
 ################################################################################
     @property
     def bot(self) -> TrainingBot:
@@ -207,8 +215,7 @@ class VenueManager:
         
         if venue.pending:
             if admin:
-                if not await venue.approve(interaction):
-                    return
+                await venue.approve(interaction)
             else:
                 error = VenuePendingApprovalError(name)
                 await interaction.respond(embed=error, ephemeral=True)
@@ -228,7 +235,7 @@ class VenueManager:
     @staticmethod
     async def authenticate(venue: Venue, user: User, interaction: Interaction) -> bool:
         
-        if user not in venue.owners + venue.authorized_users:
+        if user not in venue.authorized_users:
             error = UnauthorizedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
@@ -508,4 +515,66 @@ class VenueManager:
         await self.guild.log.venue_removed(venue)
     
 ################################################################################
+    async def import_venue(self, interaction: Interaction, name: str) -> None:
+        
+        prompt = U.make_embed(
+            title="Confirm Venue Import",
+            description=(
+                "The following venue information will be imported from your "
+                "XIV Venues listing into this server, so long as your Discord "
+                "user is listed as a manager for the venue.\n\n"
+
+                "* Manager List\n"
+                "* Banner Image\n"
+                "* Description\n"
+                "* Location\n"
+                "* Website\n"
+                "* Discord\n"
+                "* Hiring Status\n"
+                "* SFW Status\n"
+                "* Tags\n"
+                "* Mare ID\n"
+                "* Mare Password\n"
+                "* Normal Operating Schedule\n"
+                "*(Overrides will not be imported.)*\n"
+                f"{U.draw_line(extra=25)}\n"
+                "Are you sure you want to import venue `{name}`?"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        msg = await interaction.followup.send("Please wait...")
+        
+        results = [
+            v for v in
+            await self.bot.veni_client.get_venues_by_manager(interaction.user.id)
+            if v.name.lower() == name.lower()
+        ]
+        
+        await msg.delete()
+            
+        if len(results) == 0:
+            error = VenueImportNotFoundError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if len(results) > 1:
+            error = VenueImportError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        xiv_venue = results[0]
+        venue = Venue.new(self, xiv_venue.name)
+        venue.update_from_xiv_venue(interaction, xiv_venue)
+        self._venues.append(venue)
+        
+        print(self._venues)
+        print(self._venues[0].name)
     
+################################################################################

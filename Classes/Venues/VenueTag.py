@@ -1,27 +1,29 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple, Any, List
-
-from .JobPosting import JobPosting
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Classes import GuildData
+    pass
 ################################################################################
 
-__all__ = ("JobPostingManager",)
+__all__ = ("VenueTag",)
 
 ################################################################################
-class JobPostingManager:
-    
+class VenueTag:
+
     __slots__ = (
-        "_guild",
-        "_postings",
+        "_text",
     )
     
 ################################################################################
-    def __init__(self, guild: GuildData):
+    def __init__(self, text: str) -> None:
+
+        self._text: str = text
         
-        self._guild: GuildData = guild
-        self._postings: List[JobPosting] = []
+################################################################################
+    @property
+    def tag_text(self) -> str:
         
+        return self._text
+    
 ################################################################################

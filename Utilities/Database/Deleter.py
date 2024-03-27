@@ -6,12 +6,14 @@ from .Branch import DBWorkerBranch
 
 if TYPE_CHECKING:
     from Classes import (
-        Availability, 
-        Qualification, 
-        Training, 
+        Availability,
+        Qualification,
+        Training,
         AdditionalImage,
-        VenueAvailability,
+        VenueHours,
         Venue,
+        JobHours,
+        JobPosting
     )
 ################################################################################
 
@@ -65,11 +67,19 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################
-    def _delete_venue_availability(self, availability: VenueAvailability) -> None:
+    def _delete_venue_hours(self, availability: VenueHours) -> None:
         
         self.execute(
             "DELETE FROM venue_hours WHERE venue_id = %s AND weekday = %s;",
             availability.venue_id, availability.day.value,
+        )
+        
+################################################################################
+    def _delete_job_hours(self, hours: JobHours) -> None:
+        
+        self.execute(
+            "DELETE FROM job_hours WHERE job_id = %s AND day = %s;",
+            hours.job_id, hours.day.value,
         )
         
 ################################################################################
@@ -79,8 +89,14 @@ class DatabaseDeleter(DBWorkerBranch):
         self.execute("DELETE FROM venue_hours WHERE venue_id = %s;", venue.id)
         self.execute("DELETE FROM venue_locations WHERE venue_id = %s;", venue.id)
         self.execute("DELETE FROM venue_aag WHERE venue_id = %s;", venue.id)
-        self.execute("DELETE FROM venue_details WHERE venue_id = %s;", venue.id)
+        self.execute("DELETE FROM venue_urls WHERE venue_id = %s;", venue.id)
+    
+################################################################################    
+    def _delete_job_post(self, job: JobPosting) -> None:
         
+        self.execute("DELETE FROM job_postings WHERE _id = %s;", job.id)
+        self.execute("DELETE FROM job_hours WHERE job_id = %s;", job.id)
+    
 ################################################################################
 
     requirement             = _delete_requirement
@@ -88,8 +104,10 @@ class DatabaseDeleter(DBWorkerBranch):
     qualification           = _delete_qualification
     training                = _delete_training
     profile_addl_image      = _delete_additional_image
-    venue_availability      = _delete_venue_availability
+    venue_hours             = _delete_venue_hours
     venue                   = _delete_venue
+    job_hours               = _delete_job_hours
+    job_posting             = _delete_job_post
     
 ################################################################################
     

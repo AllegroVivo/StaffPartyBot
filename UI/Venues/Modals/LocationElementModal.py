@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Any
 
 from discord import Interaction, InputTextStyle
 from discord.ui import InputText
@@ -8,23 +8,24 @@ from discord.ui import InputText
 from UI.Common import FroggeModal
 ################################################################################
 
-__all__ = ("WardPlotModal",)
+__all__ = ("LocationElementModal",)
 
 ################################################################################
-class WardPlotModal(FroggeModal):
+class LocationElementModal(FroggeModal):
     
-    def __init__(self, cur_ward: Optional[int], cur_plot: Optional[int]):
+    def __init__(self, component_name: str, cur_value: Optional[Any]):
         
-        super().__init__(title="Edit Venue Description")
+        super().__init__(title=f"Edit {component_name} Number")
         
         self.add_item(
             InputText(
                 style=InputTextStyle.multiline,
                 label="Instructions",
-                placeholder="Enter the venue's ward and plot number.",
+                placeholder=f"Enter the venue's {component_name} number.",
                 value=(
-                    "Enter the ward and plot number for the venue.\n"
-                    "These should just be the raw numbers. (eg. 5, 12)"
+                    f"Enter the {component_name} number for the venue.\n"
+                    "This should just be a raw number. (eg. 5, 12) or "
+                    f"leave blank to clear the {component_name} number."
                 ),
                 required=False
             )
@@ -32,26 +33,19 @@ class WardPlotModal(FroggeModal):
         self.add_item(
             InputText(
                 style=InputTextStyle.singleline,
-                label="Ward",
-                placeholder="eg. '5'",
-                value=str(cur_ward) if cur_ward else None,
-                max_length=2,
-                required=True
-            )
-        )
-        self.add_item(
-            InputText(
-                style=InputTextStyle.singleline,
-                label="Plot",
+                label=component_name,
                 placeholder="eg. '12'",
-                value=str(cur_plot) if cur_plot else None,
+                value=str(cur_value) if cur_value else None,
                 max_length=2,
-                required=True
+                required=False
             )
         )
         
     async def callback(self, interaction: Interaction):
-        self.value = (int(self.children[1].value), int(self.children[2].value))
+        try:
+            self.value = int(self.children[1].value) if self.children[1].value else None
+        except ValueError:
+            self.value = -1
         self.complete = True
         
         await interaction.edit()

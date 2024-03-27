@@ -281,3 +281,20 @@ class Utilities:
         )   
 
 ################################################################################
+    @staticmethod
+    def parse_salary(salary: str) -> Optional[int]:
+
+        # Remove commas and whitespace, and make lowercase
+        salary = salary.lower().strip().replace(",", "")
+
+        try:
+            if salary.endswith("k"):
+                return int(salary[:-1]) * 1000
+            elif salary.endswith("m"):
+                return int(salary[:-1]) * 1000000
+            else:
+                return int(salary)
+        except ValueError:
+            return
+
+################################################################################

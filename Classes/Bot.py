@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import os
-
-from dotenv import load_dotenv
 from typing import TYPE_CHECKING, Dict, Any, Optional
 
+from discord import Attachment, Bot, TextChannel
 from discord.abc import GuildChannel
-from discord import Attachment, Bot, TextChannel, HTTPException
+from dotenv import load_dotenv
 
-from .Logger import Logger
-from .GuildManager import GuildManager
 from Utilities.Database import Database
+from .GuildManager import GuildManager
+from .XIVVenues import XIVVenuesClient
 
 if TYPE_CHECKING:
     from Classes import GuildData
@@ -25,6 +24,7 @@ class TrainingBot(Bot):
         "_img_dump",
         "_db",
         "_guild_mgr",
+        "_xiv_client",
     )
 
 ################################################################################
@@ -36,6 +36,7 @@ class TrainingBot(Bot):
 
         self._db: Database = Database(self)        
         self._guild_mgr: GuildManager = GuildManager(self)
+        self._xiv_client: XIVVenuesClient = XIVVenuesClient(self)
 
 ################################################################################
     def __getitem__(self, guild_id: int) -> GuildData:
@@ -53,6 +54,12 @@ class TrainingBot(Bot):
     def fguilds(self) -> GuildManager:
         
         return self._guild_mgr
+    
+################################################################################
+    @property
+    def veni_client(self) -> XIVVenuesClient:
+        
+        return self._xiv_client
     
 ################################################################################
     async def load_all(self) -> None:
@@ -82,6 +89,7 @@ class TrainingBot(Bot):
 ################################################################################
     def _parse_data(self, data: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
          
+        # Setup the return dictionary.
         ret = { g.id : {
             "bot_config": None,
             "tusers": [],
@@ -92,17 +100,21 @@ class TrainingBot(Bot):
             "trainings": [],
             "requirement_overrides": [],
             "profiles": [],
-            "venues": {},
+            "venues": [],
+            "job_postings": {},
         } for g in self.guilds }
         
         load_dotenv()
         
+        ### Bot Config ###
         for cfg in data["bot_config"]:
             if os.getenv("DEBUG") == "True":
                 # Skip other servers when running in debug.
                 if cfg[0] not in (955933227372122173, 303742308874977280):
                     continue
             ret[cfg[0]]["bot_config"] = cfg
+            
+        ### Training ###
         for u in data["tusers"]:
             ret[u[1]]["tusers"].append(u)
         for a in data["availability"]:
@@ -118,6 +130,7 @@ class TrainingBot(Bot):
         for ro in data["requirement_overrides"]:
             ret[ro[1]]["requirement_overrides"].append(ro)
             
+        ### Profiles ###
         for p in data["profiles"]:
             ret[p[2]]["profiles"].append(
                 {
@@ -128,25 +141,27 @@ class TrainingBot(Bot):
                 }
             )
             
+        ### Venues ###
         for v in data["venues"]:
-            ret[v[1]]["venues"][v[0]] = {
-                "user_ids": v[2],
-                "owner_ids": v[4],
-                "pending": v[5],
-                "positions": v[3],
-                "details": None,
-                "aag": None,
-                "hours": [],
-                "location": None,
-            }
-        for vd in data["venue_details"]:
-            ret[vd[1]]["venues"][vd[0]]["details"] = vd
+            ret[v[1]]["venues"].append(
+                {
+                    "venue": v,
+                    "hours": [],
+                }
+            )
         for vh in data["venue_hours"]:
-            ret[vh[1]]["venues"][vh[0]]["hours"].append(vh)
-        for vl in data["venue_locations"]:
-            ret[vl[1]]["venues"][vl[0]]["location"] = vl
-        for aag in data["venue_aag"]:
-            ret[aag[1]]["venues"][aag[0]]["aag"] = aag
+            for v in ret[vh[1]]["venues"]:
+                if v["venue"][0] == vh[0]:
+                    v["hours"].append(vh)
+            
+        ### Job Postings ###
+        for jp in data["job_postings"]:
+            ret[jp[1]]["job_postings"][jp[0]] = {
+                "data": jp,
+                "hours": [],
+            }
+        for jpa in data["hours"]:
+            ret[jpa[1]]["job_postings"][jpa[0]]["hours"].append(jpa)
             
         return ret
     

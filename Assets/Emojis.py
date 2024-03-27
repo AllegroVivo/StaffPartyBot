@@ -18,6 +18,7 @@ class BotEmojis:
     Drum = PartialEmoji.from_str("🥁")
     Envelope = PartialEmoji.from_str("💌")
     Eyes = PartialEmoji.from_str("👀")
+    FlyingEnvelope = PartialEmoji.from_str("📨")
     FlyingMoney = PartialEmoji.from_str("💸")
     Goose = PartialEmoji.from_str("<:goose:958828235058208829>")
     Pause = PartialEmoji.from_str("<:Pause:1186526919940902912>")

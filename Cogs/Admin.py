@@ -100,6 +100,35 @@ class Admin(Cog):
         await guild.venue_manager.set_venue_channel(ctx.interaction, channel)
 
 ################################################################################
+    @admin.command( 
+        name="jobs_channel",
+        description="Set the channel for job postings."
+    )
+    async def set_jobs_channel(
+        self,
+        ctx: ApplicationContext,
+        channel: Option(
+            SlashCommandOptionType.channel,
+            name="channel",
+            description="The channel to set as the jobs channel.",
+            required=True
+        ),
+        post_type: Option(
+            SlashCommandOptionType.string,
+            name="post_type",
+            description="The type of job posting to set the channel for.",
+            required=True,
+            choices=[
+                OptionChoice(name="Temporary", value="1"),
+                OptionChoice(name="Permanent", value="2")
+            ]
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.job_posting_manager.set_jobs_channel(ctx.interaction, channel, int(post_type))
+        
+################################################################################
     @admin.command(
         name="add_venue",
         description="Add a new venue to the system."
@@ -232,6 +261,14 @@ class Admin(Cog):
         await self.bot[ctx.guild_id].report_menu(ctx.interaction)
         
 ################################################################################
+    @admin.command(
+        name="test",
+    )
+    async def test(self, ctx: ApplicationContext) -> None:
+
+        await self.bot.veni_client.get_venues_by_manager(120065261037420544)
+        
+################################################################################        
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Admin(bot))

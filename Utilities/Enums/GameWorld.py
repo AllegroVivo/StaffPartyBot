@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from discord import SelectOption
 
@@ -57,6 +57,19 @@ class GameWorld(FroggeEnum):
     Zodiark = 48
     Zurvan = 49
 
+################################################################################
+    @classmethod
+    def from_xiv(cls, xiv_name: Optional[str]) -> Optional["GameWorld"]:
+        
+        if xiv_name is None:
+            return
+        
+        for world in cls:
+            if world.proper_name == xiv_name:
+                return world
+            
+        raise ValueError(f"Invalid XIV world name: {xiv_name}")
+    
 ################################################################################
     @staticmethod
     def select_options_by_dc(dc: DataCenter) -> List[SelectOption]:
