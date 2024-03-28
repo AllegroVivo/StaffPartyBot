@@ -311,7 +311,7 @@ class VenueManager:
             fields = []
             for venue in venue_list:
                 field = venue._authorized_users_field(inline=True)
-                field.name = venue.name + " - (Pending)" if venue.pending else ""
+                field.name = venue.name + " - (Pending)" if venue.pending else venue.name
                 fields.append(field)
                 
                 if len(fields) >= 12:
@@ -337,7 +337,7 @@ class VenueManager:
             fields = []
             for venue in xyz_group:
                 field = venue._authorized_users_field(inline=True)
-                field.name = venue.name + " - (Pending)" if venue.pending else ""
+                field.name = venue.name + " - (Pending)" if venue.pending else venue.name
                 fields.append(field)
     
                 if len(fields) >= 12:

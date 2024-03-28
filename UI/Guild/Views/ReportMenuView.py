@@ -23,7 +23,7 @@ class ReportMenuView(FroggeView):
         self.guild: GuildData = guild
         
         button_list = [
-            AuthorizedUsersButton(),
+            VenuesButton(),
             UnpaidTrainerButton(),
             CloseMessageButton(),
         ]
@@ -31,13 +31,13 @@ class ReportMenuView(FroggeView):
             self.add_item(btn)
         
 ################################################################################
-class AuthorizedUsersButton(Button):
+class VenuesButton(Button):
     
     def __init__(self):
         
         super().__init__(
             style=ButtonStyle.primary,
-            label="Venues & Authorized Users",
+            label="Venues",
             disabled=False,
             row=0
         )
