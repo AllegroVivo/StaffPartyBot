@@ -126,7 +126,7 @@ class Admin(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.job_posting_manager.set_jobs_channel(ctx.interaction, channel, int(post_type))
+        await guild.jobs_manager.set_jobs_channel(ctx.interaction, channel, int(post_type))
         
 ################################################################################
     @admin.command(

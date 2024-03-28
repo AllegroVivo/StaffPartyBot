@@ -41,7 +41,7 @@ class JobPostings(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.job_posting_manager.create_new(ctx.interaction, venue)
+        await guild.jobs_manager.create_new(ctx.interaction, venue)
 
 ################################################################################
     @jobs.command(
@@ -60,7 +60,7 @@ class JobPostings(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.job_posting_manager.check_status(ctx.interaction, post_id)
+        await guild.jobs_manager.check_status(ctx.interaction, post_id)
         
 ################################################################################
 def setup(bot: "TrainingBot") -> None:

@@ -16,6 +16,7 @@ from UI.Profiles import (
     ProfileMareModal,
     AtAGlanceStatusView
 )
+from UI.Venues import DataCenterSelectView, HomeWorldSelectView
 from Utilities import (
     Utilities as U,
     Gender,
@@ -26,6 +27,8 @@ from Utilities import (
     HeightInputError,
     NS,
     FroggeEnum,
+    DataCenter,
+    GameWorld
 )
 from .ProfileSection import ProfileSection
 
@@ -49,6 +52,8 @@ class ProfileAtAGlance(ProfileSection):
         "_height",
         "_age",
         "_mare",
+        "_dc",
+        "_world",
     )
 
 ################################################################################
@@ -64,12 +69,14 @@ class ProfileAtAGlance(ProfileSection):
         self._height: Optional[int] = kwargs.pop("height", None)
         self._age: Optional[Union[str, int]] = kwargs.pop("age", None)
         self._mare: Optional[str] = kwargs.pop("mare", None)
+        self._dc: Optional[DataCenter] = kwargs.pop("data_center", None)
+        self._world: Optional[GameWorld] = kwargs.pop("world", None)
      
 ################################################################################
     @classmethod
     def load(cls: Type[AAG], parent: Profile, data: Tuple[Any, ...]) -> AAG:
 
-        gender = race = clan = orientation = None
+        gender = race = clan = orientation = dc = world = None
         if data[0] is not None:
             gender = Gender(int(data[0])) if data[0].isdigit() else data[0]
         if data[2] is not None:
@@ -78,6 +85,10 @@ class ProfileAtAGlance(ProfileSection):
             clan = Clan(int(data[3])) if data[3].isdigit() else data[3]
         if data[4] is not None:
             orientation = Orientation(int(data[4])) if data[4].isdigit() else data[4]
+        if data[8] is not None:
+            dc = DataCenter(int(data[8]))
+        if data[9] is not None:
+            world = GameWorld(int(data[9]))
 
         return cls(
             parent=parent,
@@ -88,7 +99,9 @@ class ProfileAtAGlance(ProfileSection):
             orientation=orientation,
             height=data[5],
             age=data[6],
-            mare=data[7]
+            mare=data[7],
+            data_center=dc,
+            world=world
         )
     
 ################################################################################
@@ -97,7 +110,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._gender
     
-################################################################################
     @gender.setter
     def gender(self, value: Optional[Union[Gender, str]]) -> None:
         
@@ -110,7 +122,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._pronouns
     
-################################################################################
     @pronouns.setter
     def pronouns(self, value: List[Pronoun]) -> None:
         
@@ -123,7 +134,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._race
     
-################################################################################
     @race.setter
     def race(self, value: Optional[Union[Race, str]]) -> None:
         
@@ -136,7 +146,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._clan
     
-################################################################################
     @clan.setter
     def clan(self, value: Optional[Union[Clan, str]]) -> None:
         
@@ -149,7 +158,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._orientation
     
-################################################################################
     @orientation.setter
     def orientation(self, value: Optional[Union[Orientation, str]]) -> None:
         
@@ -162,7 +170,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._height
     
-################################################################################
     @height.setter
     def height(self, value: Optional[int]) -> None:
         
@@ -175,7 +182,6 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._age
     
-################################################################################
     @age.setter
     def age(self, value: Optional[Union[str, int]]) -> None:
         
@@ -188,11 +194,34 @@ class ProfileAtAGlance(ProfileSection):
         
         return self._mare
     
-################################################################################
     @mare.setter
     def mare(self, value: Optional[str]) -> None:
         
         self._mare = value
+        self.update()
+        
+################################################################################
+    @property
+    def data_center(self) -> Optional[DataCenter]:
+        
+        return self._dc
+    
+    @data_center.setter
+    def data_center(self, value: Optional[DataCenter]) -> None:
+        
+        self._dc = value
+        self.update()
+        
+################################################################################
+    @property
+    def world(self) -> Optional[GameWorld]:
+        
+        return self._world
+    
+    @world.setter
+    def world(self, value: Optional[GameWorld]) -> None:
+        
+        self._world = value
         self.update()
         
 ################################################################################
@@ -262,8 +291,14 @@ class ProfileAtAGlance(ProfileSection):
         height_val = self.format_height()
         age_val = self.get_attribute_str(self.age)
         mare_val = self.get_attribute_str(self.mare)
+        
+        dc_val = self.get_attribute_str(self.data_center)
+        world_val = self.get_attribute_str(self.world)
 
         fields = [
+            EmbedField("__Data Center__", dc_val, True),
+            EmbedField("__World__", world_val, True),
+            EmbedField("", U.draw_line(extra=30), False),
             EmbedField("__Race/Clan__", raceclan, True),
             EmbedField("__Gender/Pronouns__", gp_combined, True),
             EmbedField("", U.draw_line(extra=30), False),
@@ -422,8 +457,59 @@ class ProfileAtAGlance(ProfileSection):
         self.mare = modal.value
 
 ################################################################################
+    async def set_data_center(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Select Your Data Center",
+            description=(
+                "Pick your character's data center from the drop-down below."
+            )
+        )
+        view = DataCenterSelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.data_center = view.value
+        
+################################################################################
+    async def set_world(self, interaction: Interaction) -> None:
+        
+        if self.data_center is None:
+            error = U.make_embed(
+                title="Data Center Not Set",
+                description=(
+                    "You must select your character's data center before you can\n"
+                    "select your character's home world."
+                )
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        prompt = U.make_embed(
+            title="Select Your World",
+            description=(
+                "Pick your character's home world from the drop-down below."
+            )
+        )
+        view = HomeWorldSelectView(interaction.user, self.data_center)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.world = view.value
+        
+################################################################################
     def progress(self) -> str:
 
+        em_data_center = self.progress_emoji(self._dc)
+        em_world = self.progress_emoji(self._world)
         em_gender = self.progress_emoji(self._gender)
         em_race = self.progress_emoji(self._race)
         em_orientation = self.progress_emoji(self._orientation)
@@ -434,6 +520,8 @@ class ProfileAtAGlance(ProfileSection):
         return (
             f"{U.draw_line(extra=15)}\n"
             "__**At A Glance**__\n"
+            f"{em_data_center} -- Data Center\n"
+            f"{em_world} -- World\n"
             f"{em_gender} -- Gender / Pronouns\n"
             f"{em_race} -- Race / Clan\n"
             f"{em_orientation} -- Orientation\n"
@@ -446,6 +534,8 @@ class ProfileAtAGlance(ProfileSection):
     def _raw_string(self) -> str:
 
         ret = (
+            self.compile_data_center() +
+            self.compile_world() +
             self.compile_gender() +
             self.compile_raceclan() +
             self.compile_orientation() +
@@ -542,4 +632,20 @@ class ProfileAtAGlance(ProfileSection):
 
         return f"Mare ID:__ `{self.mare}`\n"
 
+################################################################################
+    def compile_data_center(self) -> str:
+
+        if self.data_center is None:
+            return ""
+
+        return f"__Data Center:__ {self.data_center.proper_name}\n"
+    
+################################################################################
+    def compile_world(self) -> str:
+
+        if self.world is None:
+            return ""
+
+        return f"__World:__ {self.world.proper_name}\n"
+    
 ################################################################################

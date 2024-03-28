@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List, Dict, Optional
 
-from discord import Interaction, TextChannel, NotFound
+from discord import Interaction, TextChannel, NotFound, ChannelType
 
 from Utilities import (
     Utilities as U,
@@ -17,10 +17,10 @@ if TYPE_CHECKING:
     from Classes import GuildData, TrainingBot, VenueManager
 ################################################################################
 
-__all__ = ("JobPostingManager",)
+__all__ = ("JobsManager",)
 
 ################################################################################
-class JobPostingManager:
+class JobsManager:
     
     __slots__ = (
         "_guild",
@@ -161,8 +161,8 @@ class JobPostingManager:
         post_type: int
     ) -> None:
         
-        if not isinstance(channel, TextChannel):
-            error = ChannelTypeError(channel, "TextChannel")
+        if channel.type is not ChannelType.forum:
+            error = ChannelTypeError(channel, "ForumChannel")
             await interaction.respond(embed=error, ephemeral=True)
             return
         

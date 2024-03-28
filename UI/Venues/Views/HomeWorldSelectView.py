@@ -25,7 +25,7 @@ class HomeWorldSelect(Select):
     def __init__(self, dc: DataCenter):
                                    
         super().__init__(
-            placeholder="Select a home world for this venue...",
+            placeholder="Select a home world...",
             options=GameWorld.select_options_by_dc(dc),
             min_values=1,
             max_values=1,

@@ -154,11 +154,12 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE ataglance SET gender = %s, pronouns = %s, race = %s, "
-            "clan = %s, orientation = %s, height = %s, age = %s, mare = %s "
-            "WHERE _id = %s;",
-            str(gender), [p.value for p in aag.pronouns], str(race), 
-            str(clan), str(orientation), aag.height, str(aag.age), str(aag.mare), 
-            aag.profile_id
+            "clan = %s, orientation = %s, height = %s, age = %s, mare = %s, "
+            "data_center = %s, world = %s WHERE _id = %s;",
+            gender, [p.value for p in aag.pronouns], race, clan, orientation,
+            aag.height, aag.age, aag.mare, 
+            aag.data_center.value if aag.data_center is not None else None,
+            aag.world.value if aag.world is not None else None, aag.profile_id
         )
        
 ################################################################################ 
@@ -270,7 +271,7 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################
-    def _update_job_posting_channels(self, manager: JobPostingManager) -> None:
+    def _update_job_posting_channels(self, manager: JobsManager) -> None:
         
         self.execute(
             "UPDATE bot_config SET temp_jobs_channel = %s, perm_jobs_channel = %s "

@@ -23,6 +23,8 @@ class AtAGlanceStatusView(FroggeView):
         self.aag: ProfileAtAGlance = aag
 
         button_list = [
+            DataCenterButton(self.aag.data_center),
+            HomeWorldButton(self.aag.world),
             RaceClanButton(self.aag.race),
             GenderPronounButton(self.aag.gender),
             OrientationButton(self.aag.orientation),
@@ -88,7 +90,7 @@ class OrientationButton(FroggeButton):
         super().__init__(
             label="Orientation",
             disabled=False,
-            row=0
+            row=1
         )
         
         self.set_style(orientation)
@@ -161,3 +163,46 @@ class MareButton(FroggeButton):
         await interaction.edit(embed=self.view.aag.status(), view=self.view)
 
 ################################################################################
+class DataCenterButton(FroggeButton):
+
+    def __init__(self, data_center: Optional[Any]) -> None:
+
+        super().__init__(
+            label="Data Center",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(data_center)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.aag.set_data_center(interaction)
+        self.set_style(self.view.aag.data_center)
+
+        await edit_message_helper(
+            interaction, embed=self.view.aag.status(), view=self.view
+        )
+        
+################################################################################
+class HomeWorldButton(FroggeButton):
+
+    def __init__(self, world: Optional[Any]) -> None:
+
+        super().__init__(
+            label="Home World",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(world)
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.aag.set_world(interaction)
+        self.set_style(self.view.aag.world)
+
+        await edit_message_helper(
+            interaction, embed=self.view.aag.status(), view=self.view
+        )
+        
+################################################################################
+        

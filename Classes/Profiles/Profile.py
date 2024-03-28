@@ -93,8 +93,8 @@ class Profile:
         
         self._details = ProfileDetails.load(self, profile[3:9])
         self._personality = ProfilePersonality.load(self, profile[9:13])
-        self._aag = ProfileAtAGlance.load(self, profile[13:21])
-        self._images = ProfileImages.load(self, profile[21:23], addl_imgs)
+        self._aag = ProfileAtAGlance.load(self, profile[13:23])
+        self._images = ProfileImages.load(self, profile[23:25], addl_imgs)
         
         return self
         

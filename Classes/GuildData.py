@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict
 
 from discord import Guild, User, Interaction
 
-from Classes.Jobs.JobPostingManager import JobPostingManager
+from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
@@ -46,7 +46,7 @@ class GuildData:
         self._training_mgr: TrainingManager = TrainingManager(self)
         self._profile_mgr: ProfileManager = ProfileManager(self)
         self._venue_mgr: VenueManager = VenueManager(self)
-        self._job_mgr: JobPostingManager = JobPostingManager(self)
+        self._job_mgr: JobsManager = JobsManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
@@ -109,7 +109,7 @@ class GuildData:
     
 ################################################################################
     @property
-    def job_posting_manager(self) -> JobPostingManager:
+    def jobs_manager(self) -> JobsManager:
         
         return self._job_mgr
     

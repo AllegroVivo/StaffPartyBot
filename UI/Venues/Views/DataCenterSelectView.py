@@ -25,7 +25,7 @@ class DataCenterSelect(Select):
     def __init__(self):
                                    
         super().__init__(
-            placeholder="Select a data center for this venue...",
+            placeholder="Select a data center...",
             options=DataCenter.select_options(),
             min_values=1,
             max_values=1,

@@ -28,7 +28,7 @@ from .JobHours import JobHours
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
-    from Classes import JobPostingManager, Position, Venue, TrainingBot
+    from Classes import JobsManager, Position, Venue, TrainingBot
 ################################################################################
 
 __all__ = ("JobPosting",)
@@ -53,9 +53,9 @@ class JobPosting:
     )
     
 ################################################################################
-    def __init__(self, mgr: JobPostingManager, **kwargs) -> None:
+    def __init__(self, mgr: JobsManager, **kwargs) -> None:
         
-        self._mgr: JobPostingManager = mgr
+        self._mgr: JobsManager = mgr
         
         self._id: str = kwargs.pop("_id")
         self._venue: Venue = kwargs.pop("venue")
@@ -72,14 +72,14 @@ class JobPosting:
         
 ################################################################################
     @classmethod
-    def new(cls: Type[JP], mgr: JobPostingManager, venue: Venue, user: User) -> JP:
+    def new(cls: Type[JP], mgr: JobsManager, venue: Venue, user: User) -> JP:
         
         new_id = mgr.bot.database.insert.job_posting(mgr.guild_id, venue.id, user.id)
         return cls(mgr, _id=new_id, venue=venue, user=user)
     
 ################################################################################
     @classmethod
-    async def load(cls: Type[JP], mgr: JobPostingManager, record: Dict[str, Any]) -> JP:
+    async def load(cls: Type[JP], mgr: JobsManager, record: Dict[str, Any]) -> JP:
         
         data = record["data"]
         
