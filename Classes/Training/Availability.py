@@ -114,7 +114,7 @@ class Availability:
 
         ret = ""
 
-        for i in [w for w in Weekday if w.value != 0]:
+        for i in [w for w in Weekday if w.value]:
             if i.value not in [a.day.value for a in availability]:
                 ret += f"{i.proper_name}: `Not Available`\n"
             else:
