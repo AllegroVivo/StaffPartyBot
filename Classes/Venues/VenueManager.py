@@ -563,5 +563,7 @@ class VenueManager:
         venue = Venue.new(self, xiv_venue.name)
         venue.update_from_xiv_venue(interaction, xiv_venue)
         self._venues.append(venue)
+        
+        await self.guild.log.venue_created(venue)
     
 ################################################################################
