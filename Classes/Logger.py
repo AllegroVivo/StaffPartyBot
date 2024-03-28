@@ -233,7 +233,6 @@ class Logger:
     async def venue_created(self, venue: Venue) -> None:
 
         users = "\n".join(
-            [f"* {u.mention}" for u in venue.owners] +
             [f"* {u.mention}" for u in venue.authorized_users]
         )
 
