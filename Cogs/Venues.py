@@ -77,36 +77,28 @@ class Venues(Cog):
             description="The name of the new venue.",
             required=True
         ),
-        owner2: Option(
-            SlashCommandOptionType.user,
-            name="alt_owner",
-            description="A alternate user to register as owner of the venue.",
-            required=False
-        ),
         user1: Option(
             SlashCommandOptionType.user,
-            name="auth_user_1",
+            name="manager_2",
             description="An alternate user that can make edits to the venue listing.",
             required=False
         ),
         user2: Option(
             SlashCommandOptionType.user,
-            name="auth_user_2",
+            name="manager_3",
             description="An alternate user that can make edits to the venue listing.",
             required=False
         ),
         user3: Option(
             SlashCommandOptionType.user,
-            name="auth_user_3",
+            name="manager_4",
             description="An alternate user that can make edits to the venue listing.",
             required=False
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.signup(
-            ctx.interaction, name, owner2, user1, user2, user3
-        )
+        await guild.venue_manager.signup(ctx.interaction, name, user1, user2, user3)
         
 ################################################################################
     @venues.command(
@@ -127,21 +119,11 @@ class Venues(Cog):
             name="user",
             description="The user to add to the venue's authorized user list.",
             required=True
-        ),
-        _type: Option(
-            SlashCommandOptionType.string,
-            name="user_type",
-            description="The user type to assign the user as.",
-            required=True,
-            choices=[
-                OptionChoice(name="Owner", value="Owner"),
-                OptionChoice(name="Authorized User", value="AuthUser")
-            ]
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type)
+        await guild.venue_manager.add_user(ctx.interaction, venue, user)
         
 ################################################################################
     @venues.command(

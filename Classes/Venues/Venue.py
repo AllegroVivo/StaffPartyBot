@@ -8,7 +8,8 @@ from discord import (
     EmbedField,
     Interaction,
     Message,
-    SelectOption
+    SelectOption,   
+    TextChannel,
 )
 
 from Assets import BotEmojis
@@ -750,5 +751,9 @@ class Venue:
                 s.delete()
                 
         self._schedule.append(VenueHours.new(self, weekday, open_time, close_time))
-        
+
+################################################################################
+    def post(self, interaction: Interaction, _channel: TextChannel) -> None:
+        pass
+
 ################################################################################

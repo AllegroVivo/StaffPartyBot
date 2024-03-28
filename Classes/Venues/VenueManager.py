@@ -116,7 +116,7 @@ class VenueManager:
             return
         
         venue = Venue.new(self, name)
-        venue.add_user(user, owner=True)
+        venue.add_user(user)
         self._venues.append(venue)
         
         confirm = U.make_embed(
@@ -138,7 +138,6 @@ class VenueManager:
         interaction: Interaction, 
         name: str, 
         user: User,
-        user_type: str,
         admin: bool = False
     ) -> None:
 
@@ -148,7 +147,7 @@ class VenueManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if len(venue.owners) >= 2 and len(venue.authorized_users) >= 3:
+        if len(venue.authorized_users) >= 5 and not admin:
             error = TooManyUsersError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -157,7 +156,7 @@ class VenueManager:
             if not await self.authenticate(venue, interaction.user, interaction):
                 return
         
-        if user in venue.authorized_users or user in venue.owners:
+        if user in venue.authorized_users:
             embed = U.make_embed(
                 title="User Already Authorized",
                 description=(
@@ -185,15 +184,7 @@ class VenueManager:
         if not view.complete or view.value is False:
             return
         
-        if (
-            len(venue.owners) >= 2 and user_type == "Owner" or
-            len(venue.authorized_users) >= 3 and user_type == "AuthUser"
-        ):
-            error = TooManyUsersError(name)
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
-        venue.add_user(user, owner=user_type == "Owner")
+        venue.add_user(user)
         
         confirm = U.make_embed(
             title="User Authorized",
@@ -371,7 +362,6 @@ class VenueManager:
         self, 
         interaction: Interaction,
         name: str,
-        owner2: Optional[User],
         user1: Optional[User],
         user2: Optional[User],
         user3: Optional[User]
@@ -404,11 +394,11 @@ class VenueManager:
             return
         
         venue = Venue.new(self, name)
-        venue.add_user(interaction.user, owner=view.value)
+        venue.add_user(interaction.user)
         self._venues.append(venue)
         
-        if owner2 is not None:
-            venue.add_user(owner2, owner=True)
+        if user1 is not None:
+            venue.add_user(user1)
         if user1 is not None:
             venue.add_user(user1)
         if user2 is not None:
@@ -461,17 +451,17 @@ class VenueManager:
         venue: Venue
     ) -> bool:
 
-        if len(venue.all_authorized_users) == 0:
+        if len(venue.authorized_users) == 0:
             error = CannotRemoveUserError("There are no users on this venue.")
             await interaction.respond(embed=error, ephemeral=True)
             return False
 
-        if user not in venue.all_authorized_users:
+        if user not in venue.authorized_users:
             error = CannotRemoveUserError(f"User {user.mention} is not authorized to access venue `{name}`.")
             await interaction.respond(embed=error, ephemeral=True)
             return False
 
-        if len(venue.all_authorized_users) == 1:
+        if len(venue.authorized_users) == 1:
             error = CannotRemoveUserError("You cannot remove the only user on a venue.")
             await interaction.respond(embed=error, ephemeral=True)
             return False

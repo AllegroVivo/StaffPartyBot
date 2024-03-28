@@ -46,7 +46,7 @@ class XIVVenuesClient:
         if response.status_code != 200:
             raise WTFException(
                 "Failed to get venue by manager - response status code: " + 
-                response.status_code
+                str(response.status_code)
             )
         
         if os.getenv("DEBUG") == "True":
@@ -73,7 +73,7 @@ class XIVVenuesClient:
         if response.status_code != 200:
             raise WTFException(
                 "Failed to get venue by name - response status code: " +
-                response.status_code
+                str(response.status_code)
             )
 
         if os.getenv("DEBUG") == "True":
