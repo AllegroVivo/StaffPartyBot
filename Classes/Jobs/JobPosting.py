@@ -550,7 +550,7 @@ class JobPosting:
             
         confirm = U.make_embed(
             title="Job Posting Created",
-            description="The job posting has been created."
+            description=f"The job posting has been created. `ID: {self._id}`"
         )
         
         await interaction.respond(embed=confirm, ephemeral=True)

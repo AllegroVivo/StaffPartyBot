@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional, List, Type, TypeVar, Any, Dict
 
-from discord import User, Embed, EmbedField
+from discord import User
 
 from .XIVLocation import XIVLocation
 from .XIVScheduleComponent import XIVScheduleComponent
