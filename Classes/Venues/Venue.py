@@ -17,6 +17,9 @@ from UI.Venues import (
     VenueDescriptionModal,
     PositionSelectView,
     RemoveUserView,
+    ScheduleOpenSelectView,
+    ScheduleCloseSelectView,
+    VenueWeekdaySelectView,
 )
 from Utilities import (
     Utilities as U,
@@ -284,6 +287,7 @@ class Venue:
     @property
     def schedule(self) -> List[VenueHours]:
 
+        self._schedule.sort(key=lambda x: x.day.value)
         return self._schedule
 
 ################################################################################
@@ -666,11 +670,11 @@ class Venue:
         await self._location.menu(interaction)
         
 ################################################################################
-    async def _full_schedule(self) -> str:
+    def _full_schedule(self) -> str:
         
-        ret = "* "
-        for day in Weekday:
-            ret += f"{day.proper_name}: "
+        ret = ""
+        for day in [w for w in Weekday if w.value != 0]:
+            ret += f"\n* {day.proper_name}: "
             
             present = False
             for s in self.schedule:
@@ -681,7 +685,7 @@ class Venue:
                     
             if not present:
                 ret += "`Closed`"
-                
+                   
         return ret
         
 ################################################################################
@@ -694,9 +698,57 @@ class Venue:
                 
                 f"{self._full_schedule()}\n\n"
                 
-                f"{U.draw_line(extra=25)}\n"
+                f"{U.draw_line(extra=26)}\n"
                 "Please select the day you would like to edit."
             )
         )
+        view = VenueWeekdaySelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        weekday = view.value
+        
+        prompt = U.make_embed(
+            title=f"Set {weekday.proper_name} Schedule",
+            description=(
+                "Please select the open time for the venue on this day."
+            )
+        )
+        view = ScheduleOpenSelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        timezone = view.timezone
+        open_time = view.value
+        
+        prompt = U.make_embed(
+            title=f"Set {weekday.proper_name} Schedule",
+            description=(
+                "Please select the close time for the venue on this day."
+            )
+        )
+        view = ScheduleCloseSelectView(interaction.user, timezone)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        close_time = view.value
+        
+        for s in self.schedule:
+            if s.day == weekday:
+                s.delete()
+                
+        self._schedule.append(VenueHours.new(self, weekday, open_time, close_time))
         
 ################################################################################

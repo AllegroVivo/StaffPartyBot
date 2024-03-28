@@ -94,7 +94,7 @@ class Timezone(FroggeEnum):
         offset = self.value - 12
         return f"(UTC{'+' if offset >= 0 else ''}{offset}:00)"
 
-    ################################################################################
+################################################################################
     @staticmethod
     def select_options() -> List[SelectOption]:
 
