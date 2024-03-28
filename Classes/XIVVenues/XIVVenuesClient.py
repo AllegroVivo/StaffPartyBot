@@ -42,6 +42,7 @@ class XIVVenuesClient:
             print("Executing XIVClient query: " + query)
             
         response = requests.get(query)
+        print(response)
         
         if response.status_code != 200:
             raise WTFException(
