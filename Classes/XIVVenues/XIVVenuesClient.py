@@ -36,14 +36,12 @@ class XIVVenuesClient:
     async def get_venues_by_manager(self, manager_id: int) -> List[XIVVenue]:
         
         query = self.URL_BASE + "manager=" + str(manager_id)
-        print(query)
         
         load_dotenv()
         if os.getenv("DEBUG") == "True":
             print("Executing XIVClient query: " + query)
             
         response = requests.get(query)
-        print(response)
         
         if response.status_code != 200:
             raise WTFException(

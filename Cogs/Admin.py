@@ -260,15 +260,7 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].report_menu(ctx.interaction)
         
-################################################################################
-    @admin.command(
-        name="test",
-    )
-    async def test(self, ctx: ApplicationContext) -> None:
-
-        await self.bot.veni_client.get_venues_by_manager(120065261037420544)
-        
-################################################################################        
+################################################################################      
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Admin(bot))
