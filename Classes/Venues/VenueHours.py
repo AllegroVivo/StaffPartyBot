@@ -54,7 +54,7 @@ class VenueHours:
 ################################################################################
     @classmethod
     def from_xiv_schedule(cls: Type[VH], parent: Venue, xiv: XIVScheduleComponent) -> VH:
-
+   
         day = Weekday(xiv.day)
         open_time = time(xiv.start.hour, xiv.start.minute, tzinfo=pytz.timezone(xiv.start.timezone))
         close_time = time(xiv.end.hour, xiv.end.minute, tzinfo=pytz.timezone(xiv.end.timezone))
