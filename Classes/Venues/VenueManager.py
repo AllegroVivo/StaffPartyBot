@@ -217,11 +217,7 @@ class VenueManager:
             if not await self.authenticate(venue, interaction.user, interaction):
                 return
             
-        embed = venue.status()
-        view = VenueStatusView(interaction.user, venue)
-        
-        await interaction.respond(embed=embed, view=view)
-        await view.wait()
+        await venue.menu(interaction)
 
 ################################################################################
     @staticmethod
@@ -566,5 +562,7 @@ class VenueManager:
         self._venues.append(venue)
         
         await self.guild.log.venue_created(venue)
+        
+        await venue.menu(interaction)
     
 ################################################################################

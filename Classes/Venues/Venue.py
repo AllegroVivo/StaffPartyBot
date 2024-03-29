@@ -21,6 +21,7 @@ from UI.Venues import (
     ScheduleOpenSelectView,
     ScheduleCloseSelectView,
     VenueWeekdaySelectView,
+    VenueStatusView,
 )
 from Utilities import (
     Utilities as U,
@@ -759,3 +760,13 @@ class Venue:
         pass
 
 ################################################################################
+    async def menu(self, interaction: Interaction) -> None:
+
+        embed = self.status()
+        view = VenueStatusView(interaction.user, self)
+
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+        
+################################################################################
+        
