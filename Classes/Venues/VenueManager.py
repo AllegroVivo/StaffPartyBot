@@ -90,6 +90,7 @@ class VenueManager:
     @property
     def venues(self) -> List[Venue]:
         
+        self._venues.sort(key=lambda x: x.name.lower())
         return self._venues
     
 ################################################################################
@@ -269,26 +270,9 @@ class VenueManager:
 
 ################################################################################
     async def venue_report(self, interaction: Interaction) -> None:
-        
-        def _get_initial(name: str) -> str:
-            ignored_words = ['The', 'A', 'An']
-            words = name.split()
-            first_word = (
-                words[0] if words[0] not in ignored_words 
-                else words[1] if len(words) > 1 else words[0]
-            )
-            return first_word[0].upper()
 
-        sorted_venues = {}
-        for venue in self._venues:
-            initial = _get_initial(venue.name)
-            if initial not in sorted_venues:
-                sorted_venues[initial] = []
-            sorted_venues[initial].append(venue)
-            
-        page_groups = self._get_venue_page_groups(sorted_venues)
         frogginator = Frogginator(
-            pages=page_groups,
+            pages=self._get_venue_page_groups(),
             show_menu=True,
             menu_placeholder="Select a Letter..."
         )
@@ -296,8 +280,23 @@ class VenueManager:
         await frogginator.respond(interaction)
             
 ################################################################################
-    @staticmethod
-    def _get_venue_page_groups(venues: Dict[str, List[Venue]]) -> List[PageGroup]:
+    def _get_venue_page_groups(self) -> List[PageGroup]:
+    
+        def _get_initial(name: str) -> str:
+            ignored_words = ['The', 'A', 'An']
+            words = name.split()
+            first_word = (
+                words[0] if words[0] not in ignored_words
+                else words[1] if len(words) > 1 else words[0]
+            )
+            return first_word[0].upper()
+    
+        venues = {}
+        for venue in self.venues:
+            initial = _get_initial(venue.name)
+            if initial not in venues:
+                venues[initial] = []
+            venues[initial].append(venue)
         
         ret = []
         xyz_group = []
@@ -322,13 +321,15 @@ class VenueManager:
                     page = Page(embeds=[embed])
                     pages.append(page)
                     fields = []
-
-            embed = U.make_embed(
-                title=f"Venues - {initial.upper()}",
-                fields=fields
-            )
-            page = Page(embeds=[embed])
-            pages.append(page)            
+    
+            if fields:
+                embed = U.make_embed(
+                    title=f"Venues - {initial.upper()}",
+                    fields=fields
+                )
+                page = Page(embeds=[embed])
+                pages.append(page)     
+                
             group = PageGroup(pages=pages, label=initial.upper())
             ret.append(group)
     
