@@ -132,7 +132,7 @@ class Venue:
             u for u in
             [await mgr.bot.get_or_fetch_user(user_id) for user_id in venue[2]]
             if u is not None
-        ]
+        ] if venue[2] else []
         self._schedule = [VenueHours.load(self, h) for h in hours]
         self._positions = [mgr.guild.position_manager.get_position(p) for p in venue[3]]
 
