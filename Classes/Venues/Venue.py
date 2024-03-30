@@ -135,7 +135,9 @@ class Venue:
             if u is not None
         ] if venue[2] else []
         self._schedule = [VenueHours.load(self, h) for h in hours]
-        self._positions = [mgr.guild.position_manager.get_position(p) for p in venue[3]]
+        self._positions = [
+            mgr.guild.position_manager.get_position(p) for p in venue[3]
+        ] if venue[3] else []
 
         self._urls = VenueURLs.load(
             self,
