@@ -29,6 +29,9 @@ class TUserStatusView(FroggeView):
             TogglePingsButton(),
             DataCenterButton(),
             HiatusToggleButton(self.tuser.on_hiatus),
+            AddQualificationButton(),
+            ModifyQualificationButton(),
+            RemoveQualificationButton(),
             AddTrainingButton(),
             RemoveTrainingButton()
         ]
@@ -174,3 +177,68 @@ class RemoveTrainingButton(Button):
         await edit_message_helper(interaction, embed=self.view.tuser.user_status(), view=self.view)
 
 ################################################################################
+class AddQualificationButton(Button):
+
+    def __init__(self) -> None:
+
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Add Qualification",
+            disabled=False,
+            row=1
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.add_qualification(interaction)
+        self.view.set_buttons()
+
+        await edit_message_helper(
+            interaction,
+            embed=self.view.tuser.admin_status(),
+            view=self.view
+        )
+
+################################################################################
+class ModifyQualificationButton(Button):
+
+    def __init__(self) -> None:
+
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Modify Qualification",
+            row=1
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.modify_qualification(interaction)
+        self.view.set_buttons()
+
+        await edit_message_helper(
+            interaction,
+            embed=self.view.tuser.admin_status(),
+            view=self.view
+        )
+
+################################################################################
+class RemoveQualificationButton(Button):
+
+    def __init__(self) -> None:
+
+        super().__init__(
+            style=ButtonStyle.danger,
+            label="Remove Qualification",
+            row=1
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.remove_qualification(interaction)
+        self.view.set_buttons()
+
+        await edit_message_helper(
+            interaction,
+            embed=self.view.tuser.admin_status(),
+            view=self.view
+        )
+        
+################################################################################
+        
