@@ -25,6 +25,7 @@ class ReportMenuView(FroggeView):
         button_list = [
             VenuesButton(),
             UnpaidTrainerButton(),
+            PositionsButton(),
             CloseMessageButton(),
         ]
         for btn in button_list:
