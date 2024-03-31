@@ -8,11 +8,15 @@ from discord import (
     EmbedField,
     Interaction,
     Message,
-    SelectOption,   
-    TextChannel,
+    SelectOption,
+    ForumChannel,
+    NotFound,
+    Colour,
+    Thread,
+    ForumTag,
 )
 
-from Assets import BotEmojis
+from Assets import BotEmojis, BotImages
 from UI.Venues import (
     VenueNameModal,
     VenueDescriptionModal,
@@ -28,6 +32,7 @@ from Utilities import (
     RPLevel,
     VenueSize,
     Weekday,
+    VenueChannelNotSetError,
 )
 from .VenueAtAGlance import VenueAtAGlance
 from .VenueHours import VenueHours
@@ -287,6 +292,16 @@ class Venue:
         
         return self._aag.tags
     
+################################################################################
+    @property
+    def thread_tags(self) -> List[ForumTag]:
+        
+        return [
+            t for t in self._mgr.post_channel.available_tags
+            if t.name.lower() in
+            [t.tag_text.lower() for t in self.tags]
+        ]
+    
 ################################################################################    
     @property
     def schedule(self) -> List[VenueHours]:
@@ -496,6 +511,12 @@ class Venue:
         self._users.append(user)
         self.update()
 
+################################################################################
+    def remove_user(self, user: User) -> None:
+        
+        self._users = [u for u in self._users if u.id != user.id]
+        self.update()
+        
 ################################################################################
     def update(self) -> None:
         
@@ -757,10 +778,42 @@ class Venue:
         self._schedule.append(VenueHours.new(self, weekday, open_time, close_time))
 
 ################################################################################
-    def post(self, interaction: Interaction, _channel: TextChannel) -> None:
+    async def post(self, interaction: Interaction, channel: ForumChannel) -> None:
         
-        pass
-
+        # Find threads with a matching name
+        target_threads = [t for t in channel.threads if t.name.lower() == self.name.lower()]
+        thread = target_threads[0] if target_threads else None
+    
+        # If there's a thread, update it and clear bot messages if _post_msg is None
+        if thread:
+            await thread.edit(name=self.name, applied_tags=self.thread_tags)
+            # If _post_msg is None, assume we might need to clear old messages from the bot
+            if self._post_msg is None:
+                async for msg in thread.history():
+                    if msg.author == self.bot.user:
+                        await msg.delete()
+    
+        # Attempt to edit the existing message if it exists
+        if self._post_msg is not None:
+            try:
+                await self._post_msg.edit(embed=self.status())
+            except NotFound:
+                self._post_msg = None  # Reset if the message was not found
+    
+        # If no existing message or thread, create or post as necessary
+        if not self._post_msg:
+            if not thread:
+                # If no existing thread, create a new one
+                thread = await channel.create_thread(
+                    name=self.name, embed=self.status(), applied_tags=self.thread_tags
+                )
+            # Post a new message in the thread
+            self._post_msg = thread.last_message
+    
+        self.update()
+        
+        await interaction.respond(embed=self.success_message(), ephemeral=True)
+    
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
 
@@ -769,6 +822,25 @@ class Venue:
 
         await interaction.respond(embed=embed, view=view)
         await view.wait()
+        
+################################################################################
+    def success_message(self) -> Embed:
+
+        return U.make_embed(
+            color=Colour.brand_green(),
+            title="Profile Posted!",
+            description=(
+                "Hey, good job, you did it! Your venue profile was posted successfully!\n"
+                f"{U.draw_line(extra=37)}\n"
+                f"(__Venue Name:__ ***{self.name}***)\n\n"
+
+                f"{BotEmojis.ArrowRight}  [Check It Out HERE!]"
+                f"({self.post_url})  {BotEmojis.ArrowLeft}\n"
+                f"{U.draw_line(extra=16)}"
+            ),
+            thumbnail_url=BotImages.ThumbsUpFrog,
+            timestamp=True
+        )
         
 ################################################################################
         

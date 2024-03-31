@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Any, Dict, Optional
 
-from discord import Interaction, User, TextChannel, SelectOption
+from discord import Interaction, User, ForumChannel, SelectOption, ForumTag
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
@@ -17,8 +17,10 @@ from Utilities import (
     CannotRemoveUserError,
     VenueImportNotFoundError,
     VenueImportError,
+    VenueChannelNotSetError,
 )
 from .Venue import Venue
+from .VenueTag import VenueTag
 
 if TYPE_CHECKING:
     from Classes import GuildData, TrainingBot, XIVVenue
@@ -33,6 +35,7 @@ class VenueManager:
         "_guild",
         "_venues",
         "_channel",
+        "_tags",
     )
 
 ################################################################################
@@ -41,7 +44,8 @@ class VenueManager:
         self._guild: GuildData = guild
         
         self._venues: List[Venue] = []
-        self._channel: Optional[TextChannel] = None
+        self._channel: Optional[ForumChannel] = None
+        self._tags: List[VenueTag] = []
         
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
@@ -82,7 +86,7 @@ class VenueManager:
     
 ################################################################################
     @property
-    def post_channel(self) -> Optional[TextChannel]:
+    def post_channel(self) -> Optional[ForumChannel]:
         
         return self._channel
     
@@ -231,10 +235,10 @@ class VenueManager:
         return True
 
 ################################################################################
-    async def set_venue_channel(self, interaction: Interaction, channel: TextChannel) -> None:
+    async def set_venue_channel(self, interaction: Interaction, channel: ForumChannel) -> None:
 
-        if not isinstance(channel, TextChannel):
-            embed = ChannelTypeError(channel, "TextChannel")
+        if not isinstance(channel, ForumChannel):
+            embed = ChannelTypeError(channel, "ForumChannel")
         else:
             self._channel = channel
             self.update()
@@ -247,6 +251,11 @@ class VenueManager:
 
 ################################################################################
     async def post_venue(self, interaction: Interaction, name: str) -> None:
+        
+        if self.post_channel is None:
+            error = VenueChannelNotSetError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
 
         venue = self.get_venue(name)
         if venue is None:

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from discord import PartialEmoji
 from typing import TYPE_CHECKING
+
+from Assets import BotEmojis
 
 if TYPE_CHECKING:
     pass
@@ -27,3 +30,12 @@ class VenueTag:
         return self._text
     
 ################################################################################
+    @property
+    def emoji(self) -> PartialEmoji:
+        
+        match self._text.lower():
+            case _:
+                return BotEmojis.Cross
+            
+################################################################################
+    

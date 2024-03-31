@@ -23,5 +23,6 @@ from .VenueDoesntExist import VenueDoesntExistError
 from .VenueExists import VenueExistsError
 from .VenueImportError import VenueImportError
 from .VenueImportNotFound import VenueImportNotFoundError
+from .VenueProfileNotComplete import VenueProfileNotCompleteError
 from .VenuePendingApproval import VenuePendingApprovalError
 ################################################################################
