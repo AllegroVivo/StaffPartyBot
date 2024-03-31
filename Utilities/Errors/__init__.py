@@ -6,6 +6,7 @@ from .DateTimeMismatch import DateTimeMismatchError
 from .DateTimeBeforeNow import DateTimeBeforeNowError
 from .ExceedsMaxLength import ExceedsMaxLengthError
 from .HeightInput import HeightInputError
+from .IneligibleForJob import IneligibleForJobError
 from .InsufficientPermissions import InsufficientPermissionsError
 from .InvalidColor import InvalidColorError
 from .DateTimeFormat import DateTimeFormatError

@@ -265,12 +265,14 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE job_postings SET post_type = %s, position = %s, "
             "description = %s, salary = %s, pay_frequency = %s, pay_details = %s, "
-            "post_url = %s, start_time = %s, end_time = %s WHERE _id = %s;",
+            "post_url = %s, start_time = %s, end_time = %s, candidate = %s "
+            "WHERE _id = %s;",
             job.post_type.value if job.post_type else None,
             job.position.id if job.position else None, job.description,
             job.salary, job.frequency.value if job.frequency else None,
             job.pay_details, job.post_message.jump_url if job.post_message else None,
-            job.start_time, job.end_time, job.id
+            job.start_time, job.end_time, job.candidate.user_id if job.candidate else None,
+            job.id
         )
         
 ################################################################################

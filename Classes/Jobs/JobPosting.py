@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict, List
 
-from discord import User, Interaction, Embed, EmbedField, Message
+from discord import User, Interaction, Embed, EmbedField, Message, NotFound
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView
@@ -16,6 +16,7 @@ from UI.Jobs import (
     JobPostingTypeView,
     TimezoneSelectView,
     JobPostingTimesModal,
+    JobPostingPickupView,
 )
 from Utilities import (
     Utilities as U,
@@ -26,11 +27,12 @@ from Utilities import (
     DateTimeMismatchError,
     TimeRangeError,
     DateTimeBeforeNowError,
+    IneligibleForJobError,
 )
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
-    from Classes import JobsManager, Position, Venue, TrainingBot
+    from Classes import JobsManager, Position, Venue, TrainingBot, TUser
 ################################################################################
 
 __all__ = ("JobPosting",)
@@ -51,7 +53,9 @@ class JobPosting:
         "_start",
         "_end",
         "_description",
-        "_post_msg"
+        "_post_msg",
+        "_candidate",
+        "_rejections",
     )
     
 ################################################################################
@@ -62,6 +66,8 @@ class JobPosting:
         self._id: str = kwargs.pop("_id")
         self._venue: Venue = kwargs.pop("venue")
         self._user: User = kwargs.pop("user")
+        self._candidate: Optional[TUser] = kwargs.pop("tuser", None)
+        self._rejections: List[TUser] = []
         
         self._description: Optional[str] = kwargs.pop("description", None)
         self._type: Optional[JobPostingType] = kwargs.pop("type", None)
@@ -92,6 +98,8 @@ class JobPosting:
         self._id = data[0]
         self._venue = mgr.guild.venue_manager[data[2]]
         self._user = await mgr.bot.get_or_fetch_user(data[3])
+        self._candidate = mgr.guild.training_manager[data[13]] if data[13] else None
+        self._rejections = [mgr.guild.training_manager[r] for r in data[14]] if data[14] else []
         
         self._description = data[6]
         self._type = JobPostingType(data[4]) if data[4] else None
@@ -110,6 +118,11 @@ class JobPosting:
         self._salary = PayRate(self, data[7], RateType(data[8]) if data[8] else None, data[9])
         self._start = data[11]
         self._end = data[12]
+        
+        try:
+            await self._update_posting()
+        except:
+            pass
         
         return self
     
@@ -183,6 +196,18 @@ class JobPosting:
     def post_message(self, value: Optional[Message]) -> None:
         
         self._post_msg = value
+        self.update()
+        
+################################################################################
+    @property
+    def candidate(self) -> Optional[TUser]:
+        
+        return self._candidate
+    
+    @candidate.setter
+    def candidate(self, value: Optional[TUser]) -> None:
+        
+        self._candidate = value
         self.update()
         
 ################################################################################
@@ -602,6 +627,7 @@ class JobPosting:
         if not view.complete or view.value is False:
             return
     
+        post_view = JobPostingPickupView(self)        
         channel = (
             self._mgr.temporary_jobs_channel 
             if self.post_type == JobPostingType.Temporary 
@@ -611,11 +637,10 @@ class JobPosting:
     
         try:
             if pos_thread:
-                self.post_message = await pos_thread.send(embed=self.compile())
+                self.post_message = await pos_thread.send(embed=self.compile(), view=post_view)
             else:
-                pos_thread = await channel.create_thread(name=self.position.name, embed=self.compile())
-                self._post_msg = pos_thread.last_message
-            self.update()
+                pos_thread = await channel.create_thread(name=self.position.name, embed=self.compile(), view=post_view)
+                self.post_message = pos_thread.last_message
             
             confirm = U.make_embed(
                 title="Job Posting Updated" if self.post_message else "Job Posting Created",
@@ -640,7 +665,9 @@ class JobPosting:
     async def _update_posting(self) -> bool:
         
         try:
-            await self._post_msg.edit(embed=self.status())
+            view = JobPostingPickupView(self)
+            self.bot.add_view(view, message_id=self._post_msg.id)
+            await self._post_msg.edit(embed=self.compile(), view=view)
         except:
             self.post_message = None
             return False
@@ -652,7 +679,7 @@ class JobPosting:
         
         eligible = [
             tuser for tuser in self._mgr.guild.training_manager.tusers 
-            if tuser.is_eligible(self)
+            if await tuser.is_eligible(self)
         ]
         if not eligible:
             return
@@ -673,49 +700,52 @@ class JobPosting:
                 continue
             
 ################################################################################
-    async def pickup(self, interaction: Interaction) -> bool:
+    async def candidate_accept(self, interaction: Interaction) -> None:
         
         tuser = self._mgr.guild.training_manager[interaction.user.id]
-        if not tuser.is_eligible(self, False):
-            error = U.make_embed(
-                title="Ineligible to Pick Up Job Posting",
-                description=(
-                    "You are not eligible to pick up this job posting."
-                )
-            )
+        if not tuser or not await tuser.is_eligible(
+                self, False, False, True, False
+        ):
+            error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
-            return False
+            return
+        
+        self.candidate = tuser
+        await self._update_posting()
+        await interaction.edit()
+    
+################################################################################
+    async def cancel(self, interaction: Interaction) -> None:
+        
+        if self.candidate is None:
+            return
+        
+        self.candidate = None
+        await self._update_posting()
+        await interaction.edit()
+        
+################################################################################
+    async def reject(self, interaction: Interaction) -> None:
+        
+        tuser = self._mgr.guild.training_manager[interaction.user.id]
+        if not tuser or not await tuser.is_eligible(
+            self, False, False, True, False
+        ):
+            error = IneligibleForJobError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if tuser == self.candidate:
+            await self.cancel(interaction)
+        
+        self._rejections.append(tuser)
+        self.update()
         
         confirm = U.make_embed(
-            title="Pick Up Job Posting",
-            description=(
-                "Are you sure you want to pick up the following job posting?\n\n"
-                
-                "__**Venue Name:**__\n"
-                f"`{self._venue.name}`\n\n"
-                
-                "__**Position:**__\n"
-                f"`{self._position.name}`\n\n"
-                
-                "__**Salary:**__\n"
-                f"{self._salary.format()}\n\n"
-                
-                "__**Job Description:**__\n"
-                f"{self._description or '`No description provided.`'}\n\n"
-                
-                f"{U.draw_line(extra=30)}\n"
-            )
+            title="Rejection Recorded",
+            description="Thanks for helping us keep our statistics up to date!"
         )
-        view = ConfirmCancelView(interaction.user)
         
-        await interaction.user.send(embed=confirm, view=view)
-        await view.wait()
+        await interaction.respond(embed=confirm, ephemeral=True)
         
-        if not view.complete or view.value is False:
-            return False
-        
-        await interaction.respond("** **", delete_after=0.1)
-        await self.delete()
-        return True
-    
 ################################################################################

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import TYPE_CHECKING, TypeVar, List, Type, Optional, Tuple
+from typing import TYPE_CHECKING, TypeVar, List, Type, Optional, Tuple, Any
 
 from discord import Embed, Interaction, EmbedField, SelectOption, Role
 
@@ -63,12 +63,12 @@ class Position:
     async def load(
         cls: Type[P], 
         mgr: PositionManager, 
-        data: Tuple[str, str],
+        data: Tuple[Any, ...],
         requirements: List[Tuple[str, int, str, str]]
     ) -> P:
 
         role = (
-            await mgr.guild_data.parent._fetch_role(int(data[3]))
+            await mgr.guild_data.parent._fetch_role(data[3])
             if data[3] is not None
             else None
         )

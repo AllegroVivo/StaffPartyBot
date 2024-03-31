@@ -880,25 +880,45 @@ class TUser:
                 pass
 
 ################################################################################
-    def is_eligible(self, job: JobPosting, compare_schedule: bool = True) -> bool:
+    async def is_eligible(
+        self, 
+        job: JobPosting,
+        compare_hiatus: bool = True,
+        compare_data_centers: bool = True,
+        compare_linked_role: bool = True,
+        compare_schedule: bool = True
+    ) -> bool:
         
-        if self.on_hiatus:
-            return False
-        
-        if not any(dc.contains(job.venue.location.data_center) for dc in self.data_centers):
-            return False
-        
-        if job.position not in self.qualified_positions:
-            return False
-        
-        if compare_schedule:
-            for a in self.availability:
-                if a.day.value == job.start_time.weekday() - 1 if job.start_time.weekday() != 6 else 0: 
-                    if a.contains(job.start_time.time(), job.end_time.time()):
-                        return True
-        
-            return False
-        return True
+        # Check if on hiatus
+        if compare_hiatus:
+            if self.on_hiatus:
+                return False
     
+        # Check if job's data center is in the user's data centers list
+        if compare_data_centers:
+            if not any(dc.contains(job.venue.location.data_center) for dc in self.data_centers):
+                return False
+    
+        # Check if the user has the linked role for the job position, if applicable
+        if compare_linked_role:
+            if job.position.linked_role is not None:
+                member = await self.guild.parent.fetch_member(self.user_id)
+                if job.position.linked_role not in member.roles:
+                    return False
+    
+        # If comparing schedules, check if the user is available during the job's times
+        if compare_schedule:
+            # Adjust for 0-indexed weekday where 0 is Monday, to match your custom 0-indexed day where 0 is Sunday
+            job_day = (job.start_time.weekday() + 1) % 7 
+            for availability in self.availability:
+                if availability.day.value == job_day:
+                    start_time, end_time = job.start_time.time(), job.end_time.time()
+                    if availability.contains(start_time, end_time):
+                        return True
+            return False  # If no matching availability was found
+    
+        # If not comparing schedules or none of the above conditions matched, the user is eligible
+        return True
+
 ################################################################################
         
