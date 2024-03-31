@@ -3,10 +3,10 @@ from __future__ import annotations
 from ._Error import ErrorMessage
 ################################################################################
 
-__all__ = ("InvalidDateTimeError",)
+__all__ = ("DateTimeFormatError",)
 
 ################################################################################
-class InvalidDateTimeError(ErrorMessage):
+class DateTimeFormatError(ErrorMessage):
 
     def __init__(self, entry: str):
 

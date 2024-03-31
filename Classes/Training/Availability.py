@@ -165,6 +165,11 @@ class Availability:
                     common_availability[day].append((start_max, end_min))
     
         return common_availability
-    
+
+################################################################################
+    def contains(self, range_start: time, range_end: time) -> bool:
+        
+        return self._start <= range_start and self._end >= range_end
+
 ################################################################################
     

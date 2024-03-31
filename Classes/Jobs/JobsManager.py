@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List, Dict, Optional
 
-from discord import Interaction, TextChannel, NotFound, ChannelType
+from discord import Interaction, ForumChannel, NotFound, ChannelType, ForumTag
 
 from Utilities import (
     Utilities as U,
@@ -36,8 +36,8 @@ class JobsManager:
         
         self._postings: List[JobPosting] = []
         
-        self._temp_channel: Optional[TextChannel] = None
-        self._perm_channel: Optional[TextChannel] = None
+        self._temp_channel: Optional[ForumChannel] = None
+        self._perm_channel: Optional[ForumChannel] = None
         
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
@@ -98,24 +98,24 @@ class JobsManager:
     
 ################################################################################
     @property
-    def temporary_jobs_channel(self) -> Optional[TextChannel]:
+    def temporary_jobs_channel(self) -> Optional[ForumChannel]:
         
         return self._temp_channel
     
     @temporary_jobs_channel.setter
-    def temporary_jobs_channel(self, value: Optional[TextChannel]) -> None:
+    def temporary_jobs_channel(self, value: Optional[ForumChannel]) -> None:
         
         self._temp_channel = value
         self.update()
         
 ################################################################################
     @property
-    def permanent_jobs_channel(self) -> Optional[TextChannel]:
+    def permanent_jobs_channel(self) -> Optional[ForumChannel]:
         
         return self._perm_channel
     
     @permanent_jobs_channel.setter
-    def permanent_jobs_channel(self, value: Optional[TextChannel]) -> None:
+    def permanent_jobs_channel(self, value: Optional[ForumChannel]) -> None:
         
         self._perm_channel = value
         self.update()
@@ -157,7 +157,7 @@ class JobsManager:
     async def set_jobs_channel(
         self, 
         interaction: Interaction, 
-        channel: TextChannel,
+        channel: ForumChannel,
         post_type: int
     ) -> None:
         

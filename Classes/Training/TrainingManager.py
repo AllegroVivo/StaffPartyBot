@@ -149,6 +149,12 @@ class TrainingManager:
     
 ################################################################################
     @property
+    def tusers(self) -> List[TUser]:
+        
+        return self._tusers
+    
+################################################################################
+    @property
     def signup_message(self) -> SignUpMessage:
         
         return self._message

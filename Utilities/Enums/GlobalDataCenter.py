@@ -2,6 +2,7 @@ from typing import List
 
 from discord import SelectOption
 
+from .DataCenter import DataCenter
 from ._Enum import FroggeEnum
 ################################################################################
 class GlobalDataCenter(FroggeEnum):
@@ -27,4 +28,17 @@ class GlobalDataCenter(FroggeEnum):
         elif self.value == 3:
             return "OC"
     
+################################################################################
+    def contains(self, dc: DataCenter) -> bool:
+        
+        if dc is None:
+            return False
+        
+        if self.value == 1:
+            return dc.value in [1, 2, 3, 4]
+        elif self.value == 2:
+            return dc.value in [5, 6]
+        elif self.value == 3:
+            return dc.value in [7]
+        
 ################################################################################

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
+from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict, List
 
 from discord import User, Interaction, Embed, EmbedField, Message
 
@@ -22,7 +22,8 @@ from Utilities import (
     JobPostingType,
     RateType,
     PostingNotCompleteError,
-    InvalidDateTimeError,
+    DateTimeFormatError,
+    DateTimeMismatchError,
 )
 from .PayRate import PayRate
 
@@ -121,6 +122,12 @@ class JobPosting:
     def guild_id(self) -> int:
         
         return self._mgr.guild_id
+    
+################################################################################
+    @property
+    def venue(self) -> Venue:
+        
+        return self._venue
     
 ################################################################################
     @property
@@ -515,11 +522,11 @@ class JobPosting:
         try:
             start_temp = datetime.strptime(raw_start, "%m/%d/%Y %I:%M %p")
         except ValueError:
-            error = InvalidDateTimeError(raw_start)
-            await inter.respond(embed=error, ephemeral=True)
+            error = DateTimeFormatError(raw_start)
+            await interaction.respond(embed=error, ephemeral=True)
             return
         else:
-            start_time = U.TIMEZONE_OFFSETS[timezone].localize(
+            start_time: datetime = U.TIMEZONE_OFFSETS[timezone].localize(
                 datetime(
                     year=start_temp.year,
                     month=start_temp.month,
@@ -532,11 +539,11 @@ class JobPosting:
         try:
             end_temp = datetime.strptime(raw_end, "%m/%d/%Y %I:%M %p")
         except ValueError:
-            error = InvalidDateTimeError(raw_end)
-            await inter.respond(embed=error, ephemeral=True)
+            error = DateTimeFormatError(raw_end)
+            await interaction.respond(embed=error, ephemeral=True)
             return
         else:
-            end_time = U.TIMEZONE_OFFSETS[timezone].localize(
+            end_time: datetime = U.TIMEZONE_OFFSETS[timezone].localize(
                 datetime(
                     year=end_temp.year,
                     month=end_temp.month,
@@ -546,64 +553,85 @@ class JobPosting:
                 )
             )
             
+        if end_time <= start_time:
+            error = DateTimeMismatchError(start_time, end_time)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if (end_time - start_time).total_seconds() < 7200:
+            error = U.make_embed(
+                title="Time Range Error",
+                description="The time range must be at least 2 hours."
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+            
         self._start = start_time
         self._end = end_time
+        
         self.update()
         
 ################################################################################
     async def create_post(self, interaction: Interaction) -> None:
-        
+
         if not self.complete:
             error = PostingNotCompleteError()
             await interaction.respond(embed=error, ephemeral=True)
             return
-        
-        if self.post_message is not None:
-            if await self._update_posting():
-                confirm = U.make_embed(
-                    title="Job Posting Updated",
-                    description="The job posting has been updated."
-                )
-                await interaction.respond(embed=confirm, ephemeral=True)
-                return
-            
+    
+        if self.post_message is not None and await self._update_posting():
+            confirm = U.make_embed(
+                title="Job Posting Updated",
+                description="The job posting has been updated."
+            )
+            await interaction.respond(embed=confirm, ephemeral=True)
+            return
+    
         confirm = U.make_embed(
             title="Post Job Listing",
             description="Are you sure you want to post this job listing?"
         )
         view = ConfirmCancelView(interaction.user)
-        
         await interaction.respond(embed=confirm, view=view)
         await view.wait()
-        
+    
         if not view.complete or view.value is False:
             return
-        
+    
         channel = (
-            self._mgr.temporary_jobs_channel
-            if self.post_type == JobPostingType.Temporary
+            self._mgr.temporary_jobs_channel 
+            if self.post_type == JobPostingType.Temporary 
             else self._mgr.permanent_jobs_channel
         )
-        
+        pos_thread = next((t for t in channel.threads if t.name == self.position.name), None)
+    
         try:
-            self.post_message = await channel.send(embed=self.compile())
+            if pos_thread:
+                self.post_message = await pos_thread.send(embed=self.compile())
+            else:
+                pos_thread = await channel.create_thread(name=self.position.name, embed=self.compile())
+                self._post_msg = pos_thread.last_message
+            self.update()
+            
+            confirm = U.make_embed(
+                title="Job Posting Updated" if self.post_message else "Job Posting Created",
+                description=(
+                    f"The job posting has been "
+                    f"{'updated' if self.post_message else 'created'}. "
+                    f"`ID: {self._id}`"
+                )
+            )
+            
+            await interaction.respond(embed=confirm, ephemeral=True)
         except:
             error = U.make_embed(
                 title="Posting Error",
                 description="There was an error posting the job listing."
             )
             await interaction.respond(embed=error, ephemeral=True)
-            return
         else:
-            self.update()
-            
-        confirm = U.make_embed(
-            title="Job Posting Created",
-            description=f"The job posting has been created. `ID: {self._id}`"
-        )
-        
-        await interaction.respond(embed=confirm, ephemeral=True)
-    
+            await self.notify_eligible_applicants()
+
 ################################################################################
     async def _update_posting(self) -> bool:
         
@@ -614,5 +642,30 @@ class JobPosting:
             return False
         else:
             return True
+        
+################################################################################
+    async def notify_eligible_applicants(self) -> None:
+        
+        eligible = [
+            tuser for tuser in self._mgr.guild.training_manager.tusers 
+            if tuser.is_eligible(self)
+        ]
+        if not eligible:
+            return
+        
+        embed = U.make_embed(
+            title="Job Posting Alert",
+            description=(
+                f"An opportunity has been posted for a `{self.position.name}` position at "
+                f"`{self._venue.name}`. If you're interested, you can view the posting "
+                f"[here]({self.post_message.jump_url})."
+            )
+        )
+        
+        for tuser in eligible:
+            try:
+                await tuser.user.send(embed=embed)
+            except:
+                continue
             
 ################################################################################

@@ -30,7 +30,7 @@ from .UserConfig import UserConfiguration
 from .UserDetails import UserDetails
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, TrainingManager, PositionManager, GuildData
+    from Classes import TrainingBot, TrainingManager, PositionManager, GuildData, Position, JobPosting
 ################################################################################
 
 __all__ = ("TUser",)
@@ -182,6 +182,12 @@ class TUser:
 
         return self._qualifications
 
+################################################################################
+    @property
+    def qualified_positions(self) -> List[Position]:
+
+        return [q.position for q in self.qualifications if q.level == TrainingLevel.Active]
+    
 ################################################################################
     @property
     def availability(self) -> List[Availability]:
@@ -874,3 +880,23 @@ class TUser:
                 pass
 
 ################################################################################
+    def is_eligible(self, job: JobPosting) -> bool:
+        
+        if self.on_hiatus:
+            return False
+        
+        if not any(dc.contains(job.venue.location.data_center) for dc in self.data_centers):
+            return False
+        
+        if job.position not in self.qualified_positions:
+            return False
+        
+        for a in self.availability:
+            if a.day.value == job.start_time.weekday() - 1 if job.start_time.weekday() != 6 else 0: 
+                if a.contains(job.start_time.time(), job.end_time.time()):
+                    return True
+        
+        return False
+    
+################################################################################
+        
