@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional, List, Type, TypeVar, Any, Dict
+from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 
-import pytz
-from discord import User, Interaction, Embed, EmbedField, Message, NotFound
+from discord import User, Interaction, Embed, EmbedField, Message
 
 from Assets import BotEmojis
-from UI.Training import WeekdaySelectView, TimeSelectView
 from UI.Common import ConfirmCancelView
 from UI.Jobs import (
     JobDescriptionModal,
@@ -16,15 +14,16 @@ from UI.Jobs import (
     SalaryFrequencySelectView,
     SalaryModal,
     JobPostingTypeView,
+    TimezoneSelectView,
+    JobPostingTimesModal,
 )
 from Utilities import (
-    Utilities as U, 
+    Utilities as U,
     JobPostingType,
-    Weekday,
     RateType,
-    PostingNotCompleteError
+    PostingNotCompleteError,
+    InvalidDateTimeError,
 )
-from .JobHours import JobHours
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
@@ -200,24 +199,12 @@ class JobPosting:
     def start_time(self) -> Optional[datetime]:
         
         return self._start
-    
-    @start_time.setter
-    def start_time(self, value: datetime) -> None:
-        
-        self._start = value
-        self.update()
         
 ################################################################################
     @property
     def end_time(self) -> Optional[datetime]:
         
         return self._end
-    
-    @end_time.setter
-    def end_time(self, value: datetime) -> None:
-        
-        self._end = value
-        self.update()
         
 ################################################################################
     @property
@@ -270,18 +257,6 @@ class JobPosting:
             f"{U.draw_line(extra=30)}\n"
         )
         
-        if self.post_message is None:
-            description += "__**Posting URL:**__\n`Not Posted`\n\n"
-        else:
-            description += (
-                "__**Posting URL:**__\n"
-                f"{BotEmojis.ArrowRight}{BotEmojis.ArrowRight}{BotEmojis.ArrowRight} "
-                f"[Click here to view the posting]({self.post_message.jump_url}) "
-                f"{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}\n\n"
-            )
-            
-        description += f"{U.draw_line(extra=30)}\n"
-        
         return U.make_embed(
             title=f"Job Posting Status",
             description=description,
@@ -291,6 +266,7 @@ class JobPosting:
                 self._post_type_field(),
                 self._hours_field(),
                 self._total_time_field(),
+                self._post_url_field(),
             ],
             footer_text=f"Posting ID: {self._id}",
         )
@@ -300,7 +276,8 @@ class JobPosting:
 
         description = (
             "__**Venue Contact:**__\n"
-            f"`{self._user.name}`\n\n"
+            f"`{self._user.name}`\n"
+            f"({self._user.mention})\n\n"
 
             "__**Job Description:**__\n"
             f"{self._description or '`No description provided.`'}\n"
@@ -321,11 +298,26 @@ class JobPosting:
         )
     
 ################################################################################
+    def _post_url_field(self) -> EmbedField:
+        
+        description = (
+            f"{BotEmojis.ArrowRight}{BotEmojis.ArrowRight}{BotEmojis.ArrowRight} "
+            f"[Click here to view the posting]({self.post_message.jump_url}) "
+            f"{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}"
+        ) if self.post_message is not None else "`Not Posted`"
+
+        return EmbedField(
+            name="__Posting URL__",
+            value=description + f"\n{U.draw_line(extra=30)}",
+            inline=False
+        )
+
+################################################################################
     def _post_type_field(self) -> EmbedField:
         
         return EmbedField(
             name="__Job Type__",
-            value=f"{self._type.proper_name if self._type is not None else  '`Not set.`'}",
+            value=f"{self._type.proper_name if self._type is not None else  '`Not Set`'}",
             inline=False
         )
     
@@ -334,7 +326,7 @@ class JobPosting:
         
         return EmbedField(
             name="__Position__",
-            value=f"{self._position.name if self._position is not None else '`Not set.`'}",
+            value=f"{self._position.name if self._position is not None else '`Not Set`'}",
             inline=True
         )
     
@@ -364,7 +356,7 @@ class JobPosting:
             value=(
                 f"{start_ts}\n\n"
                 
-                f"__**End Time:**__\n"
+                f"__**End Time**__\n"
                 f"{end_ts}"
             ),
             inline=True
@@ -378,7 +370,7 @@ class JobPosting:
             hours = delta.total_seconds() / 3600
             field_value = f"`{hours:.2f} hours`"
         else:
-            field_value = "`Invalid time range`"
+            field_value = "`Invalid Time Range`"
         
         return EmbedField(
             name="__Total Time__",
@@ -500,6 +492,60 @@ class JobPosting:
                 "correspond to your entries from the selector below."
             ),
         )
+        view = TimezoneSelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        timezone, inter = view.value
+        modal = JobPostingTimesModal(self.start_time, self.end_time)
+        
+        await inter.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        raw_start, raw_end = modal.value
+        
+        try:
+            start_temp = datetime.strptime(raw_start, "%m/%d/%Y %I:%M %p")
+        except ValueError:
+            error = InvalidDateTimeError(raw_start)
+            await inter.respond(embed=error, ephemeral=True)
+            return
+        else:
+            start_time = datetime(
+                year=start_temp.year,
+                month=start_temp.month,
+                day=start_temp.day,
+                hour=start_temp.hour,
+                minute=start_temp.minute,
+                tzinfo=U.TIMEZONE_OFFSETS[timezone]
+            )
+        
+        try:
+            end_temp = datetime.strptime(raw_end, "%m/%d/%Y %I:%M %p")
+        except ValueError:
+            error = InvalidDateTimeError(raw_end)
+            await inter.respond(embed=error, ephemeral=True)
+            return
+        else:
+            end_time = datetime(
+                year=end_temp.year,
+                month=end_temp.month,
+                day=end_temp.day,
+                hour=end_temp.hour,
+                minute=end_temp.minute,
+                tzinfo=U.TIMEZONE_OFFSETS[timezone]
+            )
+            
+        self._start = start_time
+        self._end = end_time
+        self.update()
         
 ################################################################################
     async def create_post(self, interaction: Interaction) -> None:
