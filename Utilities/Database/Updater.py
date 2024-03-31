@@ -33,8 +33,11 @@ class DatabaseUpdater(DBWorkerBranch):
     def _update_position(self, position: Position) -> None:
         
         self.execute(
-            "UPDATE positions SET name = %s WHERE _id = %s;",
-            position.name, position.id
+            "UPDATE positions SET name = %s, linked_role = %s "
+            "WHERE _id = %s;",
+            position.name, 
+            position.linked_role.id if position.linked_role is not None else None, 
+            position.id
         )
     
 ################################################################################

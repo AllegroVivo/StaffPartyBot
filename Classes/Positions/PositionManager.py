@@ -34,7 +34,7 @@ class PositionManager:
         self._requirements: List[Requirement] = []
 
 ################################################################################
-    def _load_all(self, data: Dict[str, Any]) -> None:
+    async def _load_all(self, data: Dict[str, Any]) -> None:
         """Loads all the positions and requirements from the database.
         
         Parameters:
@@ -60,13 +60,19 @@ class PositionManager:
 
         for pos in position_data:
             reqs = requirements.get(pos[0], [])
-            self._positions.append(Position.load(self, pos, reqs))
+            self._positions.append(await Position.load(self, pos, reqs))
             
 ################################################################################    
     @property
     def bot(self) -> TrainingBot:
         
         return self._guild.bot
+    
+################################################################################
+    @property
+    def guild_data(self) -> GuildData:
+        
+        return self._guild
     
 ################################################################################
     @property

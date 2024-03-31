@@ -880,7 +880,7 @@ class TUser:
                 pass
 
 ################################################################################
-    def is_eligible(self, job: JobPosting) -> bool:
+    def is_eligible(self, job: JobPosting, compare_schedule: bool = True) -> bool:
         
         if self.on_hiatus:
             return False
@@ -891,12 +891,14 @@ class TUser:
         if job.position not in self.qualified_positions:
             return False
         
-        for a in self.availability:
-            if a.day.value == job.start_time.weekday() - 1 if job.start_time.weekday() != 6 else 0: 
-                if a.contains(job.start_time.time(), job.end_time.time()):
-                    return True
+        if compare_schedule:
+            for a in self.availability:
+                if a.day.value == job.start_time.weekday() - 1 if job.start_time.weekday() != 6 else 0: 
+                    if a.contains(job.start_time.time(), job.end_time.time()):
+                        return True
         
-        return False
+            return False
+        return True
     
 ################################################################################
         

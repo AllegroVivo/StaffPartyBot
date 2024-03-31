@@ -1,17 +1,17 @@
 from __future__ import annotations
-
+import re
 from typing import TYPE_CHECKING, TypeVar, List, Type, Optional, Tuple
 
-from discord import Embed, Interaction, EmbedField, SelectOption
+from discord import Embed, Interaction, EmbedField, SelectOption, Role
 
-from UI.Common import ConfirmCancelView
+from UI.Common import ConfirmCancelView, CloseMessageView
 from UI.Positions import (
     PositionStatusView,
     PositionRequirementModal,
     RemoveRequirementView,
     PositionNameModal
 )
-from Utilities import Utilities as U
+from Utilities import Utilities as U, FroggeColor
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
@@ -25,25 +25,13 @@ P = TypeVar("P", bound="Position")
 
 ################################################################################
 class Position:
-    """A class to represent a workable job position, holdable in an RP establishment.
-    
-    Attributes:
-    -----------
-    _manager: :class:`PositionManager`
-        The manager instance that holds the position.
-    _id: :class:`str`
-        The unique identifier for the position.
-    _name: :class:`str`
-        The name of the position.
-    _requirements: List[:class:`Requirement`]
-        A list of all the training requirements for the position.
-    """
 
     __slots__ = (
         "_manager",
         "_id",
         "_name",
         "_requirements",
+        "_role",
     )
     
 ################################################################################
@@ -52,7 +40,8 @@ class Position:
         mgr: PositionManager, 
         _id: str,
         name: str, 
-        reqs: Optional[List[Requirement]] = None
+        reqs: Optional[List[Requirement]] = None,
+        role: Optional[Role] = None
     ) -> None:
 
         self._manager: PositionManager = mgr
@@ -60,54 +49,32 @@ class Position:
         self._id: str = _id
         self._name: str = name
         self._requirements: List[Requirement] = reqs or []
+        self._role: Optional[Role] = role
 
 ################################################################################
     @classmethod
     def new(cls: Type[P], mgr: PositionManager, name: str) -> P:
-        """Create a new position and insert it into the database.
-        
-        Parameters:
-        -----------
-        mgr: :class:`PositionManager`
-            The manager instance that holds the position.
-        name: :class:`str`
-            The name of the position.
-            
-        Returns:
-        --------
-        :class:`Position`
-            The newly created position.
-        """
 
         new_id = mgr.bot.database.insert.position(mgr.guild_id, name)
         return cls(mgr, new_id, name)
 
 ################################################################################
     @classmethod
-    def load(
+    async def load(
         cls: Type[P], 
         mgr: PositionManager, 
         data: Tuple[str, str],
         requirements: List[Tuple[str, int, str, str]]
     ) -> P:
-        """Load database data into a position instance.
-        
-        Parameters:
-        -----------
-        mgr: :class:`PositionManager`
-            The manager instance that holds the position.
-        data: Tuple[:class:`str`, :class:`str`, :class:`int`, :class:`int`]
-            The data from the database to load into the position.
-            
-        Returns:
-        --------
-        :class:`Position`
-            The loaded position instance.
-        """
 
+        role = (
+            await mgr.guild_data.parent._fetch_role(int(data[3]))
+            if data[3] is not None
+            else None
+        )
         reqs = [Requirement.load(mgr.bot, r) for r in requirements]
-        # (data[1] is the guild_id, which we don't use here.)
-        return cls(mgr, data[0], data[2], reqs) 
+        
+        return cls(mgr, data[0], data[2], reqs, role) 
     
 ################################################################################
     def update(self) -> None:
@@ -138,7 +105,6 @@ class Position:
 
         return self._name
     
-################################################################################
     @name.setter
     def name(self, value: str) -> None:
             
@@ -165,6 +131,18 @@ class Position:
         return SelectOption(label=self.name, value=self.id)
 
 ################################################################################
+    @property
+    def linked_role(self) -> Optional[Role]:
+        
+        return self._role
+    
+    @linked_role.setter
+    def linked_role(self, role: Role) -> None:
+        
+        self._role = role
+        self.update()
+        
+################################################################################
     def get_requirement(self, req_id: str) -> Requirement:
         
         for r in self._requirements:
@@ -173,13 +151,6 @@ class Position:
             
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
-        """Open the position's status menu for the user.
-        
-        Parameters:
-        -----------
-        interaction: :class:`Interaction`
-            The interaction that triggered the menu.
-        """
 
         status = self.status()
         view = PositionStatusView(interaction.user, self)
@@ -189,13 +160,6 @@ class Position:
 
 ################################################################################
     def status(self) -> Embed:
-        """Return the position's current status as an embed.
-        
-        Returns:
-        --------
-        :class:`Embed`
-            The position's status as an embed.
-        """
 
         reqs_list = [r.description for r in self.requirements]
         reqs_list.extend(
@@ -207,7 +171,14 @@ class Position:
             title=f"Position Status for: {self.name}",
             fields=[
                 EmbedField(
-                    name="Training Requirements",
+                    name="__Linked Role__",
+                    value=(
+                        f"{self.linked_role.mention if self.linked_role else '`None`'}"
+                    ),
+                    inline=False
+                ),
+                EmbedField(
+                    name="__Training Requirements__",
                     value=field_value,
                     inline=False
                 )
@@ -216,14 +187,7 @@ class Position:
     
 ################################################################################
     async def add_requirement(self, interaction: Interaction) -> None:
-        """Add a new requirement to the position.
-        
-        Parameters:
-        -----------
-        interaction: :class:`Interaction`
-            The interaction that triggered the menu.
-        """
-    
+
         modal = PositionRequirementModal()
     
         await interaction.response.send_modal(modal)
@@ -236,13 +200,6 @@ class Position:
 
 ################################################################################
     async def remove_requirement(self, interaction: Interaction) -> None:
-        """Remove a requirement from the position.
-        
-        Parameters:
-        -----------
-        interaction: :class:`Interaction`
-            The interaction that triggered the menu.
-        """
 
         embed = U.make_embed(
             title="Remove Requirement",
@@ -281,13 +238,6 @@ class Position:
 
 ################################################################################
     async def edit_name(self, interaction: Interaction) -> None:
-        """Edit the position's name.
-        
-        Parameters:
-        -----------
-        interaction: :class:`Interaction`
-            The interaction that triggered the menu.
-        """
 
         modal = PositionNameModal(self.name)
 
@@ -299,4 +249,63 @@ class Position:
 
         self.name = modal.value
 
+################################################################################
+    async def edit_role(self, interaction: Interaction) -> None:
+
+        prompt = U.make_embed(
+            title="Edit Role",
+            description=(
+                "**THE BOT IS NOW LISTENING**\n\n"
+                
+                "Please enter a mention for the role you'd like to link "
+                "to this position.\n"
+                f"{U.draw_line(extra=25)}\n"
+                "*(Type 'Cancel' to cancel this operation.)*"
+            )
+        )
+        
+        response = await interaction.respond(embed=prompt)
+
+        def check(m):
+            return m.author == interaction.user 
+
+        try:
+            message = await self.bot.wait_for("message", check=check, timeout=180)
+        except TimeoutError:
+            embed = U.make_embed(
+                title="Timeout",
+                description=(
+                    "You took too long to respond. Please try again."
+                ),
+                color=FroggeColor.brand_red()
+            )
+            await interaction.respond(embed=embed)
+            return
+
+        error = U.make_embed(
+            title="Invalid Role Mention",
+            description=(
+                "You did not provide a valid role mention. "
+                "Please try again."
+            ),
+            color=FroggeColor.brand_red()
+        )
+
+        if message.content.lower() != "cancel":
+            results = re.match(r"<@&(\d+)>", message.content)
+            if results:
+                role_id = int(results.group(1))
+                role = await self._manager.guild_data.parent._fetch_role(role_id)
+                if role:
+                    self.linked_role = role
+                else:
+                    await interaction.respond(embed=error)
+                    return
+            else:
+                await interaction.respond(embed=error)
+                return
+
+        await message.delete()
+        await response.delete_original_response()
+    
 ################################################################################

@@ -24,6 +24,8 @@ from Utilities import (
     PostingNotCompleteError,
     DateTimeFormatError,
     DateTimeMismatchError,
+    TimeRangeError,
+    DateTimeBeforeNowError,
 )
 from .PayRate import PayRate
 
@@ -558,11 +560,13 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
+        if datetime.now() > start_time:
+            error = DateTimeBeforeNowError(start_time)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
         if (end_time - start_time).total_seconds() < 7200:
-            error = U.make_embed(
-                title="Time Range Error",
-                description="The time range must be at least 2 hours."
-            )
+            error = TimeRangeError("2 Hours")
             await interaction.respond(embed=error, ephemeral=True)
             return
             
@@ -668,4 +672,50 @@ class JobPosting:
             except:
                 continue
             
+################################################################################
+    async def pickup(self, interaction: Interaction) -> bool:
+        
+        tuser = self._mgr.guild.training_manager[interaction.user.id]
+        if not tuser.is_eligible(self, False):
+            error = U.make_embed(
+                title="Ineligible to Pick Up Job Posting",
+                description=(
+                    "You are not eligible to pick up this job posting."
+                )
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return False
+        
+        confirm = U.make_embed(
+            title="Pick Up Job Posting",
+            description=(
+                "Are you sure you want to pick up the following job posting?\n\n"
+                
+                "__**Venue Name:**__\n"
+                f"`{self._venue.name}`\n\n"
+                
+                "__**Position:**__\n"
+                f"`{self._position.name}`\n\n"
+                
+                "__**Salary:**__\n"
+                f"{self._salary.format()}\n\n"
+                
+                "__**Job Description:**__\n"
+                f"{self._description or '`No description provided.`'}\n\n"
+                
+                f"{U.draw_line(extra=30)}\n"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.user.send(embed=confirm, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return False
+        
+        await interaction.respond("** **", delete_after=0.1)
+        await self.delete()
+        return True
+    
 ################################################################################

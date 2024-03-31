@@ -53,7 +53,7 @@ class GuildData:
         
         await self._logger.load(data["bot_config"][1])
         
-        self._pos_mgr._load_all(data)
+        await self._pos_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
         await self._venue_mgr._load_all(data)

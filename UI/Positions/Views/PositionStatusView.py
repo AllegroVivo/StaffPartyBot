@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
-from discord import Interaction, SelectOption, User, ButtonStyle
+from discord import Interaction, Role, User, ButtonStyle
 from discord.ui import Button
 
-from UI.Common import FroggeView, CloseMessageButton
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ class PositionStatusView(FroggeView):
         self.position = position
         
         button_list = [
-            PositionNameButton(),  # PositionRoleButton("Trainer"), PositionRoleButton("Trainee"),
+            PositionNameButton(),  PositionRoleButton(self.position.linked_role),
             PositionAddReqButton(), PositionRemoveReqButton(),
             CloseMessageButton()
         ]
@@ -37,11 +37,11 @@ class PositionStatusView(FroggeView):
     def set_button_style(self) -> None:
         
         if len(self.position.requirements) > 0:
-            self.children[2].style = ButtonStyle.danger  # type: ignore
-            self.children[2].disabled = False  # type: ignore
+            self.children[3].style = ButtonStyle.danger  # type: ignore
+            self.children[3].disabled = False  # type: ignore
         else:
-            self.children[2].style = ButtonStyle.secondary  # type: ignore
-            self.children[2].disabled = True  # type: ignore
+            self.children[3].style = ButtonStyle.secondary  # type: ignore
+            self.children[3].disabled = True  # type: ignore
             
 ################################################################################
 class PositionNameButton(Button):
@@ -97,6 +97,27 @@ class PositionRemoveReqButton(Button):
     async def callback(self, interaction: Interaction):
         await self.view.position.remove_requirement(interaction)
         self.view.set_button_style()
+        
+        await edit_message_helper(
+            interaction, embed=self.view.position.status(), view=self.view
+        )
+        
+################################################################################
+class PositionRoleButton(FroggeButton):
+    
+    def __init__(self, cur_role: Optional[Role]):
+        
+        super().__init__(
+            label="Edit Role",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(cur_role)
+        
+    async def callback(self, interaction):
+        await self.view.position.edit_role(interaction)
+        self.set_style(self.view.position.linked_role)
         
         await edit_message_helper(
             interaction, embed=self.view.position.status(), view=self.view
