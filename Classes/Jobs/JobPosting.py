@@ -249,7 +249,8 @@ class JobPosting:
             f"`{self._venue.name}`\n\n"
             
             "__**Venue Contact:**__\n"
-            f"`{self._user.name}`\n\n"
+            f"`{self._user.name}`\n"
+            f"({self._user.mention})\n\n"
 
             "__**Job Description:**__\n"
             f"{self._description or '`No description provided.`'}\n\n"
@@ -481,7 +482,7 @@ class JobPosting:
     
 ################################################################################
     async def set_schedule(self, interaction: Interaction) -> None:
-
+    
         prompt = U.make_embed(
             title="Set Job Posting Schedule",
             description=(
@@ -518,15 +519,16 @@ class JobPosting:
             await inter.respond(embed=error, ephemeral=True)
             return
         else:
-            start_time = datetime(
-                year=start_temp.year,
-                month=start_temp.month,
-                day=start_temp.day,
-                hour=start_temp.hour,
-                minute=start_temp.minute,
-                # tzinfo=U.TIMEZONE_OFFSETS[timezone]
+            start_time = U.TIMEZONE_OFFSETS[timezone].localize(
+                datetime(
+                    year=start_temp.year,
+                    month=start_temp.month,
+                    day=start_temp.day,
+                    hour=start_temp.hour,
+                    minute=start_temp.minute
+                )
             )
-        
+    
         try:
             end_temp = datetime.strptime(raw_end, "%m/%d/%Y %I:%M %p")
         except ValueError:
@@ -534,13 +536,14 @@ class JobPosting:
             await inter.respond(embed=error, ephemeral=True)
             return
         else:
-            end_time = datetime(
-                year=end_temp.year,
-                month=end_temp.month,
-                day=end_temp.day,
-                hour=end_temp.hour,
-                minute=end_temp.minute,
-                # tzinfo=U.TIMEZONE_OFFSETS[timezone]
+            end_time = U.TIMEZONE_OFFSETS[timezone].localize(
+                datetime(
+                    year=end_temp.year,
+                    month=end_temp.month,
+                    day=end_temp.day,
+                    hour=end_temp.hour,
+                    minute=end_temp.minute
+                )
             )
             
         self._start = start_time

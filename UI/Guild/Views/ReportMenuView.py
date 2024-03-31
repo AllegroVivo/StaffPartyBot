@@ -67,3 +67,21 @@ class UnpaidTrainerButton(Button):
         await self.view.stop()  # type: ignore
         
 ################################################################################
+class PositionsButton(Button):
+    
+    def __init__(self):
+        
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Positions",
+            disabled=False,
+            row=0
+        )
+        
+    async def callback(self, interaction):
+        await self.view.guild.position_manager.positions_report(interaction)
+        
+        self.view.complete = True
+        await self.view.stop()  # type: ignore
+        
+################################################################################
