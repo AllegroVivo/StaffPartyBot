@@ -524,7 +524,7 @@ class JobPosting:
                 day=start_temp.day,
                 hour=start_temp.hour,
                 minute=start_temp.minute,
-                tzinfo=U.TIMEZONE_OFFSETS[timezone]
+                # tzinfo=U.TIMEZONE_OFFSETS[timezone]
             )
         
         try:
@@ -540,7 +540,7 @@ class JobPosting:
                 day=end_temp.day,
                 hour=end_temp.hour,
                 minute=end_temp.minute,
-                tzinfo=U.TIMEZONE_OFFSETS[timezone]
+                # tzinfo=U.TIMEZONE_OFFSETS[timezone]
             )
             
         self._start = start_time
