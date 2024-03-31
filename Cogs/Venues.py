@@ -128,7 +128,7 @@ class Venues(Cog):
 ################################################################################
     @venues.command(
         name="import",
-        description="Import a venue from the XIV Venues API."
+        description="Import a venue from the FFXIV Venues API."
     )
     async def venue_import(
         self,
@@ -143,6 +143,25 @@ class Venues(Cog):
 
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.import_venue(ctx.interaction, name)
+        
+################################################################################
+    @venues.command(
+        name="update",
+        description="Update a venue from the FFXIV Venues API."
+    )
+    async def venue_update(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="name",
+            description="The name of the venue to update.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.update_venue(ctx.interaction, name)
         
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:

@@ -513,6 +513,12 @@ class VenueManager:
 ################################################################################
     async def import_venue(self, interaction: Interaction, name: str) -> None:
         
+        exists = self.get_venue(name)
+        if exists:
+            error = VenueExistsError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
         prompt = U.make_embed(
             title="Confirm Venue Import",
             description=(
@@ -574,4 +580,25 @@ class VenueManager:
         
         await venue.menu(interaction)
     
+################################################################################
+    async def update_venue(self, interaction: Interaction, name: str) -> None:
+        
+        venue = self.get_venue(name)
+        if venue is None:
+            error = VenueDoesntExistError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if not await self.authenticate(venue, interaction.user, interaction):
+            return
+
+        results = [
+            v for v in
+            await self.bot.veni_client.get_venues_by_manager(interaction.user.id)
+            if v.name.lower() == venue.name.lower()
+        ]
+        venue.update_from_xiv_venue(interaction, results[0])
+        
+        await venue.menu(interaction)
+        
 ################################################################################
