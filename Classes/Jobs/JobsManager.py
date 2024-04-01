@@ -186,3 +186,9 @@ class JobsManager:
         await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
+    async def cull_job_postings(self) -> None:
+        
+        for posting in self._postings:
+            await posting.expiration_check()
+        
+################################################################################

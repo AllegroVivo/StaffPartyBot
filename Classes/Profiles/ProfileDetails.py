@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord import Colour, Embed, Interaction, EmbedField
+from discord import Colour, Embed, Interaction, EmbedField, Message
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple
 
 from Assets import BotEmojis
@@ -32,7 +32,7 @@ class ProfileDetails(ProfileSection):
         "_color",
         "_jobs",
         "_rates",
-        "_post_url"
+        "_post_msg"
     )
 
 ################################################################################
@@ -45,12 +45,20 @@ class ProfileDetails(ProfileSection):
         self._color: Optional[Colour] = kwargs.pop("color", None) or kwargs.pop("colour", None)
         self._jobs: List[str] = kwargs.pop("jobs", []) or []
         self._rates: Optional[str] = kwargs.pop("rates", None)
-        self._post_url: Optional[str] = kwargs.pop("post_url", None)
+        self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
 
 ################################################################################
     @classmethod
-    def load(cls: Type[PD], parent: Profile, data: Tuple[Any, ...]) -> PD:
+    async def load(cls: Type[PD], parent: Profile, data: Tuple[Any, ...]) -> PD:
         
+        url_parts = data[5].split("/") if data[5] is not None else []
+        if url_parts:
+            channel_id = int(url_parts[-2])
+            message_id = int(url_parts[-1])
+            post_msg = await parent.bot.fetch_channel(channel_id).fetch_message(message_id)
+        else:
+            post_msg = None
+            
         return cls(
             parent=parent,
             name=data[0],
@@ -58,7 +66,7 @@ class ProfileDetails(ProfileSection):
             color=Colour(data[2]) if data[2] is not None else None,
             jobs=data[3] or [],
             rates=data[4],
-            post_url=data[5]
+            post_msg=post_msg
         )
     
 ################################################################################
@@ -128,15 +136,15 @@ class ProfileDetails(ProfileSection):
         
 ################################################################################    
     @property
-    def post_url(self) -> Optional[str]:
+    def post_message(self) -> Optional[Message]:
         
-        return self._post_url
+        return self._post_msg
     
 ################################################################################
-    @post_url.setter
-    def post_url(self, value: Optional[str]) -> None:
+    @post_message.setter
+    def post_message(self, value: Optional[Message]) -> None:
         
-        self._post_url = value
+        self._post_msg = value
         self.update()
         
 ################################################################################

@@ -886,7 +886,8 @@ class TUser:
         compare_hiatus: bool = True,
         compare_data_centers: bool = True,
         compare_linked_role: bool = True,
-        compare_schedule: bool = True
+        compare_schedule: bool = True,
+        check_profile: bool = False
     ) -> bool:
         
         # Check if on hiatus
@@ -916,6 +917,11 @@ class TUser:
                     if availability.contains(start_time, end_time):
                         return True
             return False  # If no matching availability was found
+        
+        if check_profile:
+            profile = self.guild.profile_manager[self.user_id]
+            if not profile.is_complete:
+                return False
     
         # If not comparing schedules or none of the above conditions matched, the user is eligible
         return True

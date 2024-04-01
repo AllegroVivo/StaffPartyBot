@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from discord import Cog
 from typing import TYPE_CHECKING
+from discord.ext import tasks
 
 if TYPE_CHECKING:
     from Classes import TrainingBot
@@ -38,6 +39,13 @@ class Internal(Cog):
     async def on_member_remove(self, member) -> None:
 
         await self.bot[member.guild.id].log.member_left(member)
+        
+################################################################################
+    @tasks.loop(minutes=30)
+    async def cull_job_postings(self) -> None:
+
+        for f in self.bot.fguilds:
+            await f.jobs_manager.cull_job_postings()
         
 ################################################################################
 def setup(bot: TrainingBot) -> None:

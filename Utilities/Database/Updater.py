@@ -136,7 +136,7 @@ class DatabaseUpdater(DBWorkerBranch):
             "rates = %s, post_url = %s WHERE _id = %s;",
             details.name, details.url, 
             details.color.value if details.color is not None else None,
-            details.jobs, details.rates, details.post_url, details.profile_id
+            details.jobs, details.rates, details.post_message, details.profile_id
         )
     
 ################################################################################    
@@ -265,14 +265,14 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE job_postings SET post_type = %s, position = %s, "
             "description = %s, salary = %s, pay_frequency = %s, pay_details = %s, "
-            "post_url = %s, start_time = %s, end_time = %s, candidate = %s "
-            "WHERE _id = %s;",
+            "post_url = %s, start_time = %s, end_time = %s, candidate = %s, "
+            "rejections = %s WHERE _id = %s;",
             job.post_type.value if job.post_type else None,
             job.position.id if job.position else None, job.description,
             job.salary, job.frequency.value if job.frequency else None,
             job.pay_details, job.post_message.jump_url if job.post_message else None,
             job.start_time, job.end_time, job.candidate.user_id if job.candidate else None,
-            job.id
+            [r.user_id for r in job.rejections], job.id
         )
         
 ################################################################################

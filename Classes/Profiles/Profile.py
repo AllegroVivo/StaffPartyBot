@@ -9,7 +9,7 @@ from discord import (
     Colour,
     Attachment,
     Embed,
-    TextChannel,
+    ForumChannel,
     Forbidden,
     EmbedField,
     Message
@@ -91,7 +91,7 @@ class Profile:
         self._user = user
         self._id = profile[0]
         
-        self._details = ProfileDetails.load(self, profile[3:9])
+        self._details = await ProfileDetails.load(self, profile[3:9])
         self._personality = ProfilePersonality.load(self, profile[9:13])
         self._aag = ProfileAtAGlance.load(self, profile[13:23])
         self._images = ProfileImages.load(self, profile[23:25], addl_imgs)
@@ -137,6 +137,18 @@ class Profile:
         
         return FroggeColor.embed_background()
     
+################################################################################
+    @property
+    def post_message(self) -> Optional[Message]:
+        
+        return self._details.post_message
+    
+    @post_message.setter
+    def post_message(self, value: Optional[Message]) -> None:
+        
+        self._details.post_message = value
+        self._details.update()
+        
 ################################################################################
     async def set_details(self, interaction: Interaction) -> None:
         
@@ -200,7 +212,7 @@ class Profile:
 ################################################################################
     async def progress(self, interaction: Interaction) -> None:
 
-        em_final = self._details.progress_emoji(self._details._post_url)
+        em_final = self._details.progress_emoji(self._details._post_msg)
         value = (
             self._details.progress() +
             self._aag.progress() +
@@ -222,7 +234,7 @@ class Profile:
         await view.wait()
 
 ################################################################################
-    async def post(self, interaction: Interaction, channel: TextChannel) -> None:
+    async def post(self, interaction: Interaction, channel: ForumChannel) -> None:
 
         if self.char_name == str(NS):
             error = CharNameNotSetError()
@@ -240,32 +252,48 @@ class Profile:
         if aboutme is not None:
             embeds.append(aboutme)
 
-        profile_msg = await self.fetch_post_message(interaction.client)  # type: ignore
-        if profile_msg is not None:
+        if self.post_message is not None:
             try:
-                await profile_msg.edit(embeds=embeds)
+                await self.post_message.edit(embeds=embeds)
             except NotFound:
-                self._details.post_url = None
+                self._details.post_message = None
+            else:
+                await interaction.respond(embed=self.success_message())
+                return
 
-            await interaction.respond(embed=self.success_message())
-            return
-
-        if not isinstance(channel, TextChannel):
-            error = ChannelTypeError(channel, "TextChannel")
+        if not isinstance(channel, ForumChannel):
+            error = ChannelTypeError(channel, "ForumChannel")
             await interaction.respond(embed=error, ephemeral=True)
             return
+        
+        matching_threads = [
+            t for t in channel.threads
+            if t.name.lower() == self.char_name.lower()
+        ]
+        if matching_threads:
+            async for m in matching_threads[0].history():
+                await m.delete()
+                
+            try:
+                self.post_message = await matching_threads[0].send(embeds=embeds)
+            except Forbidden:
+                error = InsufficientPermissionsError(channel, "Send Messages")
+                await interaction.respond(embed=error, ephemeral=True)
+                return
+            else:
+                await interaction.respond(embed=self.success_message())
+                return
 
         try:
-            post_msg = await channel.send(embeds=embeds)
+            post_msg = await channel.create_thread(name=self.char_name, embeds=embeds)
         except Forbidden:
             error = InsufficientPermissionsError(channel, "Send Messages")
             await interaction.respond(embed=error, ephemeral=True)
             return
         else:
-            self._details.post_url = post_msg.jump_url
+            self._details.post_message = post_msg
 
         await interaction.respond(embed=self.success_message())
-
         return
 
 ################################################################################
@@ -317,30 +345,6 @@ class Profile:
         return main_profile, aboutme
     
 ################################################################################
-    async def fetch_post_message(self, client: TrainingBot) -> Optional[Message]:
-
-        post_url = self._details.post_url
-        if post_url is None:
-            return
-
-        parts = post_url.split("/")
-        channel_id = int(parts[5])
-        msg_id = int(parts[6])
-
-        profile_msg = None
-        try:
-            channel = await client.fetch_channel(channel_id)
-        except:
-            return
-        else:
-            try:
-                profile_msg = await channel.fetch_message(msg_id)
-            except:
-                self._details.post_url = None
-
-        return profile_msg
-
-################################################################################
     def success_message(self) -> Embed:
 
         return U.make_embed(
@@ -352,7 +356,7 @@ class Profile:
                 f"(__Character Name:__ ***{self.char_name}***)\n\n"
 
                 f"{BotEmojis.ArrowRight}  [Check It Out HERE!]"
-                f"({self._details.post_url})  {BotEmojis.ArrowLeft}\n"
+                f"({self._details.post_message})  {BotEmojis.ArrowLeft}\n"
                 f"{U.draw_line(extra=16)}"
             ),
             thumbnail_url=BotImages.ThumbsUpFrog,

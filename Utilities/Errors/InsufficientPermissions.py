@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord import TextChannel
+from discord.abc import GuildChannel
 
 from ._Error import ErrorMessage
 ################################################################################
@@ -10,7 +10,7 @@ __all__ = ("InsufficientPermissionsError",)
 ################################################################################
 class InsufficientPermissionsError(ErrorMessage):
 
-    def __init__(self, channel: TextChannel, permissions_needed: str):
+    def __init__(self, channel: GuildChannel, permissions_needed: str):
     
         super().__init__(
             title="Insufficient Permissions",

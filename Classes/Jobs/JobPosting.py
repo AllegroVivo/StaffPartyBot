@@ -249,6 +249,12 @@ class JobPosting:
         )
     
 ################################################################################
+    @property
+    def rejections(self) -> List[TUser]:
+        
+        return self._rejections
+    
+################################################################################
     def update(self) -> None:
 
         self.bot.database.update.job_posting(self)
@@ -262,9 +268,9 @@ class JobPosting:
             except:
                 pass
         
-        # Oh no, being naughty and accessing a private attribute!
-        self._mgr._postings.remove(self)
-        self.bot.database.delete.job_posting(self)
+        # # Oh no, being naughty and accessing a private attribute!
+        # self._mgr._postings.remove(self)
+        # self.bot.database.delete.job_posting(self)
         
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
@@ -747,5 +753,11 @@ class JobPosting:
         )
         
         await interaction.respond(embed=confirm, ephemeral=True)
+
+################################################################################
+    async def expiration_check(self) -> None:
         
+        if self.end_time is not None and self.end_time <= datetime.now():
+            await self.delete()
+
 ################################################################################
