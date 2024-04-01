@@ -55,6 +55,10 @@ class DatabaseInserter(DBWorkerBranch):
             "INSERT INTO tuser_details (user_id, guild_id) VALUES (%s, %s) ",
             user_id, guild_id
         )
+        self.execute(
+            "INSERT INTO bg_checks (user_id, guild_id) VALUES (%s, %s) ",
+            user_id, guild_id
+        )
         
 ################################################################################
     def _add_qualification(

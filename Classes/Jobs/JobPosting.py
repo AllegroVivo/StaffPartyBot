@@ -596,10 +596,10 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        # if (end_time - start_time).total_seconds() < 7200:
-        #     error = TimeRangeError("2 Hours")
-        #     await interaction.respond(embed=error, ephemeral=True)
-        #     return
+        if (end_time - start_time).total_seconds() < 7200:
+            error = TimeRangeError("2 Hours")
+            await interaction.respond(embed=error, ephemeral=True)
+            return
             
         self._start = start_time
         self._end = end_time
@@ -666,6 +666,7 @@ class JobPosting:
             )
             await interaction.respond(embed=error, ephemeral=True)
         else:
+            await self._mgr.guild.log.temp_job_posted(self)
             await self.notify_eligible_applicants()
 
 ################################################################################
@@ -725,12 +726,17 @@ class JobPosting:
         self.candidate = tuser
         await self._update_posting()
         await interaction.edit()
+        
+        await self._mgr.guild.log.temp_job_accepted(self)
     
 ################################################################################
     async def cancel(self, interaction: Interaction) -> None:
         
         if self.candidate is None:
             return
+        
+        # Log before removing the candidate
+        await self._mgr.guild.log.temp_job_canceled(self)
         
         self.candidate = None
         await self._update_posting()
@@ -763,7 +769,7 @@ class JobPosting:
 ################################################################################
     async def expiration_check(self) -> None:
         
-        if self.end_time is not None and self.end_time <= datetime.now():
+        if self.end_time is not None and self.end_time.timestamp() <= datetime.now().timestamp():
             await self.delete()
 
 ################################################################################

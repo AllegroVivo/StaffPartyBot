@@ -51,7 +51,7 @@ class TrainingBot(Bot):
     
 ################################################################################
     @property
-    def fguilds(self) -> GuildManager:
+    def guild_manager(self) -> GuildManager:
         
         return self._guild_mgr
     
@@ -102,6 +102,7 @@ class TrainingBot(Bot):
             "profiles": [],
             "venues": [],
             "job_postings": {},
+            "bg_checks": []
         } for g in self.guilds }
         
         load_dotenv()
@@ -129,6 +130,8 @@ class TrainingBot(Bot):
             ret[t[1]]["trainings"].append(t)
         for ro in data["requirement_overrides"]:
             ret[ro[1]]["requirement_overrides"].append(ro)
+        for bg in data["bg_checks"]:
+            ret[bg[6]]["bg_checks"].append(bg)
             
         ### Profiles ###
         for p in data["profiles"]:
@@ -161,7 +164,7 @@ class TrainingBot(Bot):
                 "hours": [],
             }
         for jpa in data["hours"]:
-            ret[jpa[1]]["job_postings"][jpa[0]]["hours"].append(jpa)
+            ret[jpa[1]]["job_postings"][jpa[0]]["hours"].append(jpa)  # type: ignore
             
         return ret
     

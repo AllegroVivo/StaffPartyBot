@@ -691,6 +691,11 @@ class Venue:
         await self._aag.set_size(interaction)
         
 ################################################################################
+    async def set_tags(self, interaction: Interaction) -> None:
+        
+        await self._aag.set_tags(interaction)
+        
+################################################################################
     async def set_location(self, interaction: Interaction) -> None:
         
         await self._location.menu(interaction)

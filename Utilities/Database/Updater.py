@@ -289,6 +289,17 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################
+    def _update_background_check(self, check: BackgroundCheck) -> None:
+        
+        self.execute(
+            "UPDATE bg_checks SET agree = %s, names = %s, venues = %s, "
+            "jobs = %s, approved = %s WHERE user_id = %s;",
+            check.agree, check.names, 
+            [v._to_db_string() for v in check.venues],
+            [r.id for r in check.positions], check.approved, check.user_id
+        )
+        
+################################################################################
     
     log_channel             = _update_log_channel
     position                = _update_position
@@ -313,6 +324,7 @@ class DatabaseUpdater(DBWorkerBranch):
     job_hours               = _update_job_hours
     job_posting             = _update_job_post
     job_posting_channels    = _update_job_posting_channels
+    background_check        = _update_background_check
     
 ################################################################################
     

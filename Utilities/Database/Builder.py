@@ -25,6 +25,17 @@ class DatabaseBuilder(DBWorkerBranch):
                 "ON CONFLICT DO NOTHING;",
                 guild.id,
             )
+            
+        self.execute("SELECT * FROM tusers;")
+        tusers = self.fetchall()
+        
+        for record in tusers:
+            print(record)
+            self.execute(
+                "INSERT INTO bg_checks (user_id, guild_id) VALUES (%s, %s) "
+                "ON CONFLICT DO NOTHING;",
+                record[0], record[1]
+            )
   
 ################################################################################
     def _build_views(self) -> None:

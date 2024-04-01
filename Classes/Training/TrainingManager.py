@@ -22,7 +22,7 @@ from .TUser import TUser
 from .Training import Training
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, GuildData, Venue
+    from Classes import TrainingBot, GuildData, Venue, VenueTag
 ################################################################################
 
 __all__ = ("TrainingManager",)
@@ -58,13 +58,6 @@ class TrainingManager:
 
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
-        """Load all TUsers from the database records provided.
-        
-        Parameters:
-        -----------
-        data : Dict[:class:`str`, Any]
-            The data to load from.
-        """
 
         payload = self._parse_data(data)
 
@@ -94,6 +87,7 @@ class TrainingManager:
         tuser_data = data["tusers"]
         availability_data = data["availability"]
         qdata = data["qualifications"]
+        bg_checks = data["bg_checks"]
         
         tusers: Dict[int, Dict[str, Any]] = {}
 
@@ -102,6 +96,7 @@ class TrainingManager:
                 "tuser": user,
                 "availability": [],
                 "qualifications": [],
+                "bg_check": None,
             }
 
         for a in availability_data:
@@ -121,6 +116,12 @@ class TrainingManager:
                 overrides[o[2]].append((o[3], o[4]))
             except KeyError:
                 overrides[o[2]] = [(o[3], o[4])]
+                
+        for bg in bg_checks:
+            try:
+                tusers[bg[0]]["bg_check"] = bg
+            except KeyError:
+                pass
         
         return {
             "tusers": tusers,
@@ -377,21 +378,25 @@ class TrainingManager:
         rp_level: RPLevel, 
         nsfw_pref: NSFWPreference,
         size: VenueSize, 
-        styles: List[VenueTag]
+        tags: List[VenueTag]
     ) -> List[Venue]:
         
         ret = {}
         
         for venue in self.guild.venue_manager.venues:
-            if not venue.ataglance_complete or not venue.accepting_interns:
+            if venue.post_url is None or not venue.hiring:
                 continue
     
             level_diff = self._calculate_distance(rp_level, venue.rp_level)
             size_diff = self._calculate_distance(size, venue.size)
-            style_scalar = 0.5 if venue.style.value in [s.value for s in styles] else 1
             nsfw_match = nsfw_pref == venue.nsfw
+            
+            tags_scalar = 0
+            for tag in tags:
+                if tag in venue.tags:
+                    tags_scalar += 1
     
-            overall_score = (level_diff + size_diff) * style_scalar - nsfw_match
+            overall_score = (level_diff + size_diff) * tags_scalar - nsfw_match
     
             ret[venue] = overall_score
             
@@ -459,4 +464,14 @@ class TrainingManager:
         await interaction.respond(embed=report, view=view)
         await view.wait()
     
+################################################################################
+    async def start_bg_check(self, interaction: Interaction) -> None:
+
+        tuser = self[interaction.user.id]
+        if tuser is None:
+            tuser = TUser.new(self, interaction.user)
+            self._tusers.append(tuser)
+
+        await tuser.start_bg_check(interaction)
+        
 ################################################################################

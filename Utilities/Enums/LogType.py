@@ -14,5 +14,8 @@ class LogType(FroggeEnum):
     VenueCreated = 9
     OwnerRemovalFlagged = 10
     VenueRemoved = 11
+    TempJobAccepted = 12
+    TempJobCanceled = 13
+    TempJobPosted = 14
 
 ################################################################################

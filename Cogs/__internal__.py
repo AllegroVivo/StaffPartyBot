@@ -19,6 +19,9 @@ class Internal(Cog):
 
         print("Loading internals...")
         await self.bot.load_all()
+
+        print("Starting tasks...")
+        self.cull_job_postings.start()
         
         print("TrainingBot Online!")
 
@@ -26,7 +29,7 @@ class Internal(Cog):
     @Cog.listener("on_guild_join")
     async def on_guild_join(self, guild) -> None:
 
-        self.bot.fguilds.add_guild(guild)
+        self.bot.guild_manager.add_guild(guild)
 
 ################################################################################
     @Cog.listener("on_member_join")
@@ -44,7 +47,7 @@ class Internal(Cog):
     @tasks.loop(minutes=30)
     async def cull_job_postings(self) -> None:
 
-        for f in self.bot.fguilds:
+        for f in self.bot.guild_manager.fguilds:
             await f.jobs_manager.cull_job_postings()
         
 ################################################################################

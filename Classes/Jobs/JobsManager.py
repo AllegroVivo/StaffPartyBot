@@ -1,20 +1,32 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, List, Dict, Optional
 
-from discord import Interaction, ForumChannel, NotFound, ChannelType, ForumTag
+from discord import (
+    Interaction,
+    ForumChannel, 
+    NotFound, 
+    ChannelType,
+    EmbedField
+)
+from discord.ext.pages import Page
 
+from UI.Common import Frogginator
+from UI.Jobs import JobReportRangeModal
 from Utilities import (
     Utilities as U,
     VenueDoesntExistError, 
     JobPostingNotFoundError, 
     ChannelTypeError, 
-    JobPostingType
+    JobPostingType,
+    DateTimeFormatError,
+    DateTimeMismatchError,
 )
 from .JobPosting import JobPosting
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot, VenueManager
+    from Classes import GuildData, TrainingBot, VenueManager, Venue
 ################################################################################
 
 __all__ = ("JobsManager",)
@@ -190,5 +202,123 @@ class JobsManager:
         
         for posting in self._postings:
             await posting.expiration_check()
+        
+################################################################################
+    async def temp_job_report(self, interaction: Interaction) -> None:
+        
+        modal = JobReportRangeModal()
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        try:
+            start_dt = datetime.strptime(modal.value[0], "%m/%d/%Y")
+        except ValueError:
+            error = DateTimeFormatError(modal.value[0])
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        try:
+            end_dt = datetime.strptime(modal.value[1], "%m/%d/%Y")
+        except ValueError:
+            error = DateTimeFormatError(modal.value[1])
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if start_dt > end_dt:
+            error = DateTimeMismatchError(start_dt, end_dt)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        job_postings = [
+            posting for posting in self._postings
+            if posting.end_time is not None and start_dt <= posting.end_time <= end_dt
+        ]
+        job_postings.sort(key=lambda x: x.start_time)
+        
+        job_dict: Dict[Venue, List[JobPosting]] = {}
+        for jp in job_postings:
+            if jp.venue not in job_dict:
+                job_dict[jp.venue] = []
+            job_dict[jp.venue].append(jp)
+
+        # Initial setup
+        pages = []
+        col1 = col2 = col3 = ""
+        current_length = 0
+        venue_continued = False
+
+        def add_page():
+            nonlocal pages, col1, col2, col3, current_length
+            report = U.make_embed(
+                title="Temporary Job Postings",
+                fields=[
+                    EmbedField("** **", col1, True),
+                    EmbedField("** **", col2, True),
+                    EmbedField("** **", col3, True)
+                ]
+            )
+            pages.append(Page(embeds=[report]))
+            col1 = col2 = col3 = ""
+            current_length = 0
+
+        for venue, postings in job_dict.items():
+            # Calculate the potential new lengths
+            venue_name = f"{venue.name} (cont.)" if venue_continued else venue.name
+            potential_addition = sum(
+                len(
+                    posting.candidate.name 
+                    if posting.candidate else "Not Accepted"
+                ) + len(
+                    U.format_dt(posting.start_time, 'd')
+                ) + len(
+                    U.format_dt(posting.start_time, 't') + " - " + U.format_dt(posting.end_time, 't')
+                ) + 3  # +3 for newlines and formatting
+                for posting in postings
+            ) + len(venue_name)
+    
+            # Check if adding the current venue's postings would exceed the limit
+            if current_length + potential_addition > 5800:
+                add_page()  # Finalize current page and start a new one
+                venue_continued = False  # Reset continuation status for the new page
+    
+            if not venue_continued:
+                col1 += f"__**{venue_name}**__\n"
+                col2 += "** **\n"
+                col3 += "** **\n"
+                current_length += len(venue_name) + 6  # +6 for newlines and formatting
+    
+            for posting in postings:
+                entry = (
+                    f"{U.format_dt(posting.start_time, 'd')}\n",
+                    f"{U.format_dt(posting.start_time, 't')} - "
+                    f"{U.format_dt(posting.end_time, 't')}\n",
+                    f"{posting.candidate.name if posting.candidate else 'Not Accepted'}\n"
+                )
+                if current_length + sum(len(e) for e in entry) > 5800:
+                    add_page()  # Start a new page
+                    col1 += f"__**{venue.name} (cont.)**__\n** **\n"  # Add continuation header
+                    col2 += "** **\n"
+                    col3 += "** **\n"
+                    current_length += len(venue.name) + 14  # Adjust length for continuation header
+    
+                col1 += entry[0]
+                col2 += entry[1]
+                col3 += entry[2]
+                current_length += sum(len(e) for e in entry)  # Update current length
+                venue_continued = True  # Mark as continued for potential next page
+    
+            venue_continued = False  # Reset for next venue
+    
+        # Check if there's content left for a final page
+        if current_length > 0:
+            add_page()
+    
+        # Send report paginator
+        frogginator = Frogginator(pages=pages)
+        await frogginator.respond(interaction)
         
 ################################################################################

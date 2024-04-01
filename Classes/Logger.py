@@ -19,7 +19,7 @@ from discord import (
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
 
 if TYPE_CHECKING:
-    from Classes import Training, TUser, GuildData, Venue
+    from Classes import Training, TUser, GuildData, Venue, JobPosting
 ################################################################################
 
 __all__ = ("Logger",)
@@ -253,24 +253,6 @@ class Logger:
             await self._alyah.send(embed=embed)
         
 ################################################################################
-    async def owner_removal_flagged(self, venue: Venue, user: User, instigator: User) -> None:
-
-        embed = U.make_embed(
-            title="Owner Removal Flagged!",
-            description=(
-                f"{user.mention} has been flagged for removal as an "
-                f"owner of `{venue.name}` by {instigator.mention}!\n\n"
-                
-                "Please head to the server and review the request."
-            ),
-            timestamp=True
-        )
-
-        await self._log(embed, LogType.OwnerRemovalFlagged)
-        if os.getenv("DEBUG") == "False":
-            await self._alyah.send(embed=embed)
-        
-################################################################################
     async def venue_removed(self, venue: Venue) -> None:
 
         embed = U.make_embed(
@@ -283,4 +265,46 @@ class Logger:
 
         await self._log(embed, LogType.VenueRemoved)
             
+################################################################################
+    async def temp_job_posted(self, job: JobPosting) -> None:
+
+        embed = U.make_embed(
+            title="Temporary Job Posted!",
+            description=(
+                f"New temporary job posting for `{job.position.name}` has "
+                f"been posted by `{job.venue.name}`!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.TempJobPosted)
+        
+################################################################################
+    async def temp_job_accepted(self, job: JobPosting) -> None:
+
+        embed = U.make_embed(
+            title="Temporary Job Accepted!",
+            description=(
+                f"Temporary job posting for `{job.position.name}` at "
+                f"`{job.venue.name}` has been accepted by `{job.candidate.name}`!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.TempJobAccepted)
+        
+################################################################################
+    async def temp_job_canceled(self, job: JobPosting) -> None:
+
+        embed = U.make_embed(
+            title="Temporary Job Rejected!",
+            description=(
+                f"Temporary job posting for `{job.position.name}` at "
+                f"`{job.venue.name}` has been canceled by `{job.candidate.name}`!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.TempJobCanceled)
+        
 ################################################################################

@@ -305,7 +305,7 @@ class Profile:
             char_name = f"{BotEmojis.Envelope}  {char_name}  {BotEmojis.Envelope}"
 
         description = "** **"
-        if jobs is not NS:
+        if jobs:
             description = (
                 f"{U.draw_line(text=jobs)}\n"
                 f"{jobs}\n"

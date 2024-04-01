@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Tuple, List
 from discord import Interaction
 
 from .VenueTag import VenueTag
-from UI.Venues import RPLevelSelectView, RPStyleSelectView, RPSizeSelectView
+from UI.Venues import RPLevelSelectView, VenueTagSelectView, RPSizeSelectView
 from Utilities import (
     Utilities as U,
     RPLevel,
@@ -202,4 +202,24 @@ class VenueAtAGlance:
         
         self.update()
 
+################################################################################
+    async def set_tags(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Set Venue Tags",
+            description=(
+                "Please select the tags for your venue\n"
+                "from the selector below."
+            )
+        )
+        view = VenueTagSelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.tags = [VenueTag(t.proper_name) for t in view.value]
+    
 ################################################################################

@@ -11,5 +11,6 @@ from .PositionSelectView import PositionSelectView
 from .VenueLocationStatusView import VenueLocationStatusView
 from .VenueOwnerView import VenueOwnerView
 from .VenueStatusView import VenueStatusView
+from .VenueTagSelectView import VenueTagSelectView
 from .VenueWeekdaySelectView import VenueWeekdaySelectView
 ################################################################################

@@ -26,6 +26,7 @@ class ReportMenuView(FroggeView):
             VenuesButton(),
             UnpaidTrainerButton(),
             PositionsButton(),
+            TempJobPostingsButton(),
             CloseMessageButton(),
         ]
         for btn in button_list:
@@ -81,6 +82,24 @@ class PositionsButton(Button):
         
     async def callback(self, interaction):
         await self.view.guild.position_manager.positions_report(interaction)
+        
+        self.view.complete = True
+        await self.view.stop()  # type: ignore
+        
+################################################################################
+class TempJobPostingsButton(Button):
+    
+    def __init__(self):
+        
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Temporary Job Postings",
+            disabled=False,
+            row=1
+        )
+        
+    async def callback(self, interaction):
+        await self.view.guild.jobs_manager.temp_job_report(interaction)
         
         self.view.complete = True
         await self.view.stop()  # type: ignore

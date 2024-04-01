@@ -24,6 +24,7 @@ from Utilities import (
     Weekday
 )
 from .Availability import Availability
+from .BackgroundCheck import BackgroundCheck
 from .Qualification import Qualification
 from .Training import Training
 from .UserConfig import UserConfiguration
@@ -48,6 +49,7 @@ class TUser:
         "_qualifications",
         "_hiatus",
         "_details",
+        "_bg_check",
     )
 
 ################################################################################
@@ -59,6 +61,7 @@ class TUser:
         availabilities: Optional[List[Availability]] = None,
         configuration: Optional[UserConfiguration] = None,
         qualifications: Optional[List[Qualification]] = None,
+        bg_check: Optional[BackgroundCheck] = None
     ) -> None:
 
         self._manager: TrainingManager = mgr
@@ -69,6 +72,7 @@ class TUser:
         self._config: UserConfiguration = configuration or UserConfiguration(self)
         self._availability: List[Availability] = availabilities or []
         self._qualifications: List[Qualification] = qualifications or []
+        self._bg_check: BackgroundCheck = bg_check or BackgroundCheck(self)
 
 ################################################################################
     @classmethod
@@ -105,6 +109,8 @@ class TUser:
         self._config = UserConfiguration.load(self, tuser[6:8])
         self._availability = [Availability.load(self, a) for a in availability]
         self._qualifications = [Qualification.load(self, q) for q in qdata]
+        
+        self._bg_check = BackgroundCheck.load(self, data["bg_check"])
 
         return self
 
@@ -925,6 +931,11 @@ class TUser:
     
         # If not comparing schedules or none of the above conditions matched, the user is eligible
         return True
+
+################################################################################
+    async def start_bg_check(self, interaction: Interaction) -> None:
+        
+        pass
 
 ################################################################################
         

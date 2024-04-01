@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
-from discord import Guild, User, Interaction
+from discord import Guild, User, Interaction, Role
 
 from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
@@ -11,7 +11,7 @@ from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
 from UI.Guild import ReportMenuView
-from Utilities import Utilities as U
+from Utilities import Utilities as U, RoleType
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile

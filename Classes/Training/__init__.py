@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 ################################################################################
 if TYPE_CHECKING:
     from .Availability import Availability
+    from .BackgroundCheck import BackgroundCheck
+    from .BGCheckVenue import BGCheckVenue
     from .Qualification import Qualification
     from .SignUpMessage import SignUpMessage
     from .Training import Training

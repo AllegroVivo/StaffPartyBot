@@ -16,9 +16,11 @@ from .Pronoun import Pronoun
 from .Race import Race
 from .RateType import RateType
 from .RequirementLevel import RequirementLevel
+from .RoleType import RoleType
 from .RPLevel import RPLevel
 from .Timezone import Timezone
 from .TrainingLevel import TrainingLevel
+from .VenueForumTag import VenueForumTag
 from .VenueSize import VenueSize
 from .Weekday import Weekday
 ################################################################################

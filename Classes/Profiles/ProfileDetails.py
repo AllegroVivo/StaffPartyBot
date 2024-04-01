@@ -228,7 +228,7 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     async def set_name(self, interaction: Interaction) -> None:
         
-        modal = ProfileNameModal(self.name)
+        modal = ProfileNameModal(self._name)
         
         await interaction.response.send_modal(modal)
         await modal.wait()
