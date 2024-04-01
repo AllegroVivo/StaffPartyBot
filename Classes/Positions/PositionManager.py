@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from discord import Interaction, EmbedField, Embed, SelectOption
 
+from UI.Common import ConfirmCancelView
 from UI.Positions import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
 from Utilities import Utilities as U, PositionExistsError
 from .Position import Position
@@ -94,7 +95,21 @@ class PositionManager:
         return self._guild.guild_id
     
 ################################################################################    
-    async def _add_position(self, interaction: Interaction, position_name: str) -> Position:
+    async def _add_position(self, interaction: Interaction, position_name: str) -> Optional[Position]:
+        
+        prompt = U.make_embed(
+            title="Confirm Position Add",
+            description=(
+                f"Are you sure you want to add the position `{position_name}` to the database?"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
 
         position = Position.new(self, position_name)
         self._positions.append(position)
@@ -135,6 +150,8 @@ class PositionManager:
             return
     
         position = await self._add_position(interaction, position_name)
+        if position is None:
+            return
         
         await asyncio.sleep(2)
         await self.position_status(interaction, position.name)
@@ -173,7 +190,10 @@ class PositionManager:
         position = self.get_position_by_name(pos_name)
         if position is None:
             position = await self._add_position(interaction, pos_name)
-            await asyncio.sleep(2)
+            if position is None:
+                return
+            else:
+                await asyncio.sleep(2)
             
         await position.menu(interaction)
 
