@@ -92,10 +92,10 @@ class Profile:
         self._user = user
         self._id = profile[0]
         
-        self._details = await ProfileDetails.load(self, profile[3:9])
-        self._personality = ProfilePersonality.load(self, profile[9:13])
-        self._aag = ProfileAtAGlance.load(self, profile[13:23])
-        self._images = ProfileImages.load(self, profile[23:25], addl_imgs)
+        self._details = await ProfileDetails.load(self, profile[3:10])
+        self._personality = ProfilePersonality.load(self, profile[10:14])
+        self._aag = ProfileAtAGlance.load(self, profile[14:24])
+        self._images = ProfileImages.load(self, profile[24:26], addl_imgs)
         
         return self
         
@@ -355,8 +355,6 @@ class Profile:
                 f"{U.draw_line(extra=16)}"
             ),
             thumbnail_url=BotImages.ThumbsUpFrog,
-            footer_text="By Allegro#6969",
-            footer_icon=BotImages.ThumbsUpFrog,
             timestamp=True
         )
 

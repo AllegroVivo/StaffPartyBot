@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING, Optional, List
 from discord import Interaction, User
 
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
+from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import ProfileDetails
+    from Classes import ProfileDetails, Position
 ################################################################################
 
 __all__ = ("ProfileDetailsStatusView",)
@@ -27,6 +28,7 @@ class ProfileDetailsStatusView(FroggeView):
             ColorButton(self.details.color),
             JobsButton(self.details.jobs),
             RatesButton(self.details.rates),
+            PositionsButton(self.details.positions),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -126,5 +128,26 @@ class RatesButton(FroggeButton):
         self.set_style(self.view.details.rates)
         
         await interaction.edit(embed=self.view.details.status(), view=self.view)
+        
+################################################################################
+class PositionsButton(FroggeButton):
+    
+    def __init__(self, positions: List[Position]) -> None:
+        
+        super().__init__(
+            label="Employable Positions",
+            disabled=False,
+            row=1
+        )
+        
+        self.set_style(positions)
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.details.set_positions(interaction)
+        self.set_style(self.view.details.positions)
+
+        await edit_message_helper(
+            interaction, embed=self.view.details.status(), view=self.view
+        )
         
 ################################################################################

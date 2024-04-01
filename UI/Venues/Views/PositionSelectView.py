@@ -6,7 +6,6 @@ from discord import Interaction, SelectOption, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import edit_message_helper
 ################################################################################
 
 __all__ = ("PositionSelectView",)

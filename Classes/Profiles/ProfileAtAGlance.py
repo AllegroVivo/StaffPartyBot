@@ -630,7 +630,7 @@ class ProfileAtAGlance(ProfileSection):
         if self.mare is None:
             return ""
 
-        return f"Mare ID:__ `{self.mare}`\n"
+        return f"__Mare ID:__ `{self.mare}`\n"
 
 ################################################################################
     def compile_data_center(self) -> str:

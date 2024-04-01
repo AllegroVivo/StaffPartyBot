@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord import Colour, Embed, Interaction, EmbedField, Message, ForumChannel
+from discord import Colour, Embed, Interaction, EmbedField, Message, SelectOption
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple
 
 from Assets import BotEmojis
@@ -13,10 +13,11 @@ from UI.Profiles import (
     ProfileJobsModal,
     ProfileRatesModal
 )
+from UI.Venues import PositionSelectView
 from Utilities import Utilities as U, NS
 
 if TYPE_CHECKING:
-    from Classes import Profile
+    from Classes import Profile, Position
 ################################################################################
 
 __all__ = ("ProfileDetails",)
@@ -32,7 +33,8 @@ class ProfileDetails(ProfileSection):
         "_color",
         "_jobs",
         "_rates",
-        "_post_msg"
+        "_post_msg",
+        "_positions",
     )
 
 ################################################################################
@@ -43,9 +45,10 @@ class ProfileDetails(ProfileSection):
         self._name: Optional[str] = kwargs.pop("name", None)
         self._url: Optional[str] = kwargs.pop("url", None) or kwargs.pop("custom_url", None)
         self._color: Optional[Colour] = kwargs.pop("color", None) or kwargs.pop("colour", None)
-        self._jobs: List[str] = kwargs.pop("jobs", []) or []
+        self._jobs: List[str] = kwargs.pop("jobs", None) or []
         self._rates: Optional[str] = kwargs.pop("rates", None)
         self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
+        self._positions: List[Position] = kwargs.pop("positions", None) or []
 
 ################################################################################
     @classmethod
@@ -64,6 +67,10 @@ class ProfileDetails(ProfileSection):
                     post_msg = named_threads[0].last_message if named_threads else None
         except:
             pass
+        
+        positions = [
+            parent.manager.guild.position_manager.get_position(p) for p in data[6]
+        ] if data[6] else []
             
         return cls(
             parent=parent,
@@ -72,7 +79,8 @@ class ProfileDetails(ProfileSection):
             color=Colour(data[2]) if data[2] is not None else None,
             jobs=data[3] or [],
             rates=data[4],
-            post_msg=post_msg
+            post_msg=post_msg,
+            positions=positions
         )
     
 ################################################################################
@@ -81,7 +89,6 @@ class ProfileDetails(ProfileSection):
         
         return self._name or str(NS)
     
-################################################################################
     @name.setter
     def name(self, value: Optional[str]) -> None:
         
@@ -94,7 +101,6 @@ class ProfileDetails(ProfileSection):
         
         return self._url
     
-################################################################################
     @url.setter
     def url(self, value: Optional[str]) -> None:
         
@@ -107,7 +113,6 @@ class ProfileDetails(ProfileSection):
         
         return self._color
     
-################################################################################
     @color.setter
     def color(self, value: Optional[Colour]) -> None:
         
@@ -120,7 +125,6 @@ class ProfileDetails(ProfileSection):
         
         return self._jobs
     
-################################################################################
     @jobs.setter
     def jobs(self, value: List[str]) -> None:
         
@@ -132,8 +136,7 @@ class ProfileDetails(ProfileSection):
     def rates(self) -> Optional[str]:
         
         return self._rates
-    
-################################################################################
+
     @rates.setter
     def rates(self, value: Optional[str]) -> None:
         
@@ -146,11 +149,22 @@ class ProfileDetails(ProfileSection):
         
         return self._post_msg
     
-################################################################################
     @post_message.setter
     def post_message(self, value: Optional[Message]) -> None:
         
         self._post_msg = value
+        self.update()
+        
+################################################################################
+    @property
+    def positions(self) -> List[Position]:
+        
+        return self._positions
+    
+    @positions.setter
+    def positions(self, value: List[Position]) -> None:
+        
+        self._positions = value
         self.update()
         
 ################################################################################
@@ -179,10 +193,20 @@ class ProfileDetails(ProfileSection):
         else:
             color_field = str(NS)
 
+        positions = str(NS)
+        if self.positions:
+            # Group the positions in chunks of 4, then join each chunk 
+            # with a comma and each group with "\n"
+            positions = "\n".join(
+                ", ".join(f"`{p.name}`" for p in self.positions[i:i+4])
+                for i in range(0, len(self.positions), 4)
+            )
+
         fields = [
             EmbedField("__Color__", color_field, True),
             EmbedField("__Jobs__", jobs, True),
             EmbedField("__Custom URL__", url_field, False),
+            EmbedField("__Employable Positions__", positions, False),
             EmbedField("__Rates__", rates, False)
         ]
 
@@ -320,3 +344,33 @@ class ProfileDetails(ProfileSection):
         )
 
 ################################################################################
+    async def set_positions(self, interaction: Interaction) -> None:
+        
+        base_options = self._parent.manager.guild.position_manager.select_options()
+        options = [
+            SelectOption(
+                label=option.label,
+                value=option.value,
+                default=option.value in [p.id for p in self.positions]
+            ) for option in base_options
+        ]
+        
+        prompt = U.make_embed(
+            title="Set Positions",
+            description="Please select the positions you are qualified to work."
+        )
+        view = PositionSelectView(interaction.user, options)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.positions = [
+            self._parent.manager.guild.position_manager.get_position(p)
+            for p in view.value
+        ]
+    
+################################################################################
+    

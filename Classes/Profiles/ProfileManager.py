@@ -51,6 +51,12 @@ class ProfileManager:
     
 ################################################################################
     @property
+    def guild(self) -> GuildData:
+        
+        return self._state
+    
+################################################################################
+    @property
     def guild_id(self) -> int:
         
         return self._state.parent.id
