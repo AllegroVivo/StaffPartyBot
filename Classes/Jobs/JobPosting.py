@@ -591,15 +591,21 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if datetime.now() > start_time:
+        if datetime.now() > datetime(
+            year=start_time.year,
+            month=start_time.month,
+            day=start_time.day,
+            hour=start_time.hour,
+            minute=start_time.minute
+        ):
             error = DateTimeBeforeNowError(start_time)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if (end_time - start_time).total_seconds() < 7200:
-            error = TimeRangeError("2 Hours")
-            await interaction.respond(embed=error, ephemeral=True)
-            return
+        # if (end_time - start_time).total_seconds() < 7200:
+        #     error = TimeRangeError("2 Hours")
+        #     await interaction.respond(embed=error, ephemeral=True)
+        #     return
             
         self._start = start_time
         self._end = end_time
