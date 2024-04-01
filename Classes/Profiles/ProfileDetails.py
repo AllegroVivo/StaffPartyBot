@@ -67,7 +67,7 @@ class ProfileDetails(ProfileSection):
             color=Colour(data[2]) if data[2] is not None else None,
             jobs=data[3] or [],
             rates=data[4],
-            post_msg=post_msg
+            post_msg=None
         )
     
 ################################################################################
