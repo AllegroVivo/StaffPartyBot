@@ -12,7 +12,8 @@ from discord import (
     ForumChannel,
     Forbidden,
     EmbedField,
-    Message
+    Message,
+    Thread
 )
 from UI.Common.CloseMessageView import CloseMessageView
 from UI.Profiles import AdditionalImageCaptionModal
@@ -235,66 +236,60 @@ class Profile:
 
 ################################################################################
     async def post(self, interaction: Interaction, channel: ForumChannel) -> None:
-
+        
+        # Check for unset character name
         if self.char_name == str(NS):
             error = CharNameNotSetError()
             await interaction.response.send_message(embed=error, ephemeral=True)
             return
-
+    
         main_profile, aboutme = self.compile()
-
+        # Check for content length
         if len(main_profile) > 5999:
             error = ExceedsMaxLengthError(len(main_profile))
             await interaction.response.send_message(embed=error, ephemeral=True)
             return
-
-        embeds = [main_profile]
-        if aboutme is not None:
-            embeds.append(aboutme)
-
-        if self.post_message is not None:
+    
+        # Prepare embeds
+        embeds = [main_profile] + ([aboutme] if aboutme else [])
+    
+        # Attempt to edit an existing post
+        if self.post_message:
             try:
                 await self.post_message.edit(embeds=embeds)
-            except NotFound:
-                self._details.post_message = None
-            else:
                 await interaction.respond(embed=self.success_message())
                 return
-
+            except NotFound:
+                self.post_message = None  # Proceed to post anew if not found
+    
+        # Check channel type
         if not isinstance(channel, ForumChannel):
             error = ChannelTypeError(channel, "ForumChannel")
             await interaction.respond(embed=error, ephemeral=True)
             return
-        
-        matching_threads = [
-            t for t in channel.threads
-            if t.name.lower() == self.char_name.lower()
-        ]
-        if matching_threads:
-            async for m in matching_threads[0].history():
+    
+        # Handling threads
+        matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
+        if matching_thread:
+            # Clear history in the matching thread
+            async for m in matching_thread.history():
                 await m.delete()
-                
-            try:
-                self.post_message = await matching_threads[0].send(embeds=embeds)
-            except Forbidden:
-                error = InsufficientPermissionsError(channel, "Send Messages")
-                await interaction.respond(embed=error, ephemeral=True)
-                return
-            else:
-                await interaction.respond(embed=self.success_message())
-                return
-
+            action = matching_thread.send  # type: ignore
+        else:
+            # Or create a new thread if no matching one
+            action = lambda **kw: channel.create_thread(name=self.char_name, **kw)
+    
+        # Post or create thread and handle permissions error
         try:
-            post_msg = await channel.create_thread(name=self.char_name, embeds=embeds)
+            result = await action(embeds=embeds)
+            if isinstance(result, Thread):
+                self.post_message = await result.fetch_message(result.last_message_id)
+            else:
+                self.post_message = result
+            await interaction.respond(embed=self.success_message())
         except Forbidden:
             error = InsufficientPermissionsError(channel, "Send Messages")
             await interaction.respond(embed=error, ephemeral=True)
-            return
-        else:
-            self._details.post_message = post_msg
-
-        await interaction.respond(embed=self.success_message())
-        return
 
 ################################################################################
     def compile(self) -> Tuple[Embed, Optional[Embed]]:

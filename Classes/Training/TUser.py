@@ -920,7 +920,7 @@ class TUser:
         
         if check_profile:
             profile = self.guild.profile_manager[self.user_id]
-            if not profile.is_complete:
+            if not profile or profile.post_message is None:
                 return False
     
         # If not comparing schedules or none of the above conditions matched, the user is eligible

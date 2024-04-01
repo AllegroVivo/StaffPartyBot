@@ -50,15 +50,20 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     @classmethod
     async def load(cls: Type[PD], parent: Profile, data: Tuple[Any, ...]) -> PD:
-        
-        # url_parts = data[5].split("/") if data[5] is not None else []
-        # if url_parts:
-        #     message_id = int(url_parts[-1])
-        #     channel = await parent.bot.fetch_channel(int(url_parts[-2]))
-        #     if channel.threads:
-        #         post_msg = await channel.fetch_message(message_id)
-        # else:
-        #     post_msg = None
+
+        post_msg = None
+        try:
+            url_parts = data[5].split("/") if data[5] else []
+            if len(url_parts) >= 2:
+                channel = await parent.bot.fetch_channel(int(url_parts[-2]))
+                if channel.threads:
+                    named_threads = [
+                        t for t in channel.threads 
+                        if t.name.lower() == data[0].lower()
+                    ] if data[0] else []
+                    post_msg = named_threads[0].last_message if named_threads else None
+        except:
+            pass
             
         return cls(
             parent=parent,
@@ -67,7 +72,7 @@ class ProfileDetails(ProfileSection):
             color=Colour(data[2]) if data[2] is not None else None,
             jobs=data[3] or [],
             rates=data[4],
-            post_msg=None
+            post_msg=post_msg
         )
     
 ################################################################################

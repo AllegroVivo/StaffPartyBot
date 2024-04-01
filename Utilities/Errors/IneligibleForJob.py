@@ -15,7 +15,8 @@ class IneligibleForJobError(ErrorMessage):
             message="You are not eligible for this job.",
             solution=(
                 "Please ensure you have selected the appropriate "
-                "pingable role in the server\n"
+                "pingable role in the server and that your staff profile"
+                "has been completed and posted!\n"
             )
         )
         
