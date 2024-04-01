@@ -639,7 +639,9 @@ class JobPosting:
             if self.post_type == JobPostingType.Temporary 
             else self._mgr.permanent_jobs_channel
         )
-        pos_thread = next((t for t in channel.threads if t.name == self.position.name), None)
+        pos_thread = next(
+            (t for t in channel.threads if t.name == self.position.name), None
+        ) if channel is not None else None
     
         try:
             if pos_thread:
