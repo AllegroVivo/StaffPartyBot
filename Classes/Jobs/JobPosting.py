@@ -591,13 +591,7 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if datetime.now() > datetime(
-            year=start_time.year,
-            month=start_time.month,
-            day=start_time.day,
-            hour=start_time.hour,
-            minute=start_time.minute
-        ):
+        if datetime.now().timestamp() > end_time.timestamp():
             error = DateTimeBeforeNowError(start_time)
             await interaction.respond(embed=error, ephemeral=True)
             return
