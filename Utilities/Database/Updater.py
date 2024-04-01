@@ -136,7 +136,9 @@ class DatabaseUpdater(DBWorkerBranch):
             "rates = %s, post_url = %s WHERE _id = %s;",
             details.name, details.url, 
             details.color.value if details.color is not None else None,
-            details.jobs, details.rates, details.post_message, details.profile_id
+            details.jobs, details.rates, 
+            details.post_message.jump_url if details.post_message else None, 
+            details.profile_id
         )
     
 ################################################################################    

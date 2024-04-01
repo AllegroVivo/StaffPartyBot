@@ -651,10 +651,9 @@ class JobPosting:
                 self.post_message = pos_thread.last_message
             
             confirm = U.make_embed(
-                title="Job Posting Updated" if self.post_message else "Job Posting Created",
+                title="Job Posting Created/Updated",
                 description=(
-                    f"The job posting has been "
-                    f"{'updated' if self.post_message else 'created'}. "
+                    f"The job posting has been created/updated. "
                     f"`ID: {self._id}`"
                 )
             )
