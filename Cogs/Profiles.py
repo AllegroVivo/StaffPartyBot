@@ -23,7 +23,7 @@ class Profiles(Cog):
 ################################################################################
 
     profiles = SlashCommandGroup(
-        name="profile",
+        name="staff_profile",
         description="Commands for Profile creation and management."
     )
 

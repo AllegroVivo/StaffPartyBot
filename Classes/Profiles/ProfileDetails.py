@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord import Colour, Embed, Interaction, EmbedField, Message
+from discord import Colour, Embed, Interaction, EmbedField, Message, ForumChannel
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple
 
 from Assets import BotEmojis
@@ -53,9 +53,10 @@ class ProfileDetails(ProfileSection):
         
         url_parts = data[5].split("/") if data[5] is not None else []
         if url_parts:
-            channel_id = int(url_parts[-2])
             message_id = int(url_parts[-1])
-            post_msg = await parent.bot.fetch_channel(channel_id).fetch_message(message_id)
+            channel = await parent.bot.fetch_channel(int(url_parts[-2]))
+            if channel.threads:
+                post_msg = await channel.fetch_message(message_id)
         else:
             post_msg = None
             
