@@ -51,14 +51,14 @@ class ProfileDetails(ProfileSection):
     @classmethod
     async def load(cls: Type[PD], parent: Profile, data: Tuple[Any, ...]) -> PD:
         
-        url_parts = data[5].split("/") if data[5] is not None else []
-        if url_parts:
-            message_id = int(url_parts[-1])
-            channel = await parent.bot.fetch_channel(int(url_parts[-2]))
-            if channel.threads:
-                post_msg = await channel.fetch_message(message_id)
-        else:
-            post_msg = None
+        # url_parts = data[5].split("/") if data[5] is not None else []
+        # if url_parts:
+        #     message_id = int(url_parts[-1])
+        #     channel = await parent.bot.fetch_channel(int(url_parts[-2]))
+        #     if channel.threads:
+        #         post_msg = await channel.fetch_message(message_id)
+        # else:
+        #     post_msg = None
             
         return cls(
             parent=parent,
