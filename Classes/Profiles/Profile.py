@@ -351,7 +351,7 @@ class Profile:
                 f"(__Character Name:__ ***{self.char_name}***)\n\n"
 
                 f"{BotEmojis.ArrowRight}  [Check It Out HERE!]"
-                f"({self._details.post_message})  {BotEmojis.ArrowLeft}\n"
+                f"({self._details.post_message.jump_url})  {BotEmojis.ArrowLeft}\n"
                 f"{U.draw_line(extra=16)}"
             ),
             thumbnail_url=BotImages.ThumbsUpFrog,
