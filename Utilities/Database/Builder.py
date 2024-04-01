@@ -30,11 +30,10 @@ class DatabaseBuilder(DBWorkerBranch):
         tusers = self.fetchall()
         
         for record in tusers:
-            print(record)
             self.execute(
-                "INSERT INTO bg_checks (user_id, guild_id) VALUES (%s, %s) "
-                "ON CONFLICT DO NOTHING;",
-                record[0], record[1]
+                "INSERT INTO bg_checks (user_id, guild_id, agree, approved) "
+                "VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING;",
+                record[0], record[1], True, True
             )
   
 ################################################################################
