@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import TYPE_CHECKING, Optional, Any, Type, TypeVar, Dict, Tuple, List
 
 from discord import (
@@ -414,6 +415,8 @@ class Profile:
             return
         else:
             await interaction.respond(embed=confirm, ephemeral=True)
+        finally:
+            os.remove("profile.json")
         
 ################################################################################
         

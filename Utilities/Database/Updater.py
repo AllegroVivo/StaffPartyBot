@@ -244,11 +244,10 @@ class DatabaseUpdater(DBWorkerBranch):
     def _update_venue_aag(self, aag: VenueAtAGlance) -> None:
         
         self.execute(
-            "UPDATE venue_aag SET level = %s, nsfw = %s, tags = %s, "
-            "size = %s WHERE venue_id = %s;",
+            "UPDATE venue_aag SET level = %s, nsfw = %s, tags = %s "
+            "WHERE venue_id = %s;",
             aag.level.value if aag.level is not None else None, aag.nsfw,
-            [t.tag_text for t in aag.tags],
-            aag.size.value if aag.size is not None else None, aag.venue_id
+            [t.tag_text for t in aag.tags], aag.venue_id
         )
         
 ################################################################################
