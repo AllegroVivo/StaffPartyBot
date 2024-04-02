@@ -6,7 +6,7 @@ from discord import Interaction, SelectOption, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel
+from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     pass
@@ -47,7 +47,7 @@ class PositionSelect(Select):
         self.view.value = self.values[0]
         self.view.complete = True
         
-        await interaction.edit(view=self.view)
+        await edit_message_helper(interaction, view=self.view)
         await self.view.stop()  # type: ignore
     
 ################################################################################
