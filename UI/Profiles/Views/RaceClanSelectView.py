@@ -54,6 +54,7 @@ class RaceSelect(Select):
 
             if modal.complete:
                 self.view.value = (modal.value[0], modal.value[1])
+                self.view.complete = True
 
             await self.view.stop()  # type: ignore
             return
