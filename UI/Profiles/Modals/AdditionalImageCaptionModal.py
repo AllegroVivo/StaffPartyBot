@@ -46,7 +46,7 @@ class AdditionalImageCaptionModal(FroggeModal):
         self.value = self.children[1].value if self.children[1].value else None
         self.complete = True
 
-        await interaction.response.edit_message()
+        await interaction.respond("** **", delete_after=0.1)
         self.stop()
 
 ################################################################################
