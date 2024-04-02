@@ -66,3 +66,11 @@ class BGCheckVenue:
         return f"{self._name}::{self._dc.value}::{self._world.value}::{jobs}"
     
 ################################################################################
+    def format(self) -> str:
+        
+        return (
+            f"**{self._name}:** {self._world.value} ({self._dc.value})\n"
+            f"Jobs: {', '.join(self._jobs)}"
+        )
+    
+################################################################################

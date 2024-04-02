@@ -279,7 +279,7 @@ class Position:
                 ),
                 color=FroggeColor.brand_red()
             )
-            await interaction.respond(embed=embed)
+            await response.respond(embed=embed)
             return
 
         error = U.make_embed(

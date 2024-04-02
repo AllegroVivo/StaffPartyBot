@@ -1,5 +1,7 @@
 from .AddQualificationView import AddQualificationView
 from .AddTrainingView import AddTrainingView
+from .BGCheckMenuView import BGCheckMenuView
+from .BGCheckRemoveVenueView import BGCheckRemoveVenueView
 from .DataCenterSelectView import DataCenterSelectView
 from .InternshipMatchingView import InternshipMatchingView
 from .ModifyQualificationView import ModifyQualificationView

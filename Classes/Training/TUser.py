@@ -799,9 +799,10 @@ class TUser:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        frogginator = Frogginator(pages, cur_page=cur_page)
+        frogginator = Frogginator(pages)
         
         await frogginator.respond(interaction)
+        await frogginator.goto_page(cur_page)
         await frogginator.wait()
     
 ################################################################################
@@ -935,7 +936,7 @@ class TUser:
 ################################################################################
     async def start_bg_check(self, interaction: Interaction) -> None:
         
-        pass
+        await self._bg_check.menu(interaction)
 
 ################################################################################
         

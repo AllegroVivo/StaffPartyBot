@@ -2,9 +2,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple
 
-from discord import User
+from discord import Interaction, Embed, EmbedField
 
-from Utilities import TrainingLevel
+from UI.Common import ConfirmCancelView
+from UI.Training import (
+    BGCheckNamesModal,
+    BGCheckMenuView,
+    BGCheckVenueModal,
+    BGCheckRemoveVenueView
+)
+from Utilities import (
+    Utilities as U,
+    DataCenter,
+    InvalidWorldNameError,
+    GameWorld,
+    MissingNameError,
+)
 from .BGCheckVenue import BGCheckVenue
 
 if TYPE_CHECKING:
@@ -35,7 +48,7 @@ class BackgroundCheck:
         self._agree: bool = kwargs.get("agree", False)
         self._names: List[str] = kwargs.get("names", [])
         self._venues: List[BGCheckVenue] = kwargs.get("venues", [])
-        self._positions: List[Position] = kwargs.get("roles", [])
+        self._positions: List[str] = kwargs.get("positions", [])
         
         self._approved: bool = kwargs.get("approved", False)
 
@@ -46,12 +59,12 @@ class BackgroundCheck:
         return cls(
             parent=parent,
             agree=data[1],
-            names=data[2],
+            names=data[2] if data[2] is not None else [],
             venues=(
                 [BGCheckVenue.from_db_string(v) for v in data[3]] 
-                if data[3] is not None else None
+                if data[3] is not None else []
             ),
-            positions=data[4],
+            positions=data[4] if data[4] is not None else [],
             approved=data[5]
         )
     
@@ -127,4 +140,150 @@ class BackgroundCheck:
         self.bot.database.update.background_check(self)
         
 ################################################################################
+    def status(self) -> Embed:
+
+        return U.make_embed(
+            title="Background Check",
+            description=(
+                "__You have agreed to the rules and guidelines of the server.__"
+                if self.agree else
+                "__You have not agreed to the rules and guidelines of the server.__"
+            ) + f"\n{U.draw_line(extra=20)}",
+            fields=[
+                EmbedField(
+                    name="__Character Names__",
+                    value="* " + (
+                        "\n* ".join([f"`{n}`" for n in self.names]) 
+                        if self.names else "`No Names Provided`"
+                    ),
+                    inline=False
+                ),
+                EmbedField(
+                    name="__Previous Venues__",
+                    value="* " + (
+                        "\n* ".join([v.format() for v in self.venues]) 
+                        if self.venues else "`No Venue Information Provided`"
+                    ),
+                    inline=False
+                )
+            ]
+        )
         
+################################################################################
+    async def menu(self, interaction: Interaction) -> None:
+        
+        embed = self.status()
+        view = BGCheckMenuView(interaction.user, self)
+        
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+        
+################################################################################
+    async def set_names(self, interaction: Interaction) -> None:
+        
+        modal = BGCheckNamesModal(self.names)
+
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.names = modal.value
+        
+################################################################################
+    async def add_venue_experience(self, interaction: Interaction) -> None:
+
+        modal = BGCheckVenueModal()
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        name, raw_world, jobs = modal.value
+        
+        world = GameWorld.from_string(raw_world)
+        if world is None:
+            error = InvalidWorldNameError(raw_world)
+            await interaction.respond(error)
+            return
+        
+        data_center = DataCenter.from_world(world)
+
+        self._venues.append(BGCheckVenue(name, data_center, world, jobs))
+        self.update()
+        
+################################################################################
+    async def remove_venue_experience(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Remove Venue Experience",
+            description=(
+                "Please select the venue experience you'd like to remove."
+            )
+        )
+        view = BGCheckRemoveVenueView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        for i, venue in enumerate(self._venues):
+            if venue.name == view.value:
+                self._venues.pop(i)
+                
+        self.update()
+    
+################################################################################
+    async def submit(self, interaction: Interaction, agreed: bool) -> None:
+        
+        if not self.names:
+            error = MissingNameError()
+            await interaction.respond(embed=error, ephemeral=Truez)
+            return
+        
+        word = "AGREE" if agreed else "DISAGREE"
+        prompt = U.make_embed(
+            title="Submit and Agree",
+            description=(
+                "Are you sure you want to submit your background check\n"
+                f"and __**{word}**__ to the above-mentioned terms?"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        self.agree = agreed
+        
+        await self.parent.guild.log.bg_check_submitted(self)
+        
+        if agreed:
+            description = (
+                "Your background check has been submitted!\n"
+                "You will receive a DM from the bot letting you "
+                "know when you've been approved."
+            )
+        else:
+            description = (
+                "Your background check has been submitted.\n"
+                "You will be contacted by a staff member shortly."
+            )
+        
+        confirm = U.make_embed(
+            title="Background Check Submitted",
+            description=description,
+            timestamp=True
+        )
+        
+        await interaction.edit(embed=confirm)
+        
+################################################################################

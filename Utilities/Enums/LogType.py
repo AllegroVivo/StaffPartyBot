@@ -17,5 +17,6 @@ class LogType(FroggeEnum):
     TempJobAccepted = 12
     TempJobCanceled = 13
     TempJobPosted = 14
+    BGCheckSubmitted = 15
 
 ################################################################################

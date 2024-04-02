@@ -1,9 +1,11 @@
+from __future__ import annotations
 from typing import List, Optional
-
+from typing import TYPE_CHECKING
 from discord import SelectOption
 
 from ._Enum import FroggeEnum
-from .DataCenter import DataCenter
+if TYPE_CHECKING:
+    from Utilities import DataCenter
 ################################################################################
 class GameWorld(FroggeEnum):
 
@@ -69,6 +71,14 @@ class GameWorld(FroggeEnum):
                 return world
             
         raise ValueError(f"Invalid XIV world name: {xiv_name}")
+    
+################################################################################
+    @classmethod
+    def from_string(cls, world_name: str) -> Optional["GameWorld"]:
+        
+        for world in cls:
+            if world_name.lower() == world.proper_name.lower():
+                return world
     
 ################################################################################
     @staticmethod

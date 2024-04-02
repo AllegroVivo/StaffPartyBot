@@ -19,7 +19,7 @@ from discord import (
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
 
 if TYPE_CHECKING:
-    from Classes import Training, TUser, GuildData, Venue, JobPosting
+    from Classes import *
 ################################################################################
 
 __all__ = ("Logger",)
@@ -306,5 +306,17 @@ class Logger:
         )
 
         await self._log(embed, LogType.TempJobCanceled)
+
+################################################################################
+    async def bg_check_submitted(self, bg_check: BackgroundCheck) -> None:
         
+        embed = U.make_embed(
+            title="Background Check Submitted!",
+            description=(
+                f"The background check for `{bg_check.names[0]}` has been\n"
+                f"__**{'approved' if bg_check.agree else 'submitted'}**__!"
+            ),
+            timestamp=True
+        )
+
 ################################################################################
