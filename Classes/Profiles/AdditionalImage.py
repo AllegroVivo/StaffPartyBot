@@ -29,7 +29,7 @@ class AdditionalImage:
         
         self._parent: ProfileImages = kwargs.pop("parent")
         
-        self._id: str = kwargs.pop("id")
+        self._id: str = kwargs.pop("_id")
         self._url: str = kwargs.pop("url")
         self._caption: Optional[str] = kwargs.pop("caption", None)
     
@@ -38,7 +38,7 @@ class AdditionalImage:
     def new(cls, parent: ProfileImages, url: str, caption: Optional[str]) -> AdditionalImage:
         
         new_id = parent.parent.bot.database.insert.addl_image(parent.parent.id, url, caption)
-        return cls(parent=parent, id=new_id, url=url, caption=caption)
+        return cls(parent=parent, _id=new_id, url=url, caption=caption)
     
 ################################################################################
     def __eq__(self, other: AdditionalImage) -> bool:
