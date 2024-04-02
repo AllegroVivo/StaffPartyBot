@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Optional, Any, Type, TypeVar, Dict, Tuple, List
 
 from discord import (
@@ -13,9 +14,12 @@ from discord import (
     Forbidden,
     EmbedField,
     Message,
-    Thread
+    Thread,
+    File
 )
-from UI.Common.CloseMessageView import CloseMessageView
+
+from Assets import BotEmojis, BotImages
+from UI.Common import CloseMessageView, ConfirmCancelView
 from UI.Profiles import AdditionalImageCaptionModal
 from Utilities import (
     Utilities as U,
@@ -26,13 +30,13 @@ from Utilities import (
     CharNameNotSetError,
     ExceedsMaxLengthError,
     ChannelTypeError,
-    InsufficientPermissionsError
+    InsufficientPermissionsError,
+    ProfileExportError
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
 from .ProfileImages import ProfileImages
 from .ProfilePersonality import ProfilePersonality
-from Assets import BotEmojis, BotImages
 
 if TYPE_CHECKING:
     from Classes import ProfileManager, TrainingBot
@@ -359,3 +363,57 @@ class Profile:
         )
 
 ################################################################################
+    def _to_dict(self) -> Dict[str, Dict[str, Any]]:
+        
+        return {
+            "user": self._user.id,
+            "details": self._details._to_dict(),
+            "ataglance": self._aag._to_dict(),
+            "personality": self._personality._to_dict(),
+            "images": self._images._to_dict()
+        }
+        
+################################################################################
+    async def export(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            color=self.color,
+            title="Profile Export",
+            description=(
+                "This will supply you with your profile data in JSON format.\n"
+                "Save the following file and use `/profile import` to restore "
+                "it in another server with Frogge.\n"
+                "Would you like to export it?"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        with open(f"{self._user.id}_profile.json", "w") as f:
+            f.write(json.dumps(self._to_dict(), indent=4))
+        file = File(f"{self._user.id}_profile.json")
+        
+        confirm = U.make_embed(
+            title="Profile Exported",
+            description=(
+                "Your profile data has been exported successfully to your DMs!\n"
+                "Please save the provided file for future use."
+            )
+        )
+        
+        try:
+            await interaction.user.send(embed=confirm, file=file)
+        except:
+            error = ProfileExportError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        else:
+            await interaction.respond(embed=confirm, ephemeral=True)
+        
+################################################################################
+        

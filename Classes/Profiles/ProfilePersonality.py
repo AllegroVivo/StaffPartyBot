@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Tuple, Any
+from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Tuple, Any, Dict
 
 from discord import Interaction, Embed, EmbedField
 
@@ -283,4 +283,14 @@ class ProfilePersonality(ProfileSection):
             )
         )
 
+################################################################################
+    def _to_dict(self) -> Dict[str, Any]:
+        
+        return {
+            "likes": self.likes,
+            "dislikes": self.dislikes,
+            "personality": self.personality,
+            "aboutme": self.aboutme
+        }
+    
 ################################################################################

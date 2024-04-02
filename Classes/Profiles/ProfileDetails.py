@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from discord import Colour, Embed, Interaction, EmbedField, Message, SelectOption
-from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple
+from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
 from Assets import BotEmojis
 from .ProfileSection import ProfileSection
@@ -371,6 +371,17 @@ class ProfileDetails(ProfileSection):
             self._parent.manager.guild.position_manager.get_position(p)
             for p in view.value
         ]
+    
+################################################################################
+    def _to_dict(self) -> Dict[str, Any]:
+        
+        return {
+            "name": self._name,
+            "url": self._url,
+            "color": self._color.value if self._color is not None else None,
+            "jobs": self._jobs,
+            "rates": self._rates,
+        }
     
 ################################################################################
     

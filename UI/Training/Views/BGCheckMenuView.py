@@ -32,8 +32,8 @@ class BGCheckMenuView(FroggeView):
             CloseMessageButton(),
         ]
         
-        # if self.bg_check.is_trainer:
-        button_list.insert(3, HaveTrainedStaffToggleButton(self.bg_check.previously_trained_staff))
+        if self.bg_check.is_trainer:
+            button_list.insert(3, HaveTrainedStaffToggleButton(self.bg_check.previously_trained_staff))
         
         for btn in button_list:
             self.add_item(btn)
@@ -44,7 +44,7 @@ class EditNamesButton(FroggeButton):
     def __init__(self, names: List[str]) -> None:
 
         super().__init__(
-            label="Change Name",
+            label="Edit Names",
             disabled=False,
             row=0
         )
@@ -74,6 +74,9 @@ class AddVenueButton(FroggeButton):
         await self.view.bg_check.add_venue_experience(interaction)
         self.set_style(self.view.bg_check.venues)
         
+        if len(self.view.bg_check.venues) > 0:
+            self.view.children[2].disabled = False
+        
         await interaction.edit(embed=self.view.bg_check.status(), view=self.view)
         
 ################################################################################
@@ -83,11 +86,16 @@ class RemoveVenueButton(FroggeButton):
 
         super().__init__(
             label="Remove Experience",
-            disabled=False,
+            disabled=len(venues) == 0,
             row=0
         )
         
         self.set_style(venues)
+        
+    def set_style(self, attribute: Optional[Any]) -> None:
+        
+        super().set_style(attribute)
+        self.disabled = len(attribute) == 0
 
     async def callback(self, interaction: Interaction) -> None:
         await self.view.bg_check.remove_venue_experience(interaction)

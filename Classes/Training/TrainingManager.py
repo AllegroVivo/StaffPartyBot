@@ -180,14 +180,14 @@ class TrainingManager:
         return self._guild.guild_id
     
 ################################################################################
-    async def _add_tuser(self, interaction: Interaction, user: User, is_trainer: bool) -> bool:
+    async def _add_tuser(self, interaction: Interaction, user: User) -> bool:
         
         if user.bot:
             error = BotUserNotAllowedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
 
-        tuser = TUser.new(self, user, is_trainer)
+        tuser = TUser.new(self, user)
         self._tusers.append(tuser)
         
         confirm = U.make_embed(
@@ -204,7 +204,7 @@ class TrainingManager:
 
         tuser = self[user.id]
         if tuser is None:
-            if not await self._add_tuser(interaction, user, False):
+            if not await self._add_tuser(interaction, user):
                 return
             else:
                 tuser = self[user.id]
@@ -257,7 +257,7 @@ class TrainingManager:
 
         tuser = self[interaction.user.id]
         if tuser is None:
-            if not await self._add_tuser(interaction, interaction.user, False):
+            if not await self._add_tuser(interaction, interaction.user):
                 return
             else:
                 tuser = self[interaction.user.id]
@@ -465,11 +465,11 @@ class TrainingManager:
         await view.wait()
     
 ################################################################################
-    async def start_bg_check(self, interaction: Interaction, is_trainer: bool) -> None:
+    async def start_bg_check(self, interaction: Interaction) -> None:
 
         tuser = self[interaction.user.id]
         if tuser is None:
-            tuser = TUser.new(self, interaction.user, is_trainer)
+            tuser = TUser.new(self, interaction.user)
             self._tusers.append(tuser)
 
         await tuser.start_bg_check(interaction)

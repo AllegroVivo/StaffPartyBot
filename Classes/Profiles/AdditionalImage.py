@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any, Dict
 
 from discord import Interaction
 from discord.ext.pages import Page
@@ -116,4 +116,13 @@ class AdditionalImage:
         
         self.caption = modal.value
         
+################################################################################
+    def _to_dict(self) -> Dict[str, Any]:
+        
+        return {
+            "id": self.id,
+            "url": self.url,
+            "caption": self.caption
+        }
+    
 ################################################################################

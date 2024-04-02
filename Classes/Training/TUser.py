@@ -1,9 +1,9 @@
 from __future__ import annotations
 import pytz
 from datetime import datetime, time
-from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple
+from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple, Union
 
-from discord import User, Embed, EmbedField, Interaction, SelectOption
+from discord import User, Embed, EmbedField, Interaction, SelectOption, Member
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView, Frogginator
@@ -77,8 +77,11 @@ class TUser:
 
 ################################################################################
     @classmethod
-    def new(cls: Type[TU], manager: TrainingManager, user: User, is_trainer: bool) -> TU:
-
+    def new(cls: Type[TU], manager: TrainingManager, user: Union[Member, User]) -> TU:
+        
+        if not isinstance(user, Member):
+            user = manager.guild.parent.fetch_member(user.id)
+        is_trainer = manager.guild.role_manager.trainer_pending in user.roles
         manager.bot.database.insert.tuser(manager.guild_id, user.id, is_trainer)
 
         self: TU = cls.__new__(cls)
@@ -90,6 +93,7 @@ class TUser:
         self._config = UserConfiguration(self)
         self._availability = []
         self._qualifications = []
+        self._bg_check = BackgroundCheck(self)
 
         return self
 

@@ -137,6 +137,18 @@ class Profiles(Cog):
         return
 
 ################################################################################
+    @profiles.command(
+        name="export",
+        description="Export your profile for import into another server."
+    )
+    async def profile_export(self, ctx: ApplicationContext) -> None:
+
+        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
+        await profile.export(ctx.interaction)
+
+        return
+    
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Profiles(bot))

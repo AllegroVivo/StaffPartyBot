@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import TYPE_CHECKING, List, Optional, Union, Type, TypeVar, Any, Tuple
+from typing import TYPE_CHECKING, List, Optional, Union, Type, TypeVar, Any, Tuple, Dict
 
 from discord import Interaction, Embed, EmbedField
 
@@ -647,5 +647,39 @@ class ProfileAtAGlance(ProfileSection):
             return ""
 
         return f"__World:__ {self.world.proper_name}\n"
+    
+################################################################################
+    def _to_dict(self) -> Dict[str, Any]:
+        
+        return {
+            "gender": (
+                self.gender.value if isinstance(self.gender, FroggeEnum)
+                else self.gender
+            ),
+            "pronouns": [p.value for p in self.pronouns],
+            "race": (
+                self.race.value if isinstance(self.race, FroggeEnum)
+                else self.race
+            ),
+            "clan": (
+                self.clan.value if isinstance(self.clan, FroggeEnum)
+                else self.clan
+            ),
+            "orientation": (
+                self.orientation.value if isinstance(self.orientation, FroggeEnum)
+                else self.orientation
+            ),
+            "height": self.height,
+            "age": self.age,
+            "mare": self.mare,
+            "data_center": (
+                self.data_center.value if isinstance(self.data_center, FroggeEnum)
+                else self.data_center
+            ),
+            "world": (
+                self.world.value if isinstance(self.world, FroggeEnum)
+                else self.world
+            )
+        }
     
 ################################################################################

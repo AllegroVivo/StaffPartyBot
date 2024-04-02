@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple
+from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
 from discord import Interaction, Embed, EmbedField
 from discord.ext.pages import Page
@@ -344,4 +344,13 @@ class ProfileImages(ProfileSection):
             self.compile_additional()
         )
 
+################################################################################
+    def _to_dict(self) -> Dict[str, Any]:
+        
+        return {
+            "thumbnail": self.thumbnail,
+            "main_image": self.main_image,
+            "additional": [i._to_dict() for i in self.additional]
+        }
+    
 ################################################################################

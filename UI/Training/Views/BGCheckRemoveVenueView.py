@@ -24,7 +24,7 @@ class BGCheckRemoveVenueView(FroggeView):
         options = [
             SelectOption(
                 label=f"{v.name}",
-                description=f"({v.world})",
+                description=f"({v.world.proper_name})",
                 value=v.name
             )
             for v in bg_check.venues
