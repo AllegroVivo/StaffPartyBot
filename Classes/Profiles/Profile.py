@@ -394,9 +394,9 @@ class Profile:
         if not view.complete or view.value is False:
             return
         
-        with open(f"{self._user.id}_profile.json", "w") as f:
+        with open("profile.json", "w") as f:
             f.write(json.dumps(self._to_dict(), indent=4))
-        file = File(f"{self._user.id}_profile.json")
+        file = File("profile.json")
         
         confirm = U.make_embed(
             title="Profile Exported",
