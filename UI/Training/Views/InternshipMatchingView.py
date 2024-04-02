@@ -63,32 +63,9 @@ class NSFWSelect(Select):
         
     async def callback(self, interaction: Interaction):
         self.view.value.append(NSFWPreference(int(self.values[0])))
-        self.view.add_item(VenueSizeSelect())
-
-        self.placeholder = self.view.value[1].proper_name
-        self.disabled = True
-
-        await interaction.edit(view=self.view)
-
-################################################################################
-class VenueSizeSelect(Select):
-
-    def __init__(self):
-
-        super().__init__(
-            placeholder="Select the size of venue you're looking for...",
-            options=VenueSize.select_options(),
-            min_values=1,
-            max_values=1,
-            disabled=False,
-            row=2
-        )
-
-    async def callback(self, interaction: Interaction):
-        self.view.value.append(VenueSize(int(self.values[0])))
         self.view.add_item(VenueTagSelect())
 
-        self.placeholder = self.view.value[2].proper_name
+        self.placeholder = self.view.value[1].proper_name
         self.disabled = True
 
         await interaction.edit(view=self.view)
