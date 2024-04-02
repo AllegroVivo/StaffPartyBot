@@ -293,12 +293,28 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE bg_checks SET agree = %s, names = %s, venues = %s, "
-            "jobs = %s, approved = %s WHERE user_id = %s;",
+            "jobs = %s, approved = %s, prev_experience = %s WHERE user_id = %s;",
             check.agree, check.names, 
-            [v._to_db_string() for v in check.venues],
-            [r.id for r in check.positions], check.approved, check.user_id
+            [v._to_db_string() for v in check.venues], check.positions, 
+            check.approved, check.previously_trained_staff, check.user_id
         )
         
+################################################################################
+    def _update_roles(self, role_mgr: RoleManager) -> None:
+        
+        self.execute(
+            "UPDATE roles SET trainer_main = %s, trainer_pending = %s, "
+            "trainer_hiatus = %s, staff_main = %s, staff_unvalidated = %s "
+            "WHERE guild_id = %s;",
+            role_mgr.trainer_main.id if role_mgr.trainer_main else None,
+            role_mgr.trainer_pending.id if role_mgr.trainer_pending else None,
+            role_mgr.trainer_hiatus.id if role_mgr.trainer_hiatus else None,
+            role_mgr.staff_main.id if role_mgr.staff_main else None,
+            role_mgr.staff_unvalidated.id if role_mgr.staff_unvalidated else None,
+            role_mgr.guild_id
+        
+        )
+    
 ################################################################################
     
     log_channel             = _update_log_channel
@@ -325,6 +341,7 @@ class DatabaseUpdater(DBWorkerBranch):
     job_posting             = _update_job_post
     job_posting_channels    = _update_job_posting_channels
     background_check        = _update_background_check
+    roles                   = _update_roles
     
 ################################################################################
     

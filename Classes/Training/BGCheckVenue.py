@@ -33,7 +33,7 @@ class BGCheckVenue:
     def from_db_string(cls, db_string: str) -> BGCheckVenue:
         
         name, dc, world, jobs = db_string.split("::")
-        return cls(name, DataCenter(dc), GameWorld(world), jobs.split("||"))
+        return cls(name, DataCenter(int(dc)), GameWorld(int(world)), jobs.split("||"))
     
 ################################################################################
     @property
@@ -69,7 +69,7 @@ class BGCheckVenue:
     def format(self) -> str:
         
         return (
-            f"**{self._name}:** {self._world.value} ({self._dc.value})\n"
+            f"**{self._name}:** {self._world.proper_name} ({self._dc.proper_name})\n"
             f"Jobs: {', '.join(self._jobs)}"
         )
     

@@ -43,11 +43,15 @@ class TUserStatusView(FroggeView):
 ################################################################################        
     def set_buttons(self) -> None:
 
-        disable_buttons = len(self.tuser.trainings_as_trainee) == 0
+        disable_qualification_buttons = len(self.tuser.qualifications) == 0
+        disable_training_buttons = len(self.tuser.trainings_as_trainee) == 0
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.
-        self.children[6].disabled = disable_buttons
+        self.children[6].disabled = disable_qualification_buttons
+        self.children[7].disabled = disable_qualification_buttons
+        
+        self.children[9].disabled = disable_training_buttons
 
 ################################################################################
 class EditNameButton(Button):
@@ -194,7 +198,7 @@ class AddQualificationButton(Button):
 
         await edit_message_helper(
             interaction,
-            embed=self.view.tuser.admin_status(),
+            embed=self.view.tuser.user_status(),
             view=self.view
         )
 
@@ -215,7 +219,7 @@ class ModifyQualificationButton(Button):
 
         await edit_message_helper(
             interaction,
-            embed=self.view.tuser.admin_status(),
+            embed=self.view.tuser.user_status(),
             view=self.view
         )
 
@@ -236,7 +240,7 @@ class RemoveQualificationButton(Button):
 
         await edit_message_helper(
             interaction,
-            embed=self.view.tuser.admin_status(),
+            embed=self.view.tuser.user_status(),
             view=self.view
         )
         

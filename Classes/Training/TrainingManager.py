@@ -180,14 +180,14 @@ class TrainingManager:
         return self._guild.guild_id
     
 ################################################################################
-    async def _add_tuser(self, interaction: Interaction, user: User) -> bool:
+    async def _add_tuser(self, interaction: Interaction, user: User, is_trainer: bool) -> bool:
         
         if user.bot:
             error = BotUserNotAllowedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
 
-        tuser = TUser.new(self, user)
+        tuser = TUser.new(self, user, is_trainer)
         self._tusers.append(tuser)
         
         confirm = U.make_embed(
@@ -204,7 +204,7 @@ class TrainingManager:
 
         tuser = self[user.id]
         if tuser is None:
-            if not await self._add_tuser(interaction, user):
+            if not await self._add_tuser(interaction, user, False):
                 return
             else:
                 tuser = self[user.id]
@@ -257,7 +257,7 @@ class TrainingManager:
 
         tuser = self[interaction.user.id]
         if tuser is None:
-            if not await self._add_tuser(interaction, interaction.user):
+            if not await self._add_tuser(interaction, interaction.user, False):
                 return
             else:
                 tuser = self[interaction.user.id]
@@ -358,9 +358,10 @@ class TrainingManager:
         description = ""
         
         for v in venues:
+            desc = '\n'.join(v.description)
             description += (
                 f"**{v.name}:**\n"
-                f"*({v.description})*\n\n"
+                f"*{desc}*\n\n"
             )
         
         report = U.make_embed(
@@ -397,7 +398,9 @@ class TrainingManager:
     
             ret[venue] = overall_score
             
-        return [venue for venue, score in sorted(ret.items(), key=lambda x: x[1])]
+        venues = [venue for venue, score in sorted(ret.items(), key=lambda x: x[1])]
+        max_results = 5 if len(venues) >= 5 else len(venues)
+        return venues[:max_results]
     
 ################################################################################
     @staticmethod
@@ -462,11 +465,11 @@ class TrainingManager:
         await view.wait()
     
 ################################################################################
-    async def start_bg_check(self, interaction: Interaction) -> None:
+    async def start_bg_check(self, interaction: Interaction, is_trainer: bool) -> None:
 
         tuser = self[interaction.user.id]
         if tuser is None:
-            tuser = TUser.new(self, interaction.user)
+            tuser = TUser.new(self, interaction.user, is_trainer)
             self._tusers.append(tuser)
 
         await tuser.start_bg_check(interaction)

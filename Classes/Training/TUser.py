@@ -21,7 +21,8 @@ from Utilities import (
     TrainingLevel, 
     GlobalDataCenter,
     NoTrainingsError,
-    Weekday
+    Weekday,    
+    RoleType
 )
 from .Availability import Availability
 from .BackgroundCheck import BackgroundCheck
@@ -76,9 +77,9 @@ class TUser:
 
 ################################################################################
     @classmethod
-    def new(cls: Type[TU], manager: TrainingManager, user: User) -> TU:
+    def new(cls: Type[TU], manager: TrainingManager, user: User, is_trainer: bool) -> TU:
 
-        manager.bot.database.insert.tuser(manager.guild_id, user.id)
+        manager.bot.database.insert.tuser(manager.guild_id, user.id, is_trainer)
 
         self: TU = cls.__new__(cls)
 
@@ -854,6 +855,13 @@ class TUser:
         
         if not view.complete or view.value is False:
             return
+        
+        if self.on_hiatus:
+            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerMain)
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerHiatus)
+        else:
+            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
 
         self._details.toggle_hiatus()
         
@@ -862,8 +870,8 @@ class TUser:
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
         
-        await self.guild.log.tuser_hiatus(self)
         await self.training_manager.signup_message.update_components()
+        await self.guild.log.tuser_hiatus(self)
         
 ################################################################################
     async def notify_of_trainer_hiatus(self, training: Training) -> None:

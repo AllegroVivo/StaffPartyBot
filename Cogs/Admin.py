@@ -260,6 +260,15 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].report_menu(ctx.interaction)
         
+################################################################################
+    @admin.command(
+        name="roles",
+        description="View the status of the TrainerBot roles."
+    )
+    async def roles_status(self, ctx: ApplicationContext) -> None:
+
+        await self.bot[ctx.guild_id].role_manager.roles_menu(ctx.interaction)
+        
 ################################################################################      
 def setup(bot: "TrainingBot") -> None:
 

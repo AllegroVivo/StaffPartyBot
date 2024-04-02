@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional, Any
 
 from discord import Interaction, User, ButtonStyle
 
@@ -31,6 +31,10 @@ class BGCheckMenuView(FroggeView):
             SubmitAndRejectButton(),
             CloseMessageButton(),
         ]
+        
+        # if self.bg_check.is_trainer:
+        button_list.insert(3, HaveTrainedStaffToggleButton(self.bg_check.previously_trained_staff))
+        
         for btn in button_list:
             self.add_item(btn)
 
@@ -48,10 +52,10 @@ class EditNamesButton(FroggeButton):
         self.set_style(names)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.tuser.set_names(interaction)
+        await self.view.bg_check.set_names(interaction)
         self.set_style(self.view.bg_check.names)
         
-        await interaction.edit(embed=self.view.tuser.user_status(), view=self.view)
+        await interaction.edit(embed=self.view.bg_check.status(), view=self.view)
 
 ################################################################################
 class AddVenueButton(FroggeButton):
@@ -134,3 +138,32 @@ class SubmitAndRejectButton(FroggeButton):
         await self.view.stop()  # type: ignore
 
 ################################################################################
+class HaveTrainedStaffToggleButton(FroggeButton):
+
+    def __init__(self, cur_val: bool) -> None:
+
+        super().__init__(
+            label="Previously Trained Staff?",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(cur_val)
+        
+    def set_style(self, attribute: Optional[Any]) -> None:
+        
+        if attribute:
+            self.style = ButtonStyle.success
+            self.emoji = BotEmojis.Check
+        else:
+            self.style = ButtonStyle.danger
+            self.emoji = None
+
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.bg_check.toggle_previously_trained()
+        self.set_style(self.view.bg_check.previously_trained_staff)
+        
+        await interaction.edit(embed=self.view.bg_check.status(), view=self.view)   
+        
+################################################################################
+    

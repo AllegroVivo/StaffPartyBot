@@ -124,7 +124,7 @@ class Availability:
                     f"{a.start_timestamp} - {a.end_timestamp}\n"
                 )
 
-        return "*(Times are displayed in your local time zone.)*\n\n" + ret
+        return "*(Times are displayed in\nyour local time zone.)*\n\n" + ret
 
 ################################################################################
     def delete(self) -> None:

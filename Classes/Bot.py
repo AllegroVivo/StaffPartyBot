@@ -102,7 +102,8 @@ class TrainingBot(Bot):
             "profiles": [],
             "venues": [],
             "job_postings": {},
-            "bg_checks": []
+            "bg_checks": [],
+            "roles": None
         } for g in self.guilds }
         
         load_dotenv()
@@ -114,6 +115,8 @@ class TrainingBot(Bot):
                 if cfg[0] not in (955933227372122173, 303742308874977280):
                     continue
             ret[cfg[0]]["bot_config"] = cfg
+        for r in data["roles"]:
+            ret[r[0]]["roles"] = r
             
         ### Training ###
         for u in data["tusers"]:

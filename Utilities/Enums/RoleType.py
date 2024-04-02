@@ -6,10 +6,10 @@ from ._Enum import FroggeEnum
 ################################################################################
 class RoleType(FroggeEnum):
 
-    Hiatus = 1
-    Trainer = 2
-    TrainerPending = 3
-    Staff = 4
+    TrainerMain = 1
+    TrainerPending = 2
+    TrainerHiatus = 3
+    StaffMain = 4
     StaffNotValidated = 5
     NewStaff = 6
 
@@ -17,14 +17,14 @@ class RoleType(FroggeEnum):
     @property
     def proper_name(self) -> str:
 
-        if self.value == 3:
+        if self.value == 2:
             return "Trainer Pending"
         elif self.value == 5:
             return "Staff Not Validated"
         elif self.value == 6:
             return "New Staff"
 
-        return self.name
+        return self.name.rstrip("Main")
     
 ################################################################################
     @staticmethod

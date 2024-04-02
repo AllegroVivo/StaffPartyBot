@@ -366,7 +366,6 @@ class ProfileAtAGlance(ProfileSection):
         if not view.complete or view.value is False:
             return
         
-        print(view.value)
         self.race = view.value[0]
         self.clan = view.value[1]
         

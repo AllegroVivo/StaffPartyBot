@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
-from discord import Guild, User, Interaction, Role
+from discord import Guild, User, Interaction, Role, Embed, EmbedField
 
 from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
@@ -10,8 +10,9 @@ from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
+from Classes.RoleManager import RoleManager
 from UI.Guild import ReportMenuView
-from Utilities import Utilities as U, RoleType
+from Utilities import Utilities as U
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -31,7 +32,8 @@ class GuildData:
         "_logger",
         "_profile_mgr",
         "_venue_mgr",
-        "_job_mgr"
+        "_job_mgr",
+        "_role_mgr"
     )
 
 ################################################################################
@@ -47,6 +49,7 @@ class GuildData:
         self._profile_mgr: ProfileManager = ProfileManager(self)
         self._venue_mgr: VenueManager = VenueManager(self)
         self._job_mgr: JobsManager = JobsManager(self)
+        self._role_mgr: RoleManager = RoleManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
@@ -58,6 +61,7 @@ class GuildData:
         await self._profile_mgr._load_all(data)
         await self._venue_mgr._load_all(data)
         await self._job_mgr._load_all(data)
+        await self._role_mgr._load_all(data["roles"])
         
 ################################################################################
     @property
@@ -112,6 +116,12 @@ class GuildData:
     def jobs_manager(self) -> JobsManager:
         
         return self._job_mgr
+    
+################################################################################
+    @property
+    def role_manager(self) -> RoleManager:
+        
+        return self._role_mgr
     
 ################################################################################
     def get_profile(self, user: User) -> Profile:

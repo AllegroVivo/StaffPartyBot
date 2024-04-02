@@ -550,16 +550,18 @@ class Venue:
 ################################################################################
     async def approve(self, interaction: Interaction) -> None:
         
-        if self.pending:
-            self.pending = False
-            embed = U.make_embed(
-                title=f"Venue Approved: __{self.name}__",
-                description=(
-                    f"The venue has been approved by {interaction.user.mention}!\n"
-                    "They can now begin accepting applications."
-                )
+        if not self.pending:
+            return
+        
+        self.pending = False
+        embed = U.make_embed(
+            title=f"Venue Approved: __{self.name}__",
+            description=(
+                f"The venue has been approved by {interaction.user.mention}!\n"
+                "They can now begin accepting applications."
             )
-            await interaction.respond(embed=embed, ephemeral=True)
+        )
+        await interaction.respond(embed=embed, ephemeral=True)
         
 ################################################################################
     async def set_name(self, interaction: Interaction) -> None:

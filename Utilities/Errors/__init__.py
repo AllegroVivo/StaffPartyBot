@@ -32,4 +32,5 @@ from .VenueImportNotFound import VenueImportNotFoundError
 from .VenuePendingApproval import VenuePendingApprovalError
 from .VenueProfileNotComplete import VenueProfileNotCompleteError
 from .MissingNameError import MissingNameError
+from .JobPostingExpired import JobPostingExpiredError
 ################################################################################

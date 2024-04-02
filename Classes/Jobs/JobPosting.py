@@ -28,6 +28,7 @@ from Utilities import (
     TimeRangeError,
     DateTimeBeforeNowError,
     IneligibleForJobError,
+    JobPostingExpiredError,
 )
 from .PayRate import PayRate
 
@@ -255,6 +256,18 @@ class JobPosting:
         return self._rejections
     
 ################################################################################
+    @property
+    def has_passed(self) -> bool:
+        
+        return (
+            self._candidate is not None or 
+            (
+                self.end_time is not None and
+                self.end_time.timestamp() <= datetime.now().timestamp()
+            )
+        )
+    
+################################################################################
     def update(self) -> None:
 
         self.bot.database.update.job_posting(self)
@@ -268,12 +281,17 @@ class JobPosting:
             except:
                 pass
         
-        # # Oh no, being naughty and accessing a private attribute!
-        # self._mgr._postings.remove(self)
-        # self.bot.database.delete.job_posting(self)
+        # Oh no, being naughty and accessing a private attribute!
+        self._mgr._postings.remove(self)
+        self.bot.database.delete.job_posting(self)
         
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
+        
+        if self.has_passed:
+            error = JobPostingExpiredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
         
         embed = self.status()
         view = JobPostingStatusView(interaction.user, self)
@@ -349,7 +367,7 @@ class JobPosting:
 
         return EmbedField(
             name="__Posting URL__",
-            value=description + f"\n{U.draw_line(extra=30)}",
+            value=f"{U.draw_line(extra=30)}\n" + description,
             inline=False
         )
 

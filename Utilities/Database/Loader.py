@@ -32,7 +32,8 @@ class DatabaseLoader(DBWorkerBranch):
             "venue_hours" : self._load_venue_hours(),
             "job_postings" : self._load_job_postings(),
             "hours" : self._load_job_hours(),
-            "bg_checks" : self._load_bg_checks()
+            "bg_checks" : self._load_bg_checks(),
+            "roles" : self._load_roles()
         }
 
 ################################################################################
@@ -123,6 +124,12 @@ class DatabaseLoader(DBWorkerBranch):
     def _load_bg_checks(self) -> Tuple[Tuple[Any, ...], ...]:
 
         self.execute("SELECT * FROM bg_checks;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_roles(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM roles;")
         return self.fetchall()
     
 ################################################################################

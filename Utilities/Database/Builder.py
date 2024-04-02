@@ -25,6 +25,11 @@ class DatabaseBuilder(DBWorkerBranch):
                 "ON CONFLICT DO NOTHING;",
                 guild.id,
             )
+            self.execute(
+                "INSERT INTO roles (guild_id) VALUES (%s) "
+                "ON CONFLICT DO NOTHING;",
+                guild.id,
+            )
   
 ################################################################################
     def _build_views(self) -> None:

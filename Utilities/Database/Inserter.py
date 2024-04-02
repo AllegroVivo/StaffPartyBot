@@ -41,7 +41,7 @@ class DatabaseInserter(DBWorkerBranch):
         return new_id
     
 ################################################################################
-    def _add_tuser(self, guild_id: int, user_id: int) -> None:
+    def _add_tuser(self, guild_id: int, user_id: int, is_trainer: bool) -> None:
         
         self.execute(
             "INSERT INTO tusers (user_id, guild_id) VALUES (%s, %s) ",
@@ -56,8 +56,9 @@ class DatabaseInserter(DBWorkerBranch):
             user_id, guild_id
         )
         self.execute(
-            "INSERT INTO bg_checks (user_id, guild_id) VALUES (%s, %s) ",
-            user_id, guild_id
+            "INSERT INTO bg_checks (user_id, guild_id, is_trainer) "
+            "VALUES (%s, %s, %s) ",
+            user_id, guild_id, is_trainer
         )
         
 ################################################################################

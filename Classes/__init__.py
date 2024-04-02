@@ -13,5 +13,6 @@ if TYPE_CHECKING:
     from .GuildData import GuildData
     from .GuildManager import GuildManager
     from .Logger import Logger
+    from .RoleManager import RoleManager
 ################################################################################
     

@@ -52,10 +52,10 @@ class SalaryModal(FroggeModal):
         if not (salary := U.parse_salary(self.children[1].value)):
             error = InvalidSalaryError(self.children[1].value)
             await interaction.respond(embed=error, ephemeral=True)
-            return
-
-        self.value = salary, (self.children[2].value or None), interaction
-        self.complete = True
+        else:
+            self.value = salary, (self.children[2].value or None), interaction
+            self.complete = True
+            await interaction.respond("** **", delete_after=0.1)
 
         self.stop()
 

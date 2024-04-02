@@ -36,7 +36,7 @@ class PositionSelect(Select):
             placeholder="Select a position for this job posting...",
             options=options,
             min_values=1,
-            max_values=len(options),
+            max_values=1,
             disabled=True if options[0].value == "-1" else False,
             row=0
         )

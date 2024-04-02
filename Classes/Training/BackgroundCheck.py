@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple
 
 from discord import Interaction, Embed, EmbedField
 
+from Assets import BotEmojis
 from UI.Common import ConfirmCancelView
 from UI.Training import (
     BGCheckNamesModal,
@@ -17,6 +18,7 @@ from Utilities import (
     InvalidWorldNameError,
     GameWorld,
     MissingNameError,
+    RoleType,
 )
 from .BGCheckVenue import BGCheckVenue
 
@@ -37,7 +39,9 @@ class BackgroundCheck:
         "_names",
         "_venues",
         "_positions",
-        "_approved"
+        "_approved",
+        "_is_trainer",
+        "_prev_exp",
     )
 
 ################################################################################
@@ -49,6 +53,9 @@ class BackgroundCheck:
         self._names: List[str] = kwargs.get("names", [])
         self._venues: List[BGCheckVenue] = kwargs.get("venues", [])
         self._positions: List[str] = kwargs.get("positions", [])
+        
+        self._is_trainer: bool = kwargs.get("is_trainer", False)
+        self._prev_exp: bool = kwargs.get("prev_exp", False)
         
         self._approved: bool = kwargs.get("approved", False)
 
@@ -65,7 +72,9 @@ class BackgroundCheck:
                 if data[3] is not None else []
             ),
             positions=data[4] if data[4] is not None else [],
-            approved=data[5]
+            approved=data[5],
+            is_trainer=data[7],
+            prev_exp=data[8]
         )
     
 ################################################################################
@@ -118,7 +127,7 @@ class BackgroundCheck:
         
 ################################################################################
     @property
-    def positions(self) -> List[Position]:
+    def positions(self) -> List[str]:
         
         return self._positions
         
@@ -135,6 +144,24 @@ class BackgroundCheck:
         self.update()
         
 ################################################################################
+    @property
+    def is_trainer(self) -> bool:
+        
+        return self._is_trainer
+    
+################################################################################
+    @property
+    def previously_trained_staff(self) -> bool:
+        
+        return self._prev_exp
+    
+    @previously_trained_staff.setter
+    def previously_trained_staff(self, value: bool) -> None:
+            
+        self._prev_exp = value
+        self.update()
+        
+################################################################################
     def update(self) -> None:
         
         self.bot.database.update.background_check(self)
@@ -145,10 +172,16 @@ class BackgroundCheck:
         return U.make_embed(
             title="Background Check",
             description=(
-                "__You have agreed to the rules and guidelines of the server.__"
-                if self.agree else
-                "__You have not agreed to the rules and guidelines of the server.__"
-            ) + f"\n{U.draw_line(extra=20)}",
+                "__**Please read, and either agree or disagree to the "
+                "following:**__\n"
+                "*I confirm that the information I provide in this background\n"
+                "check is true and I also provide consent to the employees\n"
+                "of the Staff Party Bus to contact and verify my references.*\n\n"
+                
+                "Please note that it is __**OKAY**__ to disagree with the above\n"
+                "statement. If you do, a staff member will contact you shortly."
+                
+            ) + f"\n{U.draw_line(extra=36)}",
             fields=[
                 EmbedField(
                     name="__Character Names__",
@@ -156,7 +189,15 @@ class BackgroundCheck:
                         "\n* ".join([f"`{n}`" for n in self.names]) 
                         if self.names else "`No Names Provided`"
                     ),
-                    inline=False
+                    inline=True
+                ),
+                EmbedField(
+                    name="__Have Trained Staff__",
+                    value=(
+                        str(BotEmojis.Check) if self._prev_exp
+                        else str(BotEmojis.Cross)
+                    ),
+                    inline=True
                 ),
                 EmbedField(
                     name="__Previous Venues__",
@@ -243,7 +284,7 @@ class BackgroundCheck:
         
         if not self.names:
             error = MissingNameError()
-            await interaction.respond(embed=error, ephemeral=Truez)
+            await interaction.respond(embed=error, ephemeral=True)
             return
         
         word = "AGREE" if agreed else "DISAGREE"
@@ -285,5 +326,41 @@ class BackgroundCheck:
         )
         
         await interaction.edit(embed=confirm)
+        
+################################################################################
+    async def approve(self, interaction: Interaction) -> None:
+        
+        if self.approved:
+            return
+        
+        await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.StaffMain)
+        await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.StaffNotValidated)
+        
+        self.approved = True
+        
+        confirm = U.make_embed(
+            title="User Approved",
+            description=(
+                "This user has been approved and can now access the server."
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
+        
+        user_confirm = U.make_embed(
+            title="Approved",
+            description=(
+                "Your background check has been approved!\n"
+                "You now have access to the server."
+            )
+        )
+        try:
+            await self.parent.user.send(embed=user_confirm)
+        except:
+            pass
+        
+################################################################################
+    def toggle_previously_trained(self) -> None:
+        
+        self.previously_trained_staff = not self.previously_trained_staff
         
 ################################################################################
