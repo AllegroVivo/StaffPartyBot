@@ -82,9 +82,9 @@ class GameWorld(FroggeEnum):
     
 ################################################################################
     @staticmethod
-    def select_options_by_dc(dc: DataCenter) -> List[SelectOption]:
+    def select_options_by_dc(dc: FroggeEnum) -> List[SelectOption]:
         
-        if dc is DataCenter.Aether:
+        if dc.value == 1:
             world_list = [
                 GameWorld.Adamantoise,
                 GameWorld.Cactuar,
@@ -95,7 +95,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Sargatanas,
                 GameWorld.Siren,
             ]
-        elif dc is DataCenter.Crystal:
+        elif dc.value == 2:
             world_list = [
                 GameWorld.Balmung,
                 GameWorld.Brynhildr,
@@ -106,14 +106,14 @@ class GameWorld(FroggeEnum):
                 GameWorld.Mateus,
                 GameWorld.Zalera,
             ]
-        elif dc is DataCenter.Dynamis:
+        elif dc.value == 3:
             world_list = [
                 GameWorld.Halicarnassus,
                 GameWorld.Maduin,
                 GameWorld.Marilith,
                 GameWorld.Seraph,
             ]
-        elif dc is DataCenter.Primal:
+        elif dc.value == 4:
             world_list = [
                 GameWorld.Behemoth,
                 GameWorld.Excalibur,
@@ -124,7 +124,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Leviathan,
                 GameWorld.Ultros,
             ]
-        elif dc is DataCenter.Chaos:
+        elif dc.value == 5:
             world_list = [
                 GameWorld.Cerberus,
                 GameWorld.Louisoix,
@@ -135,7 +135,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Sagittarius,
                 GameWorld.Spriggan,
             ]
-        elif dc is DataCenter.Light:
+        elif dc.value == 6:
             world_list = [
                 GameWorld.Alpha,
                 GameWorld.Lich,
