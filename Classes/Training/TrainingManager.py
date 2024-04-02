@@ -15,7 +15,8 @@ from Utilities import (
     NotRegisteredError,
     RPLevel,
     NSFWPreference,
-    VenueSize
+    VenueSize,
+    VenueForumTag
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
@@ -317,10 +318,7 @@ class TrainingManager:
                 "2. **NSFW Preference:**\n"
                 "*(Whether or not the venue is NSFW-safe.)*\n\n"
 
-                "3. **Venue Size:**\n"
-                "*(The size of the space the venue is located in.)*\n\n"
-
-                "4. **Venue Type:**\n"
+                "3. **Venue Type:**\n"
                 "*(You can select up to three tags for the style of venue you "
                 "want to intern at.)*"
             ),
@@ -377,8 +375,7 @@ class TrainingManager:
         self, 
         rp_level: RPLevel, 
         nsfw_pref: NSFWPreference,
-        size: VenueSize, 
-        tags: List[VenueTag]
+        tags: List[VenueForumTag]
     ) -> List[Venue]:
         
         ret = {}
@@ -388,15 +385,15 @@ class TrainingManager:
                 continue
     
             level_diff = self._calculate_distance(rp_level, venue.rp_level)
-            size_diff = self._calculate_distance(size, venue.size)
             nsfw_match = nsfw_pref == venue.nsfw
             
+            venue_tags = [v.tag_text.lower() for v in venue.tags]
             tags_scalar = 0
             for tag in tags:
-                if tag in venue.tags:
+                if tag.proper_name.lower() in venue_tags:
                     tags_scalar += 1
     
-            overall_score = (level_diff + size_diff) * tags_scalar - nsfw_match
+            overall_score = level_diff * (tags_scalar - nsfw_match)
     
             ret[venue] = overall_score
             

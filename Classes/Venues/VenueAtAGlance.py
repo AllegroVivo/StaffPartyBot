@@ -28,7 +28,6 @@ class VenueAtAGlance:
         "_level",
         "_nsfw",
         "_tags",
-        "_size",
     )
 
 ################################################################################
@@ -38,7 +37,6 @@ class VenueAtAGlance:
         level: Optional[RPLevel] = None,
         nsfw: Optional[bool] = False,
         tags: Optional[VenueTag] = None,
-        size: Optional[VenueSize] = None
     ) -> None:
 
         self._parent: Venue = parent
@@ -46,7 +44,6 @@ class VenueAtAGlance:
         self._level: Optional[RPLevel] = level
         self._nsfw: bool = nsfw
         self._tags: List[VenueTag] = tags or []
-        self._size: Optional[VenueSize] = size
 
 ################################################################################
     @classmethod
@@ -56,7 +53,6 @@ class VenueAtAGlance:
             parent,
             level=RPLevel(data[0]) if data[0] is not None else None,
             nsfw=data[1],
-            size=VenueSize(data[2]) if data[2] is not None else None,
             tags=[VenueTag(t) for t in data[3]] if data[3] is not None else None,
         )
     
@@ -114,27 +110,12 @@ class VenueAtAGlance:
         self.update()
         
 ################################################################################
-    @property
-    def size(self) -> Optional[VenueSize]:
-        
-        return self._size
-    
-    @size.setter
-    def size(self, value: Optional[VenueSize]) -> None:
-        
-        self._size = value
-        self.update()
-        
-################################################################################
     def compile(self) -> str:
         
         ret = f"__RP Level:__ "
         ret += f"`{self.level.proper_name}`" if self.level else "`Not Set`"
         
         ret += f"\n__NSFW:__ `{'~Yes~' if self.nsfw else 'No'}`"
-        
-        ret += f"\n__Venue Size:__ "
-        ret += f"`{self.size.proper_name}`" if self.size else "`Not Set`"
         
         ret += f"\n__Venue Tags:__\n"
         if self.tags:
@@ -174,26 +155,6 @@ class VenueAtAGlance:
         self.nsfw = not self.nsfw
         await interaction.respond("** **", delete_after=0.1)
         
-################################################################################
-    async def set_size(self, interaction: Interaction) -> None:
-        
-        prompt = U.make_embed(
-            title="Set Venue Size",
-            description=(
-                "Please select the size of your venue\n"
-                "from the selector below."
-            )
-        )
-        view = RPSizeSelectView(interaction.user, self._parent)
-        
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
-        
-        if not view.complete or view.value is False:
-            return
-        
-        self.size = view.value
-
 ################################################################################
     def update_from_xiv_venue(self, venue: XIVVenue) -> None:
         

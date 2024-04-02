@@ -282,12 +282,6 @@ class Venue:
     
 ################################################################################
     @property
-    def size(self) -> Optional[VenueSize]:
-        
-        return self._aag.size
-    
-################################################################################
-    @property
     def tags(self) -> List[VenueTag]:
         
         return self._aag.tags
@@ -684,11 +678,6 @@ class Venue:
     async def toggle_nsfw(self, interaction: Interaction) -> None:
         
         await self._aag.toggle_nsfw(interaction)
-        
-################################################################################
-    async def set_size(self, interaction: Interaction) -> None:
-        
-        await self._aag.set_size(interaction)
         
 ################################################################################
     async def set_tags(self, interaction: Interaction) -> None:

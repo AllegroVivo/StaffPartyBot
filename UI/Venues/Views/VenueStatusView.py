@@ -34,7 +34,6 @@ class VenueStatusView(FroggeView):
             RPLevelButton(self.venue.rp_level),
             NSFWToggleButton(self.venue.nsfw),
             VenueTagsButton(self.venue.tags),
-            VenueSizeButton(self.venue.size),
             WebsiteURLButton(self.venue.website_url),
             LogoButton(self.venue.logo_url),
             SetPositionsButton(self.venue.positions),
@@ -145,27 +144,6 @@ class VenueTagsButton(FroggeButton):
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
-################################################################################
-class VenueSizeButton(FroggeButton):
-
-    def __init__(self, size: Optional[VenueSize]) -> None:
-
-        super().__init__(
-            label="Venue Size",
-            disabled=False,
-            row=1
-        )
-        
-        self.set_style(size)
-
-    async def callback(self, interaction: Interaction) -> None:
-        await self.view.venue.set_size(interaction)
-        self.set_style(self.view.venue.size)
-        
-        await edit_message_helper(
-            interaction, embed=self.view.venue.status(), view=self.view
-        )
-
 ################################################################################
 class SetScheduleButton(FroggeButton):
 
