@@ -68,7 +68,7 @@ class TrainerPendingRoleButton(FroggeButton):
         self.set_style(cur_role)
         
     async def callback(self, interaction):
-        await self.view.roles.set_role(interaction, RoleType.TrainerMain)
+        await self.view.roles.set_role(interaction, RoleType.TrainerPending)
         self.set_style(self.view.roles.trainer_main)
 
         await edit_message_helper(

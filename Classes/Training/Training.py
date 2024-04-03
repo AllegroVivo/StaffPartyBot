@@ -262,7 +262,7 @@ class Training:
         self.update()
         
         if self.is_complete:
-            await self.completion_procedure(interaction)
+            await self.on_complete(interaction)
     
 ################################################################################
     def get_override(self, req_id: str) -> Optional[RequirementLevel]:
@@ -305,7 +305,7 @@ class Training:
         self.update()
 
 ################################################################################
-    async def completion_procedure(self, interaction: Interaction) -> None:
+    async def on_complete(self, interaction: Interaction) -> None:
 
         trainer_embed = U.make_embed(
             title="Training Complete",
@@ -332,6 +332,11 @@ class Training:
                 
                 "Visit the server and run the `/training match` command to\n"
                 "find what venues might be best suited to hire you!\n\n"
+                
+                "Additionally, you need to run any of the `/staff_profile` "
+                "commands to set up your profile! (Follow the instructions "
+                "at https://discord.com/channels/1104515062187708525/1219788797223374938 "
+                "to get started!)\n\n"
                 f"{U.draw_line(extra=25)}\n"
             ),
         )
@@ -340,5 +345,6 @@ class Training:
             await self._trainee.user.send(embed=trainee_embed)
         except:
             pass
+            
     
 ################################################################################
