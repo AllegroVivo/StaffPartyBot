@@ -241,6 +241,12 @@ class TUser:
         return self._details.hiatus
     
 ################################################################################
+    @property
+    def bg_check(self) -> BackgroundCheck:
+        
+        return self._bg_check
+    
+################################################################################
     def is_qualified(self, position_id: str) -> bool:
         
         return any(q.position.id == position_id for q in self.qualifications)
