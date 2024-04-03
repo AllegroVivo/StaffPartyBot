@@ -319,4 +319,6 @@ class Logger:
             timestamp=True
         )
 
+        await self._log(embed, LogType.BGCheckSubmitted)
+
 ################################################################################
