@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from typing import TYPE_CHECKING, Optional
 
+from UI.Guild import BGCheckApprovalView
 from discord import (
     Interaction,
     TextChannel,
@@ -85,7 +86,7 @@ class Logger:
         )
 
 ################################################################################
-    async def _log(self, message: Embed, action: LogType) -> None:
+    async def _log(self, message: Embed, action: LogType, **kwargs) -> None:
 
         if self.log_channel is None:
             return
@@ -96,7 +97,7 @@ class Logger:
             print(f"Invalid action passed to LOG_COLORS: '{action}'")
             message.colour = Colour.embed_background()
 
-        await self.log_channel.send(embed=message)
+        await self.log_channel.send(embed=message, **kwargs)
        
 ################################################################################
     async def _member_event(self, member: Member, _type: LogType) -> None:
@@ -317,7 +318,8 @@ class Logger:
             ),
             timestamp=True
         )
+        view = BGCheckApprovalView(bg_check.parent)
 
-        await self._log(embed, LogType.BGCheckSubmitted)
+        await self._log(embed, LogType.BGCheckSubmitted, view=view)
 
 ################################################################################
