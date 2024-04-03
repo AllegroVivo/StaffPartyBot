@@ -6,6 +6,7 @@ from discord import ButtonStyle, User
 from discord.ui import Button, View
 
 from UI.Common import CloseMessageButton
+from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import TUser
@@ -23,7 +24,6 @@ class BGCheckApprovalView(View):
         self.tuser: TUser = tuser
         
         button_list = [ApproveButton()] if not tuser.bg_check.approved else []
-        button_list.append(CloseMessageButton())  # type: ignore
         for btn in button_list:
             self.add_item(btn)
         
@@ -41,11 +41,7 @@ class ApproveButton(Button):
         
     async def callback(self, interaction):
         await self.view.tuser.bg_check.approve(interaction)
-        
-        self.view.children = []
-        await interaction.edit_original_response(view=self.view)
-        
-        self.view.complete = True
+        await edit_message_helper(interaction, view=None)
         self.view.stop()
         
 ################################################################################

@@ -332,7 +332,7 @@ class BackgroundCheck:
             timestamp=True
         )
         
-        await edit_message_helper(interaction, embed=confirm, view=None)
+        await edit_message_helper(interaction, embed=confirm)
         
 ################################################################################
     async def approve(self, interaction: Interaction) -> None:
@@ -344,14 +344,14 @@ class BackgroundCheck:
         await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.StaffNotValidated)
         
         self.approved = True
-        
-        confirm = U.make_embed(
-            title="User Approved",
-            description=(
-                "This user has been approved and can now access the server."
-            )
-        )
-        await interaction.respond(embed=confirm, ephemeral=True)
+        # 
+        # confirm = U.make_embed(
+        #     title="User Approved",
+        #     description=(
+        #         "This user has been approved and can now access the server."
+        #     )
+        # )
+        # await interaction.respond(embed=confirm, ephemeral=True)
         
         user_confirm = U.make_embed(
             title="Approved",
