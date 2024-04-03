@@ -10,14 +10,17 @@ __all__ = (
 
 ################################################################################
 async def edit_message_helper(interaction: Interaction, *args, **kwargs) -> None:
-
+    
     try:
-        await interaction.message.edit(*args, **kwargs)
+        await interaction.edit(*args, **kwargs)
     except:
         try:
-            await interaction.edit_original_response(*args, **kwargs)
+            await interaction.message.edit(*args, **kwargs)
         except:
-            print("Edit Message Helper FAILED")
+            try:
+                await interaction.edit_original_response(*args, **kwargs)
+            except:
+                print("Edit Message Helper FAILED")
 
 ################################################################################
 async def dummy_response(interaction: Interaction) -> None:

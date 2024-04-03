@@ -19,6 +19,7 @@ from Utilities import (
     GameWorld,
     MissingNameError,
     RoleType,
+    edit_message_helper,
 )
 from .BGCheckVenue import BGCheckVenue
 
@@ -331,7 +332,7 @@ class BackgroundCheck:
             timestamp=True
         )
         
-        await interaction.edit(embed=confirm)
+        await edit_message_helper(interaction, embed=confirm)
         
 ################################################################################
     async def approve(self, interaction: Interaction) -> None:

@@ -313,8 +313,7 @@ class Logger:
         embed = U.make_embed(
             title="Background Check Submitted!",
             description=(
-                f"The background check for `{bg_check.names[0]}` has been\n"
-                f"__**{'approved' if bg_check.agree else 'submitted'}**__!"
+                f"A background check for `{bg_check.names[0]}` has been submitted!"
             ),
             timestamp=True
         )
