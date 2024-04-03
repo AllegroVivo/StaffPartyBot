@@ -169,6 +169,37 @@ class BackgroundCheck:
 ################################################################################
     def status(self) -> Embed:
 
+        fields = [
+            EmbedField(
+                name="__Character Names__",
+                value="* " + (
+                    "\n* ".join([f"`{n}`" for n in self.names])
+                    if self.names else "`No Names Provided`"
+                ),
+                inline=True
+            ),
+            EmbedField(
+                name="__Previous Venues__",
+                value="* " + (
+                    "\n* ".join([v.format() for v in self.venues])
+                    if self.venues else "`No Venue Information Provided`"
+                ),
+                inline=False
+            )
+        ]
+        if self.is_trainer:
+            fields.insert(
+                1,
+                EmbedField(
+                    name="__Have Trained Staff__",
+                    value=(
+                        str(BotEmojis.Check) if self._prev_exp
+                        else str(BotEmojis.Cross)
+                    ),
+                    inline=True
+                ),
+            )
+
         return U.make_embed(
             title="Background Check",
             description=(
@@ -182,32 +213,7 @@ class BackgroundCheck:
                 "statement. If you do, a staff member will contact you shortly."
                 
             ) + f"\n{U.draw_line(extra=36)}",
-            fields=[
-                EmbedField(
-                    name="__Character Names__",
-                    value="* " + (
-                        "\n* ".join([f"`{n}`" for n in self.names]) 
-                        if self.names else "`No Names Provided`"
-                    ),
-                    inline=True
-                ),
-                EmbedField(
-                    name="__Have Trained Staff__",
-                    value=(
-                        str(BotEmojis.Check) if self._prev_exp
-                        else str(BotEmojis.Cross)
-                    ),
-                    inline=True
-                ),
-                EmbedField(
-                    name="__Previous Venues__",
-                    value="* " + (
-                        "\n* ".join([v.format() for v in self.venues]) 
-                        if self.venues else "`No Venue Information Provided`"
-                    ),
-                    inline=False
-                )
-            ]
+            fields=fields
         )
         
 ################################################################################
@@ -248,7 +254,7 @@ class BackgroundCheck:
         world = GameWorld.from_string(raw_world)
         if world is None:
             error = InvalidWorldNameError(raw_world)
-            await interaction.respond(error)
+            await interaction.respond(embed=error)
             return
         
         data_center = DataCenter.from_world(world)
