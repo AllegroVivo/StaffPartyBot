@@ -43,12 +43,10 @@ class AcceptBGCheckButton(FroggeButton):
         )
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.bg_check.approve(interaction)
+        await self.view.bg_check.approve()
         self.view.complete = True
         
-        await edit_message_helper(
-            interaction, embed=self.view.bg_check.status(), view=None
-        )
+        await edit_message_helper(interaction, view=None)
         await self.view.stop()  # type: ignore
 
 ################################################################################

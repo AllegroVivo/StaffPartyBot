@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from discord import ButtonStyle, User
+from discord import ButtonStyle
 from discord.ui import Button, View
 
-from UI.Common import CloseMessageButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import TUser
+    from Classes import BackgroundCheck
 ################################################################################
 
 __all__ = ("BGCheckApprovalView",)
@@ -17,13 +16,13 @@ __all__ = ("BGCheckApprovalView",)
 ################################################################################
 class BGCheckApprovalView(View):
 
-    def __init__(self, tuser: TUser):
+    def __init__(self, bg_check: BackgroundCheck):
         
-        super().__init__()
+        super().__init__(timeout=None)
         
-        self.tuser: TUser = tuser
+        self.bg_check: BackgroundCheck = bg_check
         
-        button_list = [ApproveButton()] if not tuser.bg_check.approved else []
+        button_list = [ApproveButton()] if not bg_check.approved else []
         for btn in button_list:
             self.add_item(btn)
         
@@ -36,11 +35,12 @@ class ApproveButton(Button):
             style=ButtonStyle.success,
             label="Approve",
             disabled=False,
-            row=0
+            row=0,
+            custom_id="approve_bg_check"
         )
         
     async def callback(self, interaction):
-        await self.view.tuser.bg_check.approve(interaction)
+        await self.view.bg_check.approve(interaction)
         await edit_message_helper(interaction, view=None)
         self.view.stop()
         

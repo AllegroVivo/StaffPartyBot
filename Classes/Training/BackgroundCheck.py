@@ -332,10 +332,10 @@ class BackgroundCheck:
             timestamp=True
         )
         
-        await edit_message_helper(interaction, embed=confirm)
+        await edit_message_helper(interaction, embed=confirm, view=None)
         
 ################################################################################
-    async def approve(self, interaction: Interaction) -> None:
+    async def approve(self) -> None:
         
         if self.approved:
             return
@@ -364,6 +364,8 @@ class BackgroundCheck:
             await self.parent.user.send(embed=user_confirm)
         except:
             pass
+        
+        await self.parent.guild.log.bg_check_approved(self)
         
 ################################################################################
     def toggle_previously_trained(self) -> None:

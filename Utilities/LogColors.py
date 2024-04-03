@@ -20,5 +20,6 @@ LOG_COLORS: Dict[LogType, FroggeColor] = {
     LogType.TempJobAccepted: FroggeColor.jungle_green(),
     LogType.TempJobCanceled: FroggeColor.deep_pink(),
     LogType.BGCheckSubmitted: FroggeColor.cornflower_blue(),
+    LogType.BGCheckApproved: FroggeColor.fuchsia(),
 }
 ################################################################################

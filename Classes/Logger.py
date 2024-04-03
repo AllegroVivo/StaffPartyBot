@@ -318,8 +318,21 @@ class Logger:
             ),
             timestamp=True
         )
-        view = BGCheckApprovalView(bg_check.parent)
+        view = BGCheckApprovalView(bg_check)
 
         await self._log(embed, LogType.BGCheckSubmitted, view=view)
 
+################################################################################
+    async def bg_check_approved(self, bg_check: BackgroundCheck) -> None:
+
+        embed = U.make_embed(
+            title="Background Check Approved!",
+            description=(
+                f"Background check for `{bg_check.names[0]}` has been approved!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.BGCheckApproved)
+        
 ################################################################################
