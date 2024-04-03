@@ -332,7 +332,7 @@ class BackgroundCheck:
             timestamp=True
         )
         
-        await edit_message_helper(interaction, embed=confirm)
+        await edit_message_helper(interaction, embed=confirm, view=None)
         
 ################################################################################
     async def approve(self, interaction: Interaction) -> None:
