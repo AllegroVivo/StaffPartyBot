@@ -745,6 +745,24 @@ class JobPosting:
         await self._update_posting()
         await interaction.edit()
         
+        notify = U.make_embed(
+            title="Job Accepted",
+            description=(
+                f"__**Position**__\n\n"
+                f"`{self.position.name}`\n"
+                f"*({self.venue.name})*\n\n"
+                
+                f"__**Picked Up By**__\n\n"
+                f"`{self.candidate.name}`\n"
+                f"{self.candidate.user.mention}\n"
+            )
+        )
+        
+        try:
+            await self._user.send(embed=notify)
+        except:
+            pass
+        
         await self._mgr.guild.log.temp_job_accepted(self)
     
 ################################################################################
@@ -759,6 +777,22 @@ class JobPosting:
         self.candidate = None
         await self._update_posting()
         await interaction.edit()
+        
+        notify = U.make_embed(
+            title="Job Canceled",
+            description=(
+                f"__**Position**__\n\n"
+                f"`{self.position.name}`\n"
+                f"*({self.venue.name})*\n\n"
+                
+                "The previous candidate has removed themself from this job posting."
+            )
+        )
+        
+        try:
+            await self._user.send(embed=notify)
+        except:
+            pass
         
 ################################################################################
     async def reject(self, interaction: Interaction) -> None:
