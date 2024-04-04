@@ -785,7 +785,10 @@ class JobPosting:
                 f"`{self.position.name}`\n"
                 f"*({self.venue.name})*\n\n"
                 
-                "The previous candidate has removed themself from this job posting."
+                "The previous candidate has removed themself from this job posting.\n\n"
+                
+                "For your convenience, the posting has been re-activated and "
+                "is now available for other applicants to accept."
             )
         )
         
