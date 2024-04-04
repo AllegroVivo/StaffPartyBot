@@ -311,13 +311,14 @@ class Logger:
 ################################################################################
     async def bg_check_submitted(self, bg_check: BackgroundCheck) -> None:
         
+        venue_string = "\n* ".join([f'* {v.format()}' for v in bg_check.venues])
         embed = U.make_embed(
             title="Background Check Submitted!",
             description=(
                 f"A background check for `{bg_check.names[0]}` has been submitted!\n"
                 f"{U.draw_line(extra=25)}\n"
                 f"__Venues:__\n"
-                f"{[f'* {v.format()}' for v in bg_check.venues]}"
+                f"{venue_string}"
             ),
             timestamp=True
         )
