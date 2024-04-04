@@ -41,15 +41,6 @@ class BGCheckVenueModal(FroggeModal):
         )
         self.add_item(
             InputText(
-                style=InputTextStyle.singleline,
-                label="World Name",
-                placeholder="eg. 'Midgardsormr'",
-                max_length=25,
-                required=True
-            )
-        )
-        self.add_item(
-            InputText(
                 style=InputTextStyle.multiline,
                 label="Jobs Worked",
                 placeholder="eg. 'Bartender, Bouncer'",
@@ -61,8 +52,7 @@ class BGCheckVenueModal(FroggeModal):
     async def callback(self, interaction: Interaction):
         self.value = (
             self.children[1].value,
-            self.children[2].value,
-            [j.strip() for j in self.children[3].value.split(",")]
+            [j.strip() for j in self.children[2].value.split(",")]
         )
         self.complete = True
         

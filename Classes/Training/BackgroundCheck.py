@@ -10,7 +10,8 @@ from UI.Training import (
     BGCheckNamesModal,
     BGCheckMenuView,
     BGCheckVenueModal,
-    BGCheckRemoveVenueView
+    BGCheckRemoveVenueView, 
+    DataCenterWorldSelectView
 )
 from Utilities import (
     Utilities as U,
@@ -250,15 +251,24 @@ class BackgroundCheck:
         if not modal.complete:
             return
         
-        name, raw_world, jobs = modal.value
+        name, jobs = modal.value
         
-        world = GameWorld.from_string(raw_world)
-        if world is None:
-            error = InvalidWorldNameError(raw_world)
-            await interaction.respond(embed=error)
+        prompt = U.make_embed(
+            title="Select Data Center & World",
+            description=(
+                "Please select the data center and world where this venue "
+                "was located"
+            )
+        )
+        view = DataCenterWorldSelectView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
             return
-        
-        data_center = DataCenter.from_world(world)
+
+        data_center, world = view.value
 
         self._venues.append(BGCheckVenue(name, data_center, world, jobs))
         self.update()
