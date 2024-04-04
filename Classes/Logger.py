@@ -314,7 +314,10 @@ class Logger:
         embed = U.make_embed(
             title="Background Check Submitted!",
             description=(
-                f"A background check for `{bg_check.names[0]}` has been submitted!"
+                f"A background check for `{bg_check.names[0]}` has been submitted!\n"
+                f"{U.draw_line(extra=25)}\n"
+                f"__Venues:__\n"
+                f"{[f'* {v.format()}' for v in bg_check.venues]}"
             ),
             timestamp=True
         )
