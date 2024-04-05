@@ -359,14 +359,12 @@ class TUser:
 
         fields = [
             self._training_requested_field(),
+            self._qualifications_field(),
             EmbedField("** **", "** **", inline=False),
             self._availability_field(True),
+            self._bot_pings_field(),
             self._dc_field(),
         ]
-        
-        if len(self.qualifications) > 0:
-            fields.insert(1, self._qualifications_field())
-            fields.insert(4, self._bot_pings_field())
 
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
@@ -452,7 +450,7 @@ class TUser:
             if a.day == weekday:
                 self._availability.pop(i).delete()
                 
-        now = U.TIMEZONE_OFFSETS[tz].localize(datetime.now())
+        now = datetime.now()
         start_dt = (
             U.TIMEZONE_OFFSETS[tz].localize(
               datetime(
