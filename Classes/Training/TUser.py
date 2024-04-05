@@ -393,6 +393,7 @@ class TUser:
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
         
+        footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
         status = U.make_embed(
             title="Set Availability",
             description=(
@@ -401,7 +402,8 @@ class TUser:
 
                 "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
                 f"{U.draw_line(extra=44)}"
-            )
+            ),
+            footer_text=footer
         )
         view = WeekdayTZSelectView(interaction.user)
 
@@ -421,7 +423,8 @@ class TUser:
                 f"for `{weekday.proper_name}`...\n\n"
 
                 "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-            )
+            ),
+            footer_text=footer
         )
         view = TimeSelectView(interaction.user)
 
@@ -442,7 +445,8 @@ class TUser:
                     f"for `{weekday.proper_name}`...\n\n"
 
                     "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                )
+                ),
+                footer_text=footer
             )
             view = TimeSelectView(interaction.user)
 
