@@ -317,7 +317,7 @@ class Training:
                 f"your roster.\n\n"
 
                 "**Thank you for your hard work and dedication to the program!**\n\n"
-                f"{U.draw_line(extra=25)}\n"
+                f"{U.draw_line(extra=35)}\n"
             ),
         )
         await interaction.respond(embed=trainer_embed)

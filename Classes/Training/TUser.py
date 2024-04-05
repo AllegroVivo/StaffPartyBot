@@ -21,8 +21,9 @@ from Utilities import (
     TrainingLevel, 
     GlobalDataCenter,
     NoTrainingsError,
-    Weekday,    
-    RoleType
+    Weekday,
+    RoleType,
+    edit_message_helper
 )
 from .Availability import Availability
 from .BackgroundCheck import BackgroundCheck
@@ -492,7 +493,7 @@ class TUser:
                 "Select the position you would like to add a qualification\n"
                 "for. Subsequently, a second selector will appear to\n"
                 "allow you to select the new qualification level.\n"
-                f"{U.draw_line(extra=25)}"
+                f"{U.draw_line(extra=30)}"
             )
         )
 
