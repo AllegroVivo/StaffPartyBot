@@ -451,30 +451,20 @@ class TUser:
                 self._availability.pop(i).delete()
                 
         now = datetime.now()
-        start_dt = (
-            U.TIMEZONE_OFFSETS[tz].localize(
-              datetime(
-                now.year,
-                now.month,
-                now.day, 
-                base_start_time.hour, 
-                base_start_time.minute
-              )
-            ) if base_start_time is not None 
-            else None
-        )
-        end_dt = (
-            U.TIMEZONE_OFFSETS[tz].localize(
-              datetime(
-                now.year,
-                now.month,
-                now.day, 
-                base_end_time.hour, 
-                base_end_time.minute
-              )
-            ) if base_end_time is not None 
-            else None
-        )
+        start_dt = datetime(
+            now.year,
+            now.month,
+            now.day, 
+            base_start_time.hour, 
+            base_start_time.minute
+            ) if base_start_time is not None else None
+        end_dt = datetime(
+            now.year,
+            now.month,
+            now.day, 
+            base_end_time.hour, 
+            base_end_time.minute
+          ) if base_end_time is not None else None
 
         if base_start_time is not None:
             availability = Availability.new(self, weekday, start_dt.time(), end_dt.time())
