@@ -21,6 +21,8 @@ class TimeSelectView(FroggeView):
     def __init__(self,  user: User):
         
         super().__init__(user, close_on_complete=True)
+        
+        self.hour = None
 
         self.add_item(HourSelect())
         self.add_item(CloseMessageButton())
@@ -56,20 +58,15 @@ class HourSelect(Select):
         ][0].label
         self.disabled = True
         
-        load_dotenv()
-        if os.getenv("DEBUG") == "False":
-            # Adjust for EST timezone if in production
-            value += 4
-            if value > 23:
-                value -= 24
+        self.view.hour = value
             
-        self.view.add_item(MinuteSelect(value))
+        self.view.add_item(MinuteSelect())
         await interaction.edit(view=self.view)
     
 ################################################################################
 class MinuteSelect(Select):
 
-    def __init__(self, hour: int):
+    def __init__(self):
 
         super().__init__(
             placeholder="Select the minutes...",
@@ -79,15 +76,11 @@ class MinuteSelect(Select):
             disabled=False,
             row=1
         )
-        
-        self.hour = hour
 
     async def callback(self, interaction: Interaction):
         minutes = int(Minutes(int(self.values[0])).proper_name[3:])
-        self.view.value = time(
-            hour=self.hour, 
-            minute=minutes
-        )
+        
+        self.view.value = time(hour=self.view.hour, minute=minutes)
         self.view.complete = True
 
         await interaction.edit()

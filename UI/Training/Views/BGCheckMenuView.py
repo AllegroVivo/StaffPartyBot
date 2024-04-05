@@ -27,13 +27,11 @@ class BGCheckMenuView(FroggeView):
             EditNamesButton(self.bg_check.names),
             AddVenueButton(self.bg_check.venues),
             RemoveVenueButton(self.bg_check.venues),
+            ToggleTrainButton(self.bg_check.want_to_train),
             SubmitAndAgreeButton(),
             SubmitAndRejectButton(),
             CloseMessageButton(),
         ]
-        
-        if self.bg_check.is_trainer:
-            button_list.insert(3, HaveTrainedStaffToggleButton(self.bg_check.previously_trained_staff))
         
         for btn in button_list:
             self.add_item(btn)
@@ -146,12 +144,12 @@ class SubmitAndRejectButton(FroggeButton):
         await self.view.stop()  # type: ignore
 
 ################################################################################
-class HaveTrainedStaffToggleButton(FroggeButton):
-
+class ToggleTrainButton(FroggeButton):
+    
     def __init__(self, cur_val: bool) -> None:
-
+        
         super().__init__(
-            label="Previously Trained Staff?",
+            label="I Want to Train Staff",
             disabled=False,
             row=0
         )
@@ -169,9 +167,8 @@ class HaveTrainedStaffToggleButton(FroggeButton):
 
     async def callback(self, interaction: Interaction) -> None:
         self.view.bg_check.toggle_previously_trained()
-        self.set_style(self.view.bg_check.previously_trained_staff)
-        
-        await interaction.edit(embed=self.view.bg_check.status(), view=self.view)   
-        
-################################################################################
-    
+        self.set_style(self.view.bg_check.want_to_train)
+
+        await interaction.edit(embed=self.view.bg_check.status(), view=self.view)
+
+    ################################################################################

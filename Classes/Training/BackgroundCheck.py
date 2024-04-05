@@ -153,12 +153,12 @@ class BackgroundCheck:
     
 ################################################################################
     @property
-    def previously_trained_staff(self) -> bool:
+    def want_to_train(self) -> bool:
         
         return self._prev_exp
     
-    @previously_trained_staff.setter
-    def previously_trained_staff(self, value: bool) -> None:
+    @want_to_train.setter
+    def want_to_train(self, value: bool) -> None:
             
         self._prev_exp = value
         self.update()
@@ -181,6 +181,14 @@ class BackgroundCheck:
                 inline=True
             ),
             EmbedField(
+                name="__Want to Train__",
+                value=(
+                    str(BotEmojis.Check) if self._prev_exp
+                    else str(BotEmojis.Cross)
+                ),
+                inline=True
+            ),
+            EmbedField(
                 name="__Previous Venues__",
                 value="* " + (
                     "\n* ".join([v.format() for v in self.venues])
@@ -189,18 +197,6 @@ class BackgroundCheck:
                 inline=False
             )
         ]
-        if self.is_trainer:
-            fields.insert(
-                1,
-                EmbedField(
-                    name="__Have Trained Staff__",
-                    value=(
-                        str(BotEmojis.Check) if self._prev_exp
-                        else str(BotEmojis.Cross)
-                    ),
-                    inline=True
-                ),
-            )
 
         return U.make_embed(
             title="Background Check",
@@ -380,6 +376,6 @@ class BackgroundCheck:
 ################################################################################
     def toggle_previously_trained(self) -> None:
         
-        self.previously_trained_staff = not self.previously_trained_staff
+        self.want_to_train = not self.want_to_train
         
 ################################################################################

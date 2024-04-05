@@ -10,7 +10,7 @@ from UI.Common import ConfirmCancelView, Frogginator
 from UI.Training import (
     AddTrainingView,
     AddQualificationView,
-    WeekdaySelectView,
+    WeekdayTZSelectView,
     TimeSelectView,
     ModifyQualificationView,
     RemoveQualificationView,
@@ -392,24 +392,16 @@ class TUser:
         
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
-
-        footer = (
-            f"Current time EST: "
-            f"{datetime.now(tz=pytz.timezone('US/Eastern')).strftime('%I:%M %p')}\n"
-        )
-
+        
         status = U.make_embed(
             title="Set Availability",
             description=(
-                "Please select the appropriate day from the initial\n"
-                "selector, followed by your available time frame.\n\n"
-
-                "__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.\n"
+                "Please select the appropriate day from the initial selector, "
+                "followed by your timezone, and finally available time frame.\n"
                 f"{U.draw_line(extra=44)}"
-            ),
-            footer_text=footer
+            )
         )
-        view = WeekdaySelectView(interaction.user)
+        view = WeekdayTZSelectView(interaction.user)
 
         await interaction.respond(embed=status, view=view)
         await view.wait()
@@ -417,17 +409,14 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        weekday = view.value
+        weekday, tz = view.value
 
         prompt = U.make_embed(
             title="Set Availability Start",
             description=(
                 f"Please select the beginning of your availability "
-                f"for `{weekday.proper_name}`...\n\n"
-
-                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-            ),
-            footer_text=footer
+                f"for `{weekday.proper_name}`..."
+            )
         )
         view = TimeSelectView(interaction.user)
 
@@ -437,19 +426,16 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        start_time = view.value if view.value != -1 else None
-        end_time = None
+        base_start_time = view.value if view.value != -1 else None
+        base_end_time = None
 
-        if start_time is not None:
+        if base_start_time is not None:
             prompt = U.make_embed(
                 title="Set Availability End",
                 description=(
                     f"Please select the end of your availability "
-                    f"for `{weekday.proper_name}`...\n\n"
-
-                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                ),
-                footer_text=footer
+                    f"for `{weekday.proper_name}`..."
+                )
             )
             view = TimeSelectView(interaction.user)
 
@@ -459,14 +445,40 @@ class TUser:
             if not view.complete or view.value is False:
                 return
 
-            end_time = view.value
+            base_end_time = view.value
 
         for i, a in enumerate(self.availability):
             if a.day == weekday:
                 self._availability.pop(i).delete()
+                
+        now = U.TIMEZONE_OFFSETS[tz].localize(datetime.now())
+        start_dt = (
+            U.TIMEZONE_OFFSETS[tz].localize(
+              datetime(
+                now.year,
+                now.month,
+                now.day, 
+                base_start_time.hour, 
+                base_start_time.minute
+              )
+            ) if base_start_time is not None 
+            else None
+        )
+        end_dt = (
+            U.TIMEZONE_OFFSETS[tz].localize(
+              datetime(
+                now.year,
+                now.month,
+                now.day, 
+                base_end_time.hour, 
+                base_end_time.minute
+              )
+            ) if base_end_time is not None 
+            else None
+        )
 
-        if start_time is not None:
-            availability = Availability.new(self, weekday, start_time, end_time)
+        if base_start_time is not None:
+            availability = Availability.new(self, weekday, start_dt.time(), end_dt.time())
             self._availability.append(availability)
 
         await self._manager.notify_of_availability_change(self)

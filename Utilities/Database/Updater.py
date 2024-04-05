@@ -295,7 +295,7 @@ class DatabaseUpdater(DBWorkerBranch):
             "jobs = %s, approved = %s, prev_experience = %s WHERE user_id = %s;",
             check.agree, check.names, 
             [v._to_db_string() for v in check.venues], check.positions, 
-            check.approved, check.previously_trained_staff, check.user_id
+            check.approved, check.want_to_train, check.user_id
         )
         
 ################################################################################
