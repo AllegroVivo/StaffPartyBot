@@ -21,9 +21,8 @@ from Utilities import (
     TrainingLevel, 
     GlobalDataCenter,
     NoTrainingsError,
-    Weekday,
-    RoleType,
-    edit_message_helper
+    Weekday,    
+    RoleType
 )
 from .Availability import Availability
 from .BackgroundCheck import BackgroundCheck
@@ -359,12 +358,14 @@ class TUser:
 
         fields = [
             self._training_requested_field(),
-            self._qualifications_field(),
             EmbedField("** **", "** **", inline=False),
             self._availability_field(True),
-            self._bot_pings_field(),
             self._dc_field(),
         ]
+        
+        if len(self.qualifications) > 0:
+            fields.insert(1, self._qualifications_field())
+            fields.insert(4, self._bot_pings_field())
 
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
@@ -414,7 +415,9 @@ class TUser:
             title="Set Availability Start",
             description=(
                 f"Please select the beginning of your availability "
-                f"for `{weekday.proper_name}`..."
+                f"for `{weekday.proper_name}`...\n\n"
+
+                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
             )
         )
         view = TimeSelectView(interaction.user)
@@ -425,15 +428,17 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        base_start_time = view.value if view.value != -1 else None
-        base_end_time = None
+        start_time = view.value if view.value != -1 else None
+        end_time = None
 
-        if base_start_time is not None:
+        if start_time is not None:
             prompt = U.make_embed(
                 title="Set Availability End",
                 description=(
                     f"Please select the end of your availability "
-                    f"for `{weekday.proper_name}`..."
+                    f"for `{weekday.proper_name}`...\n\n"
+
+                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
                 )
             )
             view = TimeSelectView(interaction.user)
@@ -444,30 +449,14 @@ class TUser:
             if not view.complete or view.value is False:
                 return
 
-            base_end_time = view.value
+            end_time = view.value
 
         for i, a in enumerate(self.availability):
             if a.day == weekday:
                 self._availability.pop(i).delete()
-                
-        now = datetime.now()
-        start_dt = datetime(
-            now.year,
-            now.month,
-            now.day, 
-            base_start_time.hour, 
-            base_start_time.minute
-            ) if base_start_time is not None else None
-        end_dt = datetime(
-            now.year,
-            now.month,
-            now.day, 
-            base_end_time.hour, 
-            base_end_time.minute
-          ) if base_end_time is not None else None
 
-        if base_start_time is not None:
-            availability = Availability.new(self, weekday, start_dt.time(), end_dt.time())
+        if start_time is not None:
+            availability = Availability.new(self, weekday, start_time, end_time)
             self._availability.append(availability)
 
         await self._manager.notify_of_availability_change(self)
@@ -481,7 +470,7 @@ class TUser:
                 "Select the position you would like to add a qualification\n"
                 "for. Subsequently, a second selector will appear to\n"
                 "allow you to select the new qualification level.\n"
-                f"{U.draw_line(extra=30)}"
+                f"{U.draw_line(extra=25)}"
             )
         )
 
