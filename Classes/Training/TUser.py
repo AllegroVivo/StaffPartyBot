@@ -397,7 +397,9 @@ class TUser:
             title="Set Availability",
             description=(
                 "Please select the appropriate day from the initial selector, "
-                "followed by your timezone, and finally available time frame.\n"
+                "followed by your timezone, and finally available time frame.\n\n"
+
+                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
                 f"{U.draw_line(extra=44)}"
             )
         )
@@ -409,8 +411,9 @@ class TUser:
         if not view.complete or view.value is False:
             return
 
-        weekday, tz = view.value
-
+        # weekday, tz = view.value
+        weekday = view.value
+        
         prompt = U.make_embed(
             title="Set Availability Start",
             description=(

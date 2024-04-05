@@ -196,7 +196,6 @@ class AddQualificationButton(Button):
         await self.view.tuser.add_qualification(interaction)
         self.view.set_buttons()
 
-
         await edit_message_helper(
             interaction,
             embed=self.view.tuser.user_status(),

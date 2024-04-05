@@ -36,13 +36,18 @@ class WeekdaySelect(Select):
         )
         
     async def callback(self, interaction: Interaction):
-        self.view.weekday = Weekday(int(self.values[0]))
-        self.view.add_item(TimezoneSelect())
+        self.view.value = Weekday(int(self.values[0]))
+        self.view.complete = True
+
+        await interaction.edit()
+        await self.view.stop()  # type: ignore
         
-        self.placeholder = self.view.weekday.proper_name
-        self.disabled = True
-        
-        await edit_message_helper(interaction, view=self.view)
+        # self.view.add_item(TimezoneSelect())
+        # 
+        # self.placeholder = self.view.weekday.proper_name
+        # self.disabled = True
+        # 
+        # await edit_message_helper(interaction, view=self.view)
     
 ################################################################################
 class TimezoneSelect(Select):
