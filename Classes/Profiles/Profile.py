@@ -265,9 +265,8 @@ class Profile:
         await interaction.response.defer()
         
         member = self._mgr.guild.parent.get_member(self._user.id)
-        for pos in self._mgr.guild.position_manager.positions:
-            if pos.linked_role in member.roles:
-                await member.remove_roles(pos.linked_role)
+        pos_roles = [pos.linked_role for pos in self._mgr.guild.position_manager.positions]
+        await member.remove_roles(*pos_roles)
                 
         for pos in self._details.positions:
             await member.add_roles(pos.linked_role)
