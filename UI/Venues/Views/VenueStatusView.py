@@ -24,20 +24,22 @@ class VenueStatusView(FroggeView):
 
         self.venue: Venue = venue
 
+        # If uncommenting any buttons, make sure to check/adjust row numbers accordingly
         button_list = [
-            EditNameButton(),
-            EditDescriptionButton(self.venue.description),
-            SetScheduleButton(self.venue.schedule),
-            LocationButton(self.venue.location.format()),
-            DiscordURLButton(self.venue.discord_url),
+            # EditNameButton(),
+            # EditDescriptionButton(self.venue.description),
+            # SetScheduleButton(self.venue.schedule),
+            # LocationButton(self.venue.location.format()),
+            # DiscordURLButton(self.venue.discord_url),
             ToggleHiringButton(self.venue.hiring),
             RPLevelButton(self.venue.rp_level),
-            NSFWToggleButton(self.venue.nsfw),
-            VenueTagsButton(self.venue.tags),
+            # NSFWToggleButton(self.venue.nsfw),
+            # VenueTagsButton(self.venue.tags),
             WebsiteURLButton(self.venue.website_url),
+            ApplicationURLButton(self.venue.application_url),
             LogoButton(self.venue.logo_url),
             SetPositionsButton(self.venue.positions),
-            RemoveManagerButton(self.venue),
+            # RemoveManagerButton(self.venue),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -86,7 +88,7 @@ class RPLevelButton(FroggeButton):
         super().__init__(
             label="RP Level",
             disabled=False,
-            row=1
+            row=0
         )
         
         self.set_style(level)
@@ -195,7 +197,7 @@ class ToggleHiringButton(Button):
             style=ButtonStyle.success if accepting else ButtonStyle.danger,
             label="Hiring",
             disabled=False,
-            row=2,
+            row=1,
             emoji=BotEmojis.Check if accepting else BotEmojis.ThumbsDown
         )
         
@@ -220,7 +222,7 @@ class LogoButton(FroggeButton):
 
         super().__init__(
             label="Logo",
-            row=2,
+            row=0,
             disabled=False
         )
         
@@ -241,7 +243,7 @@ class SetPositionsButton(FroggeButton):
 
         super().__init__(
             label="Employed Jobs",
-            row=2,
+            row=1,
             disabled=False
         )
         
@@ -283,7 +285,7 @@ class WebsiteURLButton(FroggeButton):
         
         super().__init__(
             label="Website URL",
-            row=1,
+            row=0,
             disabled=False
         )
         
@@ -319,4 +321,24 @@ class RemoveManagerButton(FroggeButton):
         )
             
 ################################################################################
-            
+class ApplicationURLButton(FroggeButton):
+    
+    def __init__(self, url: Optional[str]) -> None:
+        
+        super().__init__(
+            label="Application URL",
+            row=0,
+            disabled=False
+        )
+        
+        self.set_style(url)
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.venue.set_application_url(interaction)
+        self.set_style(self.view.venue.application_url)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.venue.status(), view=self.view
+        )
+        
+################################################################################

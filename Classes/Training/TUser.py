@@ -635,7 +635,9 @@ class TUser:
         msg = await interaction.respond("Adding training(s)... Please Wait...")
 
         for pos_id in view.value:
-            await self.training_manager.add_training(Training.new(self, pos_id))
+            await self.training_manager.add_training(
+                Training.new(self, pos_id)
+            )
             
         await msg.delete()
 
@@ -954,4 +956,14 @@ class TUser:
         await self._bg_check.menu(interaction)
 
 ################################################################################
+    async def send(self, *args, **kwargs) -> None:
+        
+        try:
+            await self.user.send(*args, **kwargs)
+        except:
+            pass
+        
+################################################################################
+        
+        
         

@@ -64,72 +64,6 @@ class Admin(Cog):
 
 ################################################################################
     @admin.command(
-        name="log_channel",
-        description="Set the channel for bot logs.",
-    )
-    async def set_log_channel(
-        self,
-        ctx: ApplicationContext,
-        channel: Option(
-            SlashCommandOptionType.channel,
-            name="channel",
-            description="The channel to set as the log channel.",
-            required=True
-        )
-    ) -> None:
-
-        await self.bot[ctx.guild_id].log.set_log_channel(ctx.interaction, channel)
-
-################################################################################
-    @admin.command(
-        name="venue_channel",
-        description="Set the channel for venue postings.",
-    )
-    async def set_venue_channel(
-        self,
-        ctx: ApplicationContext,
-        channel: Option(
-            SlashCommandOptionType.channel,
-            name="channel",
-            description="The channel to set as the venue channel.",
-            required=True
-        )
-    ) -> None:
-
-        guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.set_venue_channel(ctx.interaction, channel)
-
-################################################################################
-    @admin.command( 
-        name="jobs_channel",
-        description="Set the channel for job postings."
-    )
-    async def set_jobs_channel(
-        self,
-        ctx: ApplicationContext,
-        channel: Option(
-            SlashCommandOptionType.channel,
-            name="channel",
-            description="The channel to set as the jobs channel.",
-            required=True
-        ),
-        post_type: Option(
-            SlashCommandOptionType.string,
-            name="post_type",
-            description="The type of job posting to set the channel for.",
-            required=True,
-            choices=[
-                OptionChoice(name="Temporary", value="1"),
-                OptionChoice(name="Permanent", value="2")
-            ]
-        )
-    ) -> None:
-
-        guild = self.bot[ctx.guild_id]
-        await guild.jobs_manager.set_jobs_channel(ctx.interaction, channel, int(post_type))
-        
-################################################################################
-    @admin.command(
         name="add_venue",
         description="Add a new venue to the system."
     )
@@ -263,11 +197,20 @@ class Admin(Cog):
 ################################################################################
     @admin.command(
         name="roles",
-        description="View the status of the TrainerBot roles."
+        description="View the status of important roles."
     )
     async def roles_status(self, ctx: ApplicationContext) -> None:
 
-        await self.bot[ctx.guild_id].role_manager.roles_menu(ctx.interaction)
+        await self.bot[ctx.guild_id].role_manager.menu(ctx.interaction)
+        
+################################################################################
+    @admin.command(
+        name="channels",
+        description="View the status of important channels."
+    )
+    async def channels_status(self, ctx: ApplicationContext) -> None:
+
+        await self.bot[ctx.guild_id].channel_manager.menu(ctx.interaction)
         
 ################################################################################      
 def setup(bot: "TrainingBot") -> None:

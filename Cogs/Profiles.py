@@ -120,19 +120,10 @@ class Profiles(Cog):
         name="finalize",
         description="Finalize and post/update your profile"
     )
-    async def profile_finalize(
-        self, 
-        ctx: ApplicationContext,
-        channel: Option(
-            SlashCommandOptionType.channel,
-            name="channel",
-            description="The channel to post your profile in.",
-            required=True
-        )
-    ) -> None:
+    async def profile_finalize(self,  ctx: ApplicationContext) -> None:
 
         profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.post(ctx.interaction, channel)
+        await profile.post(ctx.interaction)
 
         return
 

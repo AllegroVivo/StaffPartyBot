@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 
 from discord import Interaction
 
-from UI.Venues import VenueDiscordURLModal, VenueWebsiteURLModal
+from UI.Venues import VenueDiscordURLModal, VenueWebsiteURLModal, VenueApplicationURLModal
 from Utilities import Utilities as U, FroggeColor
 
 if TYPE_CHECKING:
@@ -24,6 +24,7 @@ class VenueURLs:
         "_discord_url",
         "_website_url",
         "_banner_url",
+        "_app_url",
     )
 
 ################################################################################
@@ -35,6 +36,7 @@ class VenueURLs:
         self._website_url: Optional[str] = kwargs.pop("website", None)
         self._logo_url: Optional[str] = kwargs.pop("logo", None)
         self._banner_url: Optional[str] = kwargs.pop("banner", None)
+        self._app_url: Optional[str] = kwargs.pop("app", None)
     
 ################################################################################
     @classmethod
@@ -46,6 +48,7 @@ class VenueURLs:
             website=data.get("website", None),
             logo=data.get("logo", None),
             banner=data.get("banner", None),
+            app=data.get("app", None),
         )
     
 ################################################################################    
@@ -119,6 +122,20 @@ class VenueURLs:
         self._website_url = modal.value
         self.update()
 
+################################################################################
+    async def set_application_url(self, interaction: Interaction) -> None:
+        
+        modal = VenueApplicationURLModal(self._app_url)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self._app_url = modal.value
+        self.update()
+        
 ################################################################################
     async def set_logo(self, interaction: Interaction) -> None:
         

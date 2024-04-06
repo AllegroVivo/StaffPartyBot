@@ -238,6 +238,16 @@ class BackgroundCheck:
         
 ################################################################################
     async def add_venue_experience(self, interaction: Interaction) -> None:
+        
+        if len(self.venues) >= 3:
+            prompt = U.make_embed(
+                title="Maximum Venues Reached",
+                description=(
+                    "You can only add up to 3 venues to your background check."
+                )
+            )
+            await interaction.respond(embed=prompt, ephemeral=True)
+            return
 
         modal = BGCheckVenueModal()
         

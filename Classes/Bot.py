@@ -103,7 +103,8 @@ class TrainingBot(Bot):
             "venues": [],
             "job_postings": {},
             "bg_checks": [],
-            "roles": None
+            "roles": None,
+            "channels": None,
         } for g in self.guilds }
         
         load_dotenv()
@@ -117,6 +118,8 @@ class TrainingBot(Bot):
             ret[cfg[0]]["bot_config"] = cfg
         for r in data["roles"]:
             ret[r[0]]["roles"] = r
+        for c in data["channels"]:
+            ret[c[0]]["channels"] = c
             
         ### Training ###
         for u in data["tusers"]:

@@ -7,10 +7,10 @@ from discord.ext.pages import Page
 
 from Assets import BotEmojis
 from UI.Training import TrainerDashboardButtonView, TrainingUpdateView
-from Utilities import Utilities as U, RequirementLevel
+from Utilities import Utilities as U, RequirementLevel, RoleType
 
 if TYPE_CHECKING:
-    from Classes import Position, TUser, TrainingBot, Requirement
+    from Classes import Position, TUser, TrainingBot, Requirement, TrainingManager
 ################################################################################
 
 __all__ = ("Training", )
@@ -88,6 +88,12 @@ class Training:
 
         return self._trainee.bot
 
+################################################################################
+    @property
+    def manager(self) -> TrainingManager:
+        
+        return self._trainee.training_manager
+    
 ################################################################################
     @property
     def id(self) -> str:
@@ -341,11 +347,9 @@ class Training:
             ),
         )
         
-        try:
-            await self._trainee.user.send(embed=trainee_embed)
-        except:
-            pass
-            
-        
+        await self.trainee.send(embed=trainee_embed)
+        await self.manager.guild.role_manager.add_role(
+            self.trainee.user, RoleType.StaffMain 
+        )
     
 ################################################################################

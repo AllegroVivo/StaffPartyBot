@@ -34,4 +34,5 @@ from .VenueProfileNotComplete import VenueProfileNotCompleteError
 from .MissingNameError import MissingNameError
 from .JobPostingExpired import JobPostingExpiredError
 from .ProfileExport import ProfileExportError
+from .ProfileChannelNotSet import ProfileChannelNotSetError
 ################################################################################

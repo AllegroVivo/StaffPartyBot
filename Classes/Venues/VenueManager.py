@@ -34,7 +34,6 @@ class VenueManager:
     __slots__ = (
         "_guild",
         "_venues",
-        "_channel",
         "_tags",
     )
 
@@ -44,17 +43,10 @@ class VenueManager:
         self._guild: GuildData = guild
         
         self._venues: List[Venue] = []
-        self._channel: Optional[ForumChannel] = None
         self._tags: List[VenueTag] = []
         
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
-
-        venue_channel = data["bot_config"][4]
-        if venue_channel is not None:
-            venue_channel = await self.bot.get_or_fetch_channel(venue_channel)
-
-        self._channel = venue_channel
 
         for vdata in data["venues"]:
             self._venues.append(await Venue.load(self, vdata))
@@ -88,7 +80,7 @@ class VenueManager:
     @property
     def post_channel(self) -> Optional[ForumChannel]:
         
-        return self._channel
+        return self.guild.channel_manager.venues_channel
     
 ################################################################################
     @property
@@ -104,13 +96,6 @@ class VenueManager:
             if venue.name.lower() == name.lower():
                 return venue
     
-################################################################################
-    def update(self) -> None:
-        
-        self.bot.database.update.venue_post_channel(
-            self.guild_id, self._channel.id if self._channel else None
-        )
-        
 ################################################################################
     async def add_venue(self, interaction: Interaction, name: str, user: User) -> None:
         
@@ -235,21 +220,6 @@ class VenueManager:
         return True
 
 ################################################################################
-    async def set_venue_channel(self, interaction: Interaction, channel: ForumChannel) -> None:
-
-        if not isinstance(channel, ForumChannel):
-            embed = ChannelTypeError(channel, "ForumChannel")
-        else:
-            self._channel = channel
-            self.update()
-            embed = U.make_embed(
-                title="Venue Channel Set!",
-                description=f"Venue channel has been set to {channel.mention}!"
-            )
-
-        await interaction.respond(embed=embed, ephemeral=True)
-
-################################################################################
     async def post_venue(self, interaction: Interaction, name: str) -> None:
         
         if self.post_channel is None:
@@ -271,7 +241,7 @@ class VenueManager:
         if not await self.authenticate(venue, interaction.user, interaction):
             return
         
-        await venue.post(interaction, self._channel)
+        await venue.post(interaction, self.post_channel)
 
 ################################################################################
     async def venue_report(self, interaction: Interaction) -> None:

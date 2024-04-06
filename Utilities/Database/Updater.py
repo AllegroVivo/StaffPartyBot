@@ -235,9 +235,10 @@ class DatabaseUpdater(DBWorkerBranch):
     
         self.execute(
             "UPDATE venue_urls SET discord_url = %s, website_url = %s, "
-            "logo_url = %s, banner_url = %s WHERE venue_id = %s;",
+            "logo_url = %s, banner_url = %s, application_url = %s "
+            "WHERE venue_id = %s;",
             urls["discord"], urls["website"], urls["logo"], urls["banner"],
-            urls.venue_id
+            urls["app"], urls.venue_id
         )
         
 ################################################################################
@@ -315,6 +316,20 @@ class DatabaseUpdater(DBWorkerBranch):
         )
     
 ################################################################################
+    def _update_channels(self, channel_mgr: ChannelManager) -> None:
+        
+        self.execute(
+            "UPDATE channels SET temp_job = %s, perm_job = %s, venues = %s, "
+            "profiles = %s, log_channel = %s WHERE guild_id = %s;",
+            channel_mgr.temp_job_channel.id if channel_mgr.temp_job_channel else None,
+            channel_mgr.perm_job_channel.id if channel_mgr.perm_job_channel else None,
+            channel_mgr.venues_channel.id if channel_mgr.venues_channel else None,
+            channel_mgr.profiles_channel.id if channel_mgr.profiles_channel else None,
+            channel_mgr.log_channel.id if channel_mgr.log_channel else None,
+            channel_mgr.guild_id
+        )
+        
+################################################################################
     
     log_channel             = _update_log_channel
     position                = _update_position
@@ -341,6 +356,7 @@ class DatabaseUpdater(DBWorkerBranch):
     job_posting_channels    = _update_job_posting_channels
     background_check        = _update_background_check
     roles                   = _update_roles
+    channels                = _update_channels
     
 ################################################################################
     

@@ -32,7 +32,8 @@ from Utilities import (
     ExceedsMaxLengthError,
     ChannelTypeError,
     InsufficientPermissionsError,
-    ProfileExportError
+    ProfileExportError,
+    ProfileChannelNotSetError
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -240,7 +241,12 @@ class Profile:
         await view.wait()
 
 ################################################################################
-    async def post(self, interaction: Interaction, channel: ForumChannel) -> None:
+    async def post(self, interaction: Interaction) -> None:
+        
+        if self.manager.guild.channel_manager.profiles_channel is None:
+            error = ProfileChannelNotSetError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
         
         # Check for unset character name
         if self.char_name == str(NS):
@@ -267,13 +273,8 @@ class Profile:
             except NotFound:
                 self.post_message = None  # Proceed to post anew if not found
     
-        # Check channel type
-        if not isinstance(channel, ForumChannel):
-            error = ChannelTypeError(channel, "ForumChannel")
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-    
         # Handling threads
+        channel = self.manager.guild.channel_manager.profiles_channel
         matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
         if matching_thread:
             # Clear history in the matching thread

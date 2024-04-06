@@ -37,8 +37,6 @@ class JobsManager:
     __slots__ = (
         "_guild",
         "_postings",
-        "_temp_channel",
-        "_perm_channel"
     )
     
 ################################################################################
@@ -48,26 +46,9 @@ class JobsManager:
         
         self._postings: List[JobPosting] = []
         
-        self._temp_channel: Optional[ForumChannel] = None
-        self._perm_channel: Optional[ForumChannel] = None
-        
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
-        
-        temp_channel_id = data["bot_config"][5]
-        if temp_channel_id is not None:
-            try:
-                self._temp_channel = await self._guild.bot.get_or_fetch_channel(temp_channel_id)
-            except NotFound:
-                self.update()
 
-        perm_channel_id = data["bot_config"][6]
-        if perm_channel_id is not None:
-            try:
-                self._perm_channel = await self._guild.bot.get_or_fetch_channel(perm_channel_id)
-            except NotFound:
-                self.update()
-        
         for _, posting in data["job_postings"].items():
             self._postings.append(await JobPosting.load(self, posting))
             
@@ -112,30 +93,13 @@ class JobsManager:
     @property
     def temporary_jobs_channel(self) -> Optional[ForumChannel]:
         
-        return self._temp_channel
-    
-    @temporary_jobs_channel.setter
-    def temporary_jobs_channel(self, value: Optional[ForumChannel]) -> None:
-        
-        self._temp_channel = value
-        self.update()
+        return self.guild.channel_manager.temp_job_channel
         
 ################################################################################
     @property
     def permanent_jobs_channel(self) -> Optional[ForumChannel]:
         
-        return self._perm_channel
-    
-    @permanent_jobs_channel.setter
-    def permanent_jobs_channel(self, value: Optional[ForumChannel]) -> None:
-        
-        self._perm_channel = value
-        self.update()
-        
-################################################################################
-    def update(self) -> None:
-        
-        self.bot.database.update.job_posting_channels(self)
+        return self.guild.channel_manager.perm_job_channel
         
 ################################################################################
     async def create_new(self, interaction: Interaction, venue_name: str) -> None:
@@ -164,38 +128,6 @@ class JobsManager:
             return
         
         await posting.menu(interaction)
-        
-################################################################################
-    async def set_jobs_channel(
-        self, 
-        interaction: Interaction, 
-        channel: ForumChannel,
-        post_type: int
-    ) -> None:
-        
-        if channel.type is not ChannelType.forum:
-            error = ChannelTypeError(channel, "ForumChannel")
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
-        post_type = JobPostingType(post_type)
-        match post_type:
-            case JobPostingType.Temporary:
-                self.temporary_jobs_channel = channel
-            case JobPostingType.Permanent:
-                self.permanent_jobs_channel = channel
-            case _:
-                raise ValueError(f"Invalid JobPostingType: {post_type}")
-        
-        confirm = U.make_embed(
-            title="Job Posting Channel Set",
-            description=(
-                f"The jobs posting channel for `{post_type.proper_name}` job "
-                f"posts has been set to {channel.mention}."
-            )
-        )
-        
-        await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
     async def cull_job_postings(self) -> None:

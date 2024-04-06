@@ -1,4 +1,4 @@
-from ._Enum import FroggeEnum
+from .ChannelPurpose import ChannelPurpose
 from .Clan import Clan
 from .DataCenter import DataCenter
 from .GameWorld import GameWorld
@@ -13,14 +13,15 @@ from .Minutes import Minutes
 from .NSFWPreference import NSFWPreference
 from .Orientation import Orientation
 from .Pronoun import Pronoun
+from .RPLevel import RPLevel
 from .Race import Race
 from .RateType import RateType
 from .RequirementLevel import RequirementLevel
 from .RoleType import RoleType
-from .RPLevel import RPLevel
 from .Timezone import Timezone
 from .TrainingLevel import TrainingLevel
 from .VenueForumTag import VenueForumTag
 from .VenueSize import VenueSize
 from .Weekday import Weekday
+from ._Enum import FroggeEnum
 ################################################################################

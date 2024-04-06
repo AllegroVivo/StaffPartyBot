@@ -30,7 +30,6 @@ class Logger:
 
     __slots__ = (
         "_guild",
-        "_channel",
         "_alyah",
     )
     
@@ -40,20 +39,10 @@ class Logger:
     def __init__(self, state: GuildData) -> None:
 
         self._guild: GuildData = state
-        
-        self._channel: Optional[TextChannel] = None
         self._alyah: User = None  # type: ignore
 
 ################################################################################
-    async def load(self, data: Optional[int]) -> None:
-
-        if data is None:
-            self._channel = None
-        else:
-            try:
-                self._channel = await self._guild.bot.fetch_channel(data)
-            except (NotFound, Forbidden):
-                self._channel = None
+    async def load(self) -> None:
 
         self._alyah = await self._guild.bot.fetch_user(self.ALYAH)
         
@@ -61,29 +50,7 @@ class Logger:
     @property
     def log_channel(self) -> Optional[TextChannel]:
 
-        return self._channel
-
-################################################################################
-    async def set_log_channel(self, interaction: Interaction, channel: TextChannel) -> None:
-
-        if not isinstance(channel, TextChannel):
-            embed = ChannelTypeError(channel, "TextChannel")
-        else:
-            self._channel = channel
-            self.update(interaction.guild_id)
-            embed = U.make_embed(
-                title="Log Channel Set!",
-                description=f"Log channel has been set to {channel.mention}!"
-            )
-
-        await interaction.respond(embed=embed)
-
-################################################################################
-    def update(self, guild_id: int) -> None:
-
-        self._guild.bot.database.update.log_channel(
-            guild_id, self.log_channel.id if self.log_channel else None
-        )
+        return self._guild.channel_manager.log_channel
 
 ################################################################################
     async def _log(self, message: Embed, action: LogType, **kwargs) -> None:
@@ -106,8 +73,12 @@ class Logger:
         
         qualifications = trainings = "`None`"
         if tuser is not None:
-            qualifications = "* " + "\n* ".join([f"{q.position.name}" for q in tuser.qualifications])
-            trainings = "* " + "\n* ".join([f"{t.position.name}" for t in tuser.trainings_as_trainee])
+            qualifications = "* " + "\n* ".join(
+                [f"{q.position.name}" for q in tuser.qualifications]
+            )
+            trainings = "* " + "\n* ".join(
+                [f"{t.position.name}" for t in tuser.trainings_as_trainee]
+            )
 
         word = "joined" if _type == LogType.MemberJoin else "left"
         embed = U.make_embed(

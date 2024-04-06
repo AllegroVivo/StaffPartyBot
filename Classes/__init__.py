@@ -10,8 +10,10 @@ if TYPE_CHECKING:
     
     # Modules
     from .Bot import TrainingBot
+    from .ChannelManager import ChannelManager
     from .GuildData import GuildData
     from .GuildManager import GuildManager
+    from .HelpMessage import HelpMessage
     from .Logger import Logger
     from .RoleManager import RoleManager
 ################################################################################

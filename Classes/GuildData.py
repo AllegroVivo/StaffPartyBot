@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from discord import Guild, User, Interaction, Role, Embed, EmbedField
+from discord.abc import GuildChannel
 
 from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
@@ -13,6 +14,7 @@ from Classes.Venues.VenueManager import VenueManager
 from Classes.RoleManager import RoleManager
 from UI.Guild import ReportMenuView
 from Utilities import Utilities as U
+from Classes.ChannelManager import ChannelManager
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -33,7 +35,8 @@ class GuildData:
         "_profile_mgr",
         "_venue_mgr",
         "_job_mgr",
-        "_role_mgr"
+        "_role_mgr",
+        "_channel_mgr",
     )
 
 ################################################################################
@@ -49,12 +52,14 @@ class GuildData:
         self._profile_mgr: ProfileManager = ProfileManager(self)
         self._venue_mgr: VenueManager = VenueManager(self)
         self._job_mgr: JobsManager = JobsManager(self)
+        
         self._role_mgr: RoleManager = RoleManager(self)
+        self._channel_mgr: ChannelManager = ChannelManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
         
-        await self._logger.load(data["bot_config"][1])
+        await self._logger.load()
         
         await self._pos_mgr._load_all(data)
         await self._training_mgr._load_all(data)
@@ -62,6 +67,7 @@ class GuildData:
         await self._venue_mgr._load_all(data)
         await self._job_mgr._load_all(data)
         await self._role_mgr._load_all(data["roles"])
+        await self._channel_mgr._load_all(data["channels"])
         
 ################################################################################
     @property
@@ -124,6 +130,12 @@ class GuildData:
         return self._role_mgr
     
 ################################################################################
+    @property
+    def channel_manager(self) -> ChannelManager:
+        
+        return self._channel_mgr
+         
+################################################################################
     def get_profile(self, user: User) -> Profile:
 
         profile = self._profile_mgr[user.id]
@@ -143,5 +155,20 @@ class GuildData:
         
         await interaction.respond(embed=prompt, view=view)
         await view.wait()
+    
+################################################################################
+    async def get_or_fetch_channel(self, channel_id: int) -> Optional[GuildChannel]:
+        
+        if channel_id is None:
+            return
+        
+        channel = self._parent.get_channel(channel_id)
+        if channel is not None:
+            try:
+                channel = await self._parent.fetch_channel(channel_id)
+            except:
+                pass
+            else:
+                return channel
     
 ################################################################################

@@ -151,6 +151,7 @@ class Venue:
                 "website": venue[24],
                 "banner": venue[25],
                 "logo": venue[26],
+                "app": venue[27],
             }
         )
         
@@ -373,6 +374,17 @@ class Venue:
         
 ################################################################################
     @property
+    def application_url(self) -> Optional[str]:
+
+        return self._urls["app"]
+    
+    @application_url.setter
+    def application_url(self, value: Optional[str]) -> None:
+        
+        self._urls["app"] = value
+        
+################################################################################
+    @property
     def post_url(self) -> Optional[str]:
 
         if not self._post_msg:
@@ -491,7 +503,9 @@ class Venue:
         
         value = (self.discord_url or '`Not Set`') + "\n\n"
         value += "__**Webpage**__\n"
-        value += (self.website_url or '`Not Set`')
+        value += (self.website_url or '`Not Set`') + "\n\n"
+        value += "__**Staff Application**__\n"
+        value += (self.application_url or '`Not Set`')
                 
         return EmbedField(
             name="__Discord Server__",
@@ -670,6 +684,11 @@ class Venue:
     async def set_logo(self, interaction: Interaction) -> None:
         
         await self._urls.set_logo(interaction)
+        
+################################################################################
+    async def set_application_url(self, interaction: Interaction) -> None:
+        
+        await self._urls.set_application_url(interaction)
         
 ################################################################################
     async def set_rp_level(self, interaction: Interaction) -> None:

@@ -163,7 +163,7 @@ class RoleManager:
         )
         
 ################################################################################
-    async def roles_menu(self, interaction: Interaction) -> None:
+    async def menu(self, interaction: Interaction) -> None:
         
         embed = self.status()
         view = RolesStatusView(interaction.user, self)
