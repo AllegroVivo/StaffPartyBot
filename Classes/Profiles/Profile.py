@@ -265,11 +265,12 @@ class Profile:
         await interaction.response.defer()
         
         member = self._mgr.guild.parent.get_member(self._user.id)
-        pos_roles = [pos.linked_role for pos in self._mgr.guild.position_manager.positions]
-        await member.remove_roles(*pos_roles)
-                
-        for pos in self._details.positions:
-            await member.add_roles(pos.linked_role)
+        
+        all_pos_roles = [pos.linked_role for pos in self._mgr.guild.position_manager.positions]
+        await member.remove_roles(*all_pos_roles)
+        
+        pos_roles = [pos.linked_role for pos in self._details.positions]    
+        await member.add_roles(*pos_roles)
     
         # Prepare embeds
         embeds = [main_profile] + ([aboutme] if aboutme else [])
