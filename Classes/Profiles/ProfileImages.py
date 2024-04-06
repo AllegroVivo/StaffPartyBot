@@ -239,8 +239,8 @@ class ProfileImages(ProfileSection):
             show_disabled=True,
             close_on_complete=True,
             loop_pages=True,
-            default_button_row=4,
-            timeout=180
+            default_button_row=3,
+            timeout=10
         )
         await frogginator.respond(interaction)
 

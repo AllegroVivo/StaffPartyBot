@@ -27,7 +27,7 @@ class AdditionalImageView(FroggeView):
             self.add_item(RemoveImageButton(image_id))
     
         self.add_item(ViewImagesStatusButton())
-        self.add_item(CloseMessageButton(row=3))
+        self.add_item(CloseMessageButton())
 
 ################################################################################
 class EditCaptionButton(Button):
