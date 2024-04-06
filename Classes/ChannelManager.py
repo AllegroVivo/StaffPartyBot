@@ -189,7 +189,7 @@ class ChannelManager:
                 "**THE BOT IS NOW LISTENING**\n\n"
 
                 "Please enter a mention for the channel you'd like to link.\n"
-                f"{U.draw_line(extra=25)}\n"
+                f"{U.draw_line(extra=33)}\n"
                 "*(Type 'Cancel' to cancel this operation.)*"
             )
         )

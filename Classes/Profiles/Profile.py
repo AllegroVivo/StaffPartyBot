@@ -260,6 +260,17 @@ class Profile:
             error = ExceedsMaxLengthError(len(main_profile))
             await interaction.response.send_message(embed=error, ephemeral=True)
             return
+        
+        # Defer to accommodate role assignment
+        await interaction.response.defer()
+        
+        member = self._mgr.guild.parent.get_member(self._user.id)
+        for pos in self._mgr.guild.position_manager.positions:
+            if pos.linked_role in member.roles:
+                await member.remove_roles(pos.linked_role)
+                
+        for pos in self._details.positions:
+            await member.add_roles(pos.linked_role)
     
         # Prepare embeds
         embeds = [main_profile] + ([aboutme] if aboutme else [])
