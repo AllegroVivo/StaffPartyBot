@@ -570,5 +570,19 @@ class VenueManager:
         venue.update_from_xiv_venue(interaction, results[0])
         
         await venue.menu(interaction)
+
+################################################################################
+    async def toggle_user_mute(self, interaction: Interaction, name: str, user: User) -> None:
+
+        venue = self.get_venue(name)
+        if venue is None:
+            error = VenueDoesntExistError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        if not await self.authenticate(venue, interaction.user, interaction):
+            return
         
+        await venue.toggle_user_mute(interaction, user)
+
 ################################################################################

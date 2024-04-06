@@ -422,7 +422,7 @@ class ProfileDetails(ProfileSection):
                 "followed by your timezone, and finally available time frame.\n\n"
 
                 "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                f"{U.draw_line(extra=44)}"
+                f"{U.draw_line(extra=46)}"
             ),
             footer_text=footer
         )

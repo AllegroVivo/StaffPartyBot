@@ -6,5 +6,7 @@ from .ImageFrogginator import ImageFrogginator
 from .OrientationSelectView import OrientationSelectView
 from .PersonalityStatusView import PersonalityStatusView
 from .ProfileImageStatusView import ProfileImageStatusView
+from .ProfileMainMenuView import ProfileMainMenuView
+from .ProfilePreView import ProfilePreView
 from .RaceClanSelectView import RaceClanSelectView
 ################################################################################

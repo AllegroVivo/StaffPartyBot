@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 from Assets import BotEmojis, BotImages
 from UI.Common import CloseMessageView, ConfirmCancelView
-from UI.Profiles import AdditionalImageCaptionModal
+from UI.Profiles import AdditionalImageCaptionModal, ProfilePreView, ProfileMainMenuView
 from Utilities import (
     Utilities as U,
     FroggeColor,
@@ -33,7 +33,8 @@ from Utilities import (
     InsufficientPermissionsError,
     ProfileExportError,
     ProfileChannelNotSetError,
-    AvailabilityNotCompleteError
+    AvailabilityNotCompleteError,
+    AboutMeNotSetError,
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -174,6 +175,12 @@ class Profile:
     def availability(self) -> List[PAvailability]:
         
         return self._details.availability
+    
+################################################################################
+    @property
+    def aboutme(self) -> Optional[str]:
+        
+        return self._personality.aboutme
     
 ################################################################################
     async def set_details(self, interaction: Interaction) -> None:
@@ -463,4 +470,68 @@ class Profile:
             os.remove("profile.json")
         
 ################################################################################
+    async def main_menu(self, interaction: Interaction) -> None:
         
+        prompt = U.make_embed(
+            color=self.color,
+            title="Profile Menu",
+            description=(
+                "Select a button below to view or edit the corresponding "
+                "section of your profile!\n"
+            )
+        )
+        view = ProfileMainMenuView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+################################################################################
+    async def preview(self, interaction: Interaction) -> None:
+
+        prompt = U.make_embed(
+            color=self.color,
+            title="Preview Profile",
+            description=(
+                "Select the button below corresponding to the section\n"
+                "of your profile you would like to preview."
+            ),
+            timestamp=False
+        )
+        view = ProfilePreView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+################################################################################
+    async def preview_profile(self, interaction: Interaction) -> None:
+        
+        main_profile, _, _ = self.compile()
+        view = CloseMessageView(interaction.user)
+        
+        await interaction.respond(embed=main_profile, view=view)
+        await view.wait()
+        
+################################################################################
+    async def preview_availability(self, interaction: Interaction) -> None:
+        
+        _, availability, _ = self.compile()
+        view = CloseMessageView(interaction.user)
+        
+        await interaction.respond(embed=availability, view=view)
+        await view.wait()
+        
+################################################################################
+    async def preview_aboutme(self, interaction: Interaction) -> None:
+        
+        _, _, aboutme = self.compile()
+        if aboutme is None:
+            error = AboutMeNotSetError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        view = CloseMessageView(interaction.user)
+        
+        await interaction.respond(embed=aboutme, view=view)
+        await view.wait()
+        
+################################################################################

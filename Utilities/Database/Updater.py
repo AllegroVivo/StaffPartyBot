@@ -68,6 +68,14 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################
+    def _update_tuser(self, tuser: TUser) -> None:
+        
+        self.execute(
+            "UPDATE tusers SET mute_list = %s WHERE user_id = %s AND guild_id = %s;",
+            [v.id for v in tuser.muted_venues], tuser.user_id, tuser.guild_id
+        )
+        
+################################################################################
     def _update_availability(self, availability: Availability) -> None:
         
         self.execute(
@@ -224,10 +232,11 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE venues SET users = %s, positions = %s, pending = %s, "
             "post_url = %s, name = %s, description = %s, hiring = %s, "
-            "mare_id = %s, mare_pass = %s WHERE _id = %s;",
+            "mare_id = %s, mare_pass = %s, mute_list = %s WHERE _id = %s;",
             [u.id for u in venue.authorized_users], [p.id for p in venue.positions],
             venue.pending, venue.post_url, venue.name, venue.description,
-            venue.hiring, venue.mare_id, venue.mare_password, venue.id
+            venue.hiring, venue.mare_id, venue.mare_password,
+            [u.id for u in venue.muted_users], venue.id
         )
         
 ################################################################################

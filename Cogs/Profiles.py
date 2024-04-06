@@ -22,55 +22,15 @@ class Profiles(Cog):
 
 ################################################################################
 
-    profiles = SlashCommandGroup(
-        name="staff_profile",
-        description="Commands for Profile creation and management."
+    staffing = SlashCommandGroup(
+        name="staffing",
+        description="Commands for staffing sign-up and management."
     )
 
 ################################################################################
-    @profiles.command(
-        name="details",
-        description="View and edit Name, URL, Color, Jobs, and Rates."
-    )
-    async def profile_details(self, ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.set_details(ctx.interaction)
-
-################################################################################
-    @profiles.command(
-        name="ataglance",
-        description="View and edit Gender, Age, Height, and more."
-    )
-    async def profile_ataglance(self, ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.set_ataglance(ctx.interaction)
-
-################################################################################
-    @profiles.command(
-        name="personality",
-        description="View and edit Personality, Likes, Dislikes, and Bio."
-    )
-    async def profile_personality(self, ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.set_personality(ctx.interaction)
-        
-################################################################################
-    @profiles.command(
-        name="images",
-        description="View and edit Thumbnail, Main Image, and Additional Images."
-    )
-    async def profile_personality(self, ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.set_images(ctx.interaction)
-
-################################################################################
-    @profiles.command(
-        name="add_image",
-        description="Add a Thumbnail, Main Image, or Additional Image to your profile."
+    @staffing.command(
+        name="add_profile_image",
+        description="Add a Thumbnail, Main Image, or Additional Image to your staff profile."
     )
     async def profile_add_image(
         self,
@@ -106,39 +66,15 @@ class Profiles(Cog):
         await profile.assign_image(ctx.interaction, ImageType(int(section)), file)
 
 ################################################################################
-    @profiles.command(
-        name="progress",
-        description="A command to view a progress dialog for your profile."
+    @staffing.command(
+        name="profile",
+        description="View and edit your staff profile."
     )
-    async def profile_progress(self, ctx: ApplicationContext) -> None:
+    async def profile_menu(self, ctx: ApplicationContext):
 
         profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.progress(ctx.interaction)
-
-################################################################################
-    @profiles.command(
-        name="finalize",
-        description="Finalize and post/update your profile"
-    )
-    async def profile_finalize(self,  ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.post(ctx.interaction)
-
-        return
-
-################################################################################
-    @profiles.command(
-        name="export",
-        description="Export your profile for import into another server."
-    )
-    async def profile_export(self, ctx: ApplicationContext) -> None:
-
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
-        await profile.export(ctx.interaction)
-
-        return
-    
+        await profile.main_menu(ctx.interaction)
+        
 ################################################################################
 def setup(bot: "TrainingBot") -> None:
 

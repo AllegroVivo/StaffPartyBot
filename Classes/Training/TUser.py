@@ -39,7 +39,8 @@ if TYPE_CHECKING:
         GuildData, 
         Position,
         JobPosting,
-        Profile
+        Profile,
+        Venue
     )
 ################################################################################
 
@@ -59,6 +60,7 @@ class TUser:
         "_hiatus",
         "_details",
         "_bg_check",
+        "_mutes",
     )
 
 ################################################################################
@@ -70,7 +72,8 @@ class TUser:
         availabilities: Optional[List[Availability]] = None,
         configuration: Optional[UserConfiguration] = None,
         qualifications: Optional[List[Qualification]] = None,
-        bg_check: Optional[BackgroundCheck] = None
+        bg_check: Optional[BackgroundCheck] = None,
+        mutes: Optional[List[Venue]] = None
     ) -> None:
 
         self._manager: TrainingManager = mgr
@@ -82,13 +85,14 @@ class TUser:
         self._availability: List[Availability] = availabilities or []
         self._qualifications: List[Qualification] = qualifications or []
         self._bg_check: BackgroundCheck = bg_check or BackgroundCheck(self)
+        self._mutes: List[Venue] = mutes or []
 
 ################################################################################
     @classmethod
     def new(cls: Type[TU], manager: TrainingManager, user: Union[Member, User]) -> TU:
         
         if not isinstance(user, Member):
-            user = manager.guild.parent.fetch_member(user.id)
+            user = manager.guild.parent.get_member(user.id)
         is_trainer = manager.guild.role_manager.trainer_pending in user.roles
         manager.bot.database.insert.tuser(manager.guild_id, user.id, is_trainer)
 
@@ -102,6 +106,7 @@ class TUser:
         self._availability = []
         self._qualifications = []
         self._bg_check = BackgroundCheck(self)
+        self._mutes = []
 
         return self
 
@@ -110,20 +115,22 @@ class TUser:
     def load(cls: Type[TU], mgr: TrainingManager, user: User, data: Dict[str, Any]) -> Optional[TU]:
 
         tuser = data["tuser"]
-        availability = data["availability"]
-        qdata = data["qualifications"]
 
         self: TU = cls.__new__(cls)
 
         self._manager = mgr
         self._user = user
 
-        self._details = UserDetails.load(self, tuser[2:6])
-        self._config = UserConfiguration.load(self, tuser[6:8])
-        self._availability = [Availability.load(self, a) for a in availability]
-        self._qualifications = [Qualification.load(self, q) for q in qdata]
+        self._details = UserDetails.load(self, tuser[3:7])
+        self._config = UserConfiguration.load(self, tuser[7:9])
+        self._availability = [Availability.load(self, a) for a in data["availability"]]
+        self._qualifications = [Qualification.load(self, q) for q in data["qualifications"]]
         
         self._bg_check = BackgroundCheck.load(self, data["bg_check"])
+        self._mutes = [
+            mgr.guild.venue_manager.get_venue(venue_id)
+            for venue_id in tuser[2]
+        ] if tuser[2] is not None else []
 
         return self
 
@@ -259,6 +266,12 @@ class TUser:
     def profile(self) -> Profile:
         
         return self.guild.profile_manager[self.user_id]
+    
+################################################################################
+    @property
+    def muted_venues(self) -> List[Venue]:
+        
+        return self._mutes
     
 ################################################################################
     def is_qualified(self, position_id: str) -> bool:

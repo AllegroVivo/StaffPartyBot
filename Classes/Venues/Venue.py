@@ -17,6 +17,7 @@ from discord import (
 )
 
 from Assets import BotEmojis, BotImages
+from UI.Common import CloseMessageView
 from UI.Venues import (
     VenueNameModal,
     VenueDescriptionModal,
@@ -67,6 +68,7 @@ class Venue:
         "_post_msg",
         "_mare_id",
         "_mare_pass",
+        "_mutes",
     )
 
 ################################################################################
@@ -90,6 +92,7 @@ class Venue:
         self._users: List[User] = kwargs.get("users", [])
         self._schedule: List[VenueHours] = kwargs.get("schedule", [])
         self._positions: List[Position] = kwargs.get("positions", [])
+        self._mutes: List[User] = kwargs.get("mutes", [])
         
         self._urls: VenueURLs = VenueURLs.load(
             self,
@@ -131,14 +134,20 @@ class Venue:
         self._hiring = venue[8]
         self._pending = venue[4]
 
-        self._location = VenueLocation.load(self, venue[11:19])
-        self._aag = VenueAtAGlance.load(self, venue[19:23])
-
+        self._location = VenueLocation.load(self, venue[12:20])
+        self._aag = VenueAtAGlance.load(self, venue[20:24])
+        
+        self._mutes = [
+            m for m in
+            [await mgr.bot.get_or_fetch_user(user_id) for user_id in venue[11]]
+            if m is not None
+        ] if venue[11] else []
         self._users = [
             u for u in
             [await mgr.bot.get_or_fetch_user(user_id) for user_id in venue[2]]
             if u is not None
         ] if venue[2] else []
+        
         self._schedule = [VenueHours.load(self, h) for h in hours]
         self._positions = [
             mgr.guild.position_manager.get_position(p) for p in venue[3]
@@ -147,11 +156,11 @@ class Venue:
         self._urls = VenueURLs.load(
             self,
             {
-                "discord": venue[23],
-                "website": venue[24],
-                "banner": venue[25],
-                "logo": venue[26],
-                "app": venue[27],
+                "discord": venue[24],
+                "website": venue[25],
+                "banner": venue[26],
+                "logo": venue[27],
+                "app": venue[28],
             }
         )
         
@@ -392,6 +401,12 @@ class Venue:
 
         return self._post_msg.jump_url
 
+################################################################################
+    @property
+    def muted_users(self) -> List[User]:
+        
+        return self._mutes
+    
 ################################################################################
     def status(self) -> Embed:
         
@@ -856,6 +871,47 @@ class Venue:
             thumbnail_url=BotImages.ThumbsUpFrog,
             timestamp=True
         )
-        
+    
 ################################################################################
+    async def mute_list_report(self, interaction: Interaction) -> Embed:
         
+        embed = U.make_embed(
+            title=f"Muted Users Report",
+            description=(
+                (
+                    "\n".join([f"• {u.mention}" for u in self.muted_users])
+                    if self.muted_users
+                    else "`No muted users`"
+                )
+                + f"\n{U.draw_line(extra=20)}"
+            )
+        )
+        view = CloseMessageView(interaction.user)
+        
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+
+################################################################################
+    async def toggle_user_mute(self, interaction: Interaction, user: User) -> None:
+        
+        flag = user in self.muted_users
+        if flag:
+            self._mutes = [u for u in self._mutes if u.id != user.id]
+        else:
+            self._mutes.append(user)
+            
+        self.update()
+        
+        description = f"@{user.display_name} has been `{'unmuted' if flag else 'muted'}`."
+        confirm = U.make_embed(
+            title="User Mute Status",
+            description=(
+                f"{user.mention} has been `{'unmuted' if flag else 'muted'}`.\n"
+                f"{U.draw_line(text=description)}"
+            )
+        )
+        
+        await interaction.respond(embed=confirm, ephemeral=True)
+
+################################################################################
+    

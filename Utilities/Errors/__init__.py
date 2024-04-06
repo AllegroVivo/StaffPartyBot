@@ -36,4 +36,5 @@ from .JobPostingExpired import JobPostingExpiredError
 from .ProfileExport import ProfileExportError
 from .ProfileChannelNotSet import ProfileChannelNotSetError
 from .AvailabilityNotComplete import AvailabilityNotCompleteError
+from .AboutMeNotSet import AboutMeNotSetError
 ################################################################################

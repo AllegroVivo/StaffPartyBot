@@ -40,6 +40,7 @@ class VenueStatusView(FroggeView):
             LogoButton(self.venue.logo_url),
             SetPositionsButton(self.venue.positions),
             # RemoveManagerButton(self.venue),
+            MuteReportButton(),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -340,5 +341,20 @@ class ApplicationURLButton(FroggeButton):
         await edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
+        
+################################################################################
+class MuteReportButton(FroggeButton):
+    
+    def __init__(self) -> None:
+        
+        super().__init__(
+            style=ButtonStyle.primary,
+            label="Muted User Report",
+            row=1,
+            disabled=False
+        )
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.venue.mute_list_report(interaction)
         
 ################################################################################

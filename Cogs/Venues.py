@@ -163,6 +163,31 @@ class Venues(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.update_venue(ctx.interaction, name)
         
+################################################################################
+    @venues.command(
+        name="toggle_user_mute",
+        description="Toggle whether a user will hear about a venue's job postings."
+    )
+    async def venue_toggle_user_mute(
+        self,
+        ctx: ApplicationContext,
+        name: Option(
+            SlashCommandOptionType.string,
+            name="venue_name",
+            description="The name of the venue to mute the user for.",
+            required=True
+        ),
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to un/mute.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.toggle_user_mute(ctx.interaction, name, user)
+        
 ################################################################################  
 def setup(bot: "TrainingBot") -> None:
 

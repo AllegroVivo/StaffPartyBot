@@ -62,9 +62,9 @@ class GuildData:
         await self._logger.load()
         
         await self._pos_mgr._load_all(data)
+        await self._venue_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
-        await self._venue_mgr._load_all(data)
         await self._job_mgr._load_all(data)
         await self._role_mgr._load_all(data["roles"])
         await self._channel_mgr._load_all(data["channels"])
