@@ -20,12 +20,12 @@ __all__ = (
 ################################################################################
 class CloseMessageButton(Button):
 
-    def __init__(self):
+    def __init__(self, row: int = 4) -> None:
         super().__init__(
             style=ButtonStyle.success,
             label="Close Message",
             disabled=False,
-            row=4
+            row=row
         )
 
     async def callback(self, interaction: Interaction):
