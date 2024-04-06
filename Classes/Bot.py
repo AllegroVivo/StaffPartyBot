@@ -146,6 +146,10 @@ class TrainingBot(Bot):
                     "profile": p,
                     "additional_images": [
                         a for a in data["additional_images"] if a[1] == p[0]
+                    ],
+                    "availability": [
+                        prof for prof in data["profile_availability"] 
+                        if prof[0] == p[0]
                     ]
                 }
             )

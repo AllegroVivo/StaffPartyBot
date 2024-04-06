@@ -222,20 +222,37 @@ class DatabaseInserter(DBWorkerBranch):
         return new_id
     
 ################################################################################
+    def _add_profile_availability(
+        self,
+        profile_id: str,
+        day: Weekday, 
+        start: time,
+        end: time
+    ) -> None:
+        
+        self.execute(
+            "INSERT INTO profile_availability (profile_id, day, "
+            "start_time, end_time) "
+            "VALUES (%s, %s, %s, %s);",
+            profile_id, day.value, start, end
+        )
+        
+################################################################################
 
-    position            = _add_position
-    requirement         = _add_requirement
-    tuser               = _add_tuser
-    qualification       = _add_qualification
-    availability        = _add_availability
-    training            = _add_training
-    req_override        = _add_requirement_override
-    profile             = _add_profile
-    addl_image          = _add_additional_image
-    venue               = _add_venue
-    venue_hours         = _add_venue_hours
-    job_hours           = _add_job_hours
-    job_posting         = _add_job_posting
+    position                = _add_position
+    requirement             = _add_requirement
+    tuser                   = _add_tuser
+    qualification           = _add_qualification
+    availability            = _add_availability
+    training                = _add_training
+    req_override            = _add_requirement_override
+    profile                 = _add_profile
+    addl_image              = _add_additional_image
+    venue                   = _add_venue
+    venue_hours             = _add_venue_hours
+    job_hours               = _add_job_hours
+    job_posting             = _add_job_posting
+    profile_availability    = _add_profile_availability
     
 ################################################################################
     

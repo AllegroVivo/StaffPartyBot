@@ -8,7 +8,7 @@ from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import ProfileDetails, Position
+    from Classes import ProfileDetails, Position, PAvailability
 ################################################################################
 
 __all__ = ("ProfileDetailsStatusView",)
@@ -26,6 +26,7 @@ class ProfileDetailsStatusView(FroggeView):
             NameButton(self.details.name),
             CustomURLButton(self.details.url),
             ColorButton(self.details.color),
+            SetAvailabilityButton(self.details.availability),
             JobsButton(self.details.jobs),
             RatesButton(self.details.rates),
             PositionsButton(self.details.positions),
@@ -146,6 +147,27 @@ class PositionsButton(FroggeButton):
         await self.view.details.set_positions(interaction)
         self.set_style(self.view.details.positions)
 
+        await edit_message_helper(
+            interaction, embed=self.view.details.status(), view=self.view
+        )
+        
+################################################################################
+class SetAvailabilityButton(FroggeButton):
+    
+    def __init__(self, availability: List[PAvailability]) -> None:
+        
+        super().__init__(
+            label="Set Availability",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(availability)
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.details.set_availability(interaction)
+        self.set_style(self.view.details.availability)
+        
         await edit_message_helper(
             interaction, embed=self.view.details.status(), view=self.view
         )

@@ -35,6 +35,7 @@ class DatabaseLoader(DBWorkerBranch):
             "bg_checks" : self._load_bg_checks(),
             "roles" : self._load_roles(),
             "channels": self._load_channels(),
+            "profile_availability" : self._load_profile_availability(),
         }
 
 ################################################################################
@@ -137,6 +138,12 @@ class DatabaseLoader(DBWorkerBranch):
     def _load_channels(self) -> Tuple[Tuple[Any, ...], ...]:
         
         self.execute("SELECT * FROM channels;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_profile_availability(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM profile_availability;")
         return self.fetchall()
     
 ################################################################################

@@ -30,8 +30,7 @@ class ProfileManager:
         
         profiles = []
         for p in payload["profiles"]:       
-            profile = await Profile.load(self, p)
-            if profile is not None:  # None when user not found.
+            if profile := await Profile.load(self, p):
                 profiles.append(profile)
                 
         self._profiles = profiles

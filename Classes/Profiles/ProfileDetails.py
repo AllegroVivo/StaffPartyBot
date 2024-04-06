@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from discord import Colour, Embed, Interaction, EmbedField, Message, SelectOption
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
+import pytz
+from discord import Colour, Embed, Interaction, EmbedField, Message, SelectOption
+
 from Assets import BotEmojis
-from .ProfileSection import ProfileSection
+from UI.Training import TimeSelectView, WeekdayTZSelectView
 from UI.Profiles import (
     ProfileDetailsStatusView,
     ProfileNameModal,
@@ -15,6 +18,8 @@ from UI.Profiles import (
 )
 from UI.Venues import PositionSelectView
 from Utilities import Utilities as U, NS
+from .PAvailability import PAvailability
+from .ProfileSection import ProfileSection
 
 if TYPE_CHECKING:
     from Classes import Profile, Position
@@ -35,6 +40,7 @@ class ProfileDetails(ProfileSection):
         "_rates",
         "_post_msg",
         "_positions",
+        "_availability",
     )
 
 ################################################################################
@@ -49,16 +55,22 @@ class ProfileDetails(ProfileSection):
         self._rates: Optional[str] = kwargs.pop("rates", None)
         self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
         self._positions: List[Position] = kwargs.pop("positions", None) or []
+        self._availability: List[PAvailability] = kwargs.pop("availability", None) or []
 
 ################################################################################
     @classmethod
-    async def load(cls: Type[PD], parent: Profile, data: Tuple[Any, ...]) -> PD:
+    async def load(
+        cls: Type[PD], 
+        parent: Profile,
+        data: Tuple[Any, ...], 
+        hours: Tuple[Tuple[Any, ...]]
+    ) -> PD:
 
         post_msg = None
         try:
             url_parts = data[5].split("/") if data[5] else []
             if len(url_parts) >= 2:
-                channel = await parent.bot.fetch_channel(int(url_parts[-2]))
+                channel = await parent.bot.get_or_fetch_channel(int(url_parts[-2]))
                 if channel.threads:
                     named_threads = [
                         t for t in channel.threads 
@@ -80,7 +92,8 @@ class ProfileDetails(ProfileSection):
             jobs=data[3] or [],
             rates=data[4],
             post_msg=post_msg,
-            positions=positions
+            positions=positions,
+            availability=[PAvailability.load(parent, h) for h in hours]
         )
     
 ################################################################################
@@ -168,6 +181,12 @@ class ProfileDetails(ProfileSection):
         self.update()
         
 ################################################################################
+    @property
+    def availability(self) -> List[PAvailability]:
+        
+        return self._availability
+    
+################################################################################
     def update(self) -> None:
         
         self.parent.bot.database.update.profile_details(self)
@@ -207,6 +226,11 @@ class ProfileDetails(ProfileSection):
             EmbedField("__Jobs__", jobs, True),
             EmbedField("__Custom URL__", url_field, False),
             EmbedField("__Employable Positions__", positions, False),
+            EmbedField(
+                name="__Availability__", 
+                value=PAvailability.short_availability_status(self._availability), 
+                inline=False
+            ),
             EmbedField("__Rates__", rates, False)
         ]
 
@@ -297,6 +321,7 @@ class ProfileDetails(ProfileSection):
         em_name = self.progress_emoji(self._name)
         em_url = self.progress_emoji(self._url)
         em_jobs = self.progress_emoji(self._jobs)
+        em_hours = self.progress_emoji(self._availability)
         em_rates = self.progress_emoji(self._rates)
 
         return (
@@ -306,6 +331,7 @@ class ProfileDetails(ProfileSection):
             f"{em_url} -- Custom URL\n"
             f"{em_color} -- Accent Color\n"
             f"{em_jobs} -- Jobs List\n"
+            f"{em_hours} -- Availability\n"
             f"{em_rates} -- Rates Field\n"
         )
 
@@ -317,7 +343,8 @@ class ProfileDetails(ProfileSection):
         Optional[str],
         Optional[Colour],
         Optional[str],
-        Optional[EmbedField]
+        Optional[EmbedField],
+        Embed
     ]:
 
         return (
@@ -325,7 +352,8 @@ class ProfileDetails(ProfileSection):
             self.url,
             self.color,
             "/".join(self._jobs) if self._jobs else None,
-            self.rates_field()
+            self.rates_field(),
+            self._compile_availability()
         )
     
 ################################################################################
@@ -382,6 +410,91 @@ class ProfileDetails(ProfileSection):
             "jobs": self._jobs,
             "rates": self._rates,
         }
+    
+################################################################################
+    async def set_availability(self, interaction: Interaction) -> None:
+
+        footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
+        status = U.make_embed(
+            title="Set Availability",
+            description=(
+                "Please select the appropriate day from the initial selector, "
+                "followed by your timezone, and finally available time frame.\n\n"
+
+                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
+                f"{U.draw_line(extra=44)}"
+            ),
+            footer_text=footer
+        )
+        view = WeekdayTZSelectView(interaction.user)
+
+        await interaction.respond(embed=status, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            return
+
+        # weekday, tz = view.value
+        weekday = view.value
+
+        prompt = U.make_embed(
+            title="Set Availability Start",
+            description=(
+                f"Please select the beginning of your availability "
+                f"for `{weekday.proper_name}`...\n\n"
+
+                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
+            ),
+            footer_text=footer
+        )
+        view = TimeSelectView(interaction.user)
+
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            return
+
+        start_time = view.value if view.value != -1 else None
+        end_time = None
+
+        if start_time is not None:
+            prompt = U.make_embed(
+                title="Set Availability End",
+                description=(
+                    f"Please select the end of your availability "
+                    f"for `{weekday.proper_name}`...\n\n"
+
+                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
+                ),
+                footer_text=footer
+            )
+            view = TimeSelectView(interaction.user)
+
+            await interaction.respond(embed=prompt, view=view)
+            await view.wait()
+
+            if not view.complete or view.value is False:
+                return
+
+            end_time = view.value
+
+        for i, a in enumerate(self.availability):
+            if a.day == weekday:
+                self._availability.pop(i).delete()
+
+        if start_time is not None:
+            availability = PAvailability.new(self.parent, weekday, start_time, end_time)
+            self._availability.append(availability)
+        
+################################################################################
+    def _compile_availability(self) -> Embed:
+        
+        return U.make_embed(
+            title="__Availability__",
+            description=PAvailability.long_availability_status(self.availability),
+            footer_text=self._url
+        )
     
 ################################################################################
     

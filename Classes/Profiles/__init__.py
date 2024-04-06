@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .AdditionalImage import AdditionalImage
     from .Profile import Profile
+    from .PAvailability import PAvailability
     from .ProfileAtAGlance import ProfileAtAGlance
     from .ProfileDetails import ProfileDetails
     from .ProfileImages import ProfileImages

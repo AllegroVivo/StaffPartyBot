@@ -11,13 +11,13 @@ from discord import (
     Colour,
     Attachment,
     Embed,
-    ForumChannel,
     Forbidden,
     EmbedField,
     Message,
     Thread,
     File
 )
+from dotenv import load_dotenv
 
 from Assets import BotEmojis, BotImages
 from UI.Common import CloseMessageView, ConfirmCancelView
@@ -30,10 +30,10 @@ from Utilities import (
     NS,
     CharNameNotSetError,
     ExceedsMaxLengthError,
-    ChannelTypeError,
     InsufficientPermissionsError,
     ProfileExportError,
-    ProfileChannelNotSetError
+    ProfileChannelNotSetError,
+    AvailabilityNotCompleteError
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -41,7 +41,7 @@ from .ProfileImages import ProfileImages
 from .ProfilePersonality import ProfilePersonality
 
 if TYPE_CHECKING:
-    from Classes import ProfileManager, TrainingBot
+    from Classes import ProfileManager, TrainingBot, PAvailability
 ################################################################################
 
 __all__ = ("Profile",)
@@ -86,6 +86,7 @@ class Profile:
         
         profile = data["profile"]
         addl_imgs = data["additional_images"]
+        hours = data["availability"]
         
         try:
             user = await mgr.bot.fetch_user(profile[1])
@@ -98,7 +99,7 @@ class Profile:
         self._user = user
         self._id = profile[0]
         
-        self._details = await ProfileDetails.load(self, profile[3:10])
+        self._details = await ProfileDetails.load(self, profile[3:10], hours)
         self._personality = ProfilePersonality.load(self, profile[10:14])
         self._aag = ProfileAtAGlance.load(self, profile[14:24])
         self._images = ProfileImages.load(self, profile[24:26], addl_imgs)
@@ -119,6 +120,12 @@ class Profile:
     
 ################################################################################
     @property
+    def guild_id(self) -> int:
+        
+        return self._mgr.guild_id
+    
+################################################################################
+    @property
     def id(self) -> str:
         
         return self._id
@@ -128,6 +135,12 @@ class Profile:
     def user(self) -> User:
         
         return self._user
+    
+################################################################################
+    @property
+    def user_id(self) -> int:
+        
+        return self._user.id
     
 ################################################################################
     @property
@@ -156,6 +169,12 @@ class Profile:
         self._details.post_message = value
         self._details.update()
         
+################################################################################
+    @property
+    def availability(self) -> List[PAvailability]:
+        
+        return self._details.availability
+    
 ################################################################################
     async def set_details(self, interaction: Interaction) -> None:
         
@@ -251,10 +270,15 @@ class Profile:
         # Check for unset character name
         if self.char_name == str(NS):
             error = CharNameNotSetError()
-            await interaction.response.send_message(embed=error, ephemeral=True)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if not self.availability:
+            error = AvailabilityNotCompleteError()
+            await interaction.respond(embed=error, ephemeral=True)
             return
     
-        main_profile, aboutme = self.compile()
+        main_profile, availability, aboutme = self.compile()
         # Check for content length
         if len(main_profile) > 5999:
             error = ExceedsMaxLengthError(len(main_profile))
@@ -266,14 +290,22 @@ class Profile:
         
         member = self._mgr.guild.parent.get_member(self._user.id)
         
-        all_pos_roles = [pos.linked_role for pos in self._mgr.guild.position_manager.positions]
-        await member.remove_roles(*all_pos_roles)
-        
-        pos_roles = [pos.linked_role for pos in self._details.positions]    
-        await member.add_roles(*pos_roles)
+        load_dotenv()
+        if os.getenv("DEBUG") == "False":
+            all_pos_roles = [
+                pos.linked_role for pos in self._mgr.guild.position_manager.positions
+                if pos.linked_role is not None
+            ]
+            await member.remove_roles(*all_pos_roles)
+            
+            pos_roles = [
+                pos.linked_role for pos in self._details.positions
+                if pos.linked_role is not None
+            ]    
+            await member.add_roles(*pos_roles)
     
         # Prepare embeds
-        embeds = [main_profile] + ([aboutme] if aboutme else [])
+        embeds = [main_profile, availability] + ([aboutme] if aboutme else [])
     
         # Attempt to edit an existing post
         if self.post_message:
@@ -309,9 +341,9 @@ class Profile:
             await interaction.respond(embed=error, ephemeral=True)
 
 ################################################################################
-    def compile(self) -> Tuple[Embed, Optional[Embed]]:
+    def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
 
-        char_name, url, color, jobs, rates_field = self._details.compile()
+        char_name, url, color, jobs, rates_field, availability = self._details.compile()
         ataglance = self._aag.compile()
         likes, dislikes, personality, aboutme = self._personality.compile()
         thumbnail, main_image, additional_imgs = self._images.compile()
@@ -354,7 +386,7 @@ class Profile:
             fields=fields
         )
 
-        return main_profile, aboutme
+        return main_profile, availability, aboutme
     
 ################################################################################
     def success_message(self) -> Embed:

@@ -32,7 +32,15 @@ from .UserConfig import UserConfiguration
 from .UserDetails import UserDetails
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, TrainingManager, PositionManager, GuildData, Position, JobPosting
+    from Classes import (
+        TrainingBot, 
+        TrainingManager, 
+        PositionManager, 
+        GuildData, 
+        Position,
+        JobPosting,
+        Profile
+    )
 ################################################################################
 
 __all__ = ("TUser",)
@@ -245,6 +253,12 @@ class TUser:
     def bg_check(self) -> BackgroundCheck:
         
         return self._bg_check
+    
+################################################################################
+    @property
+    def profile(self) -> Profile:
+        
+        return self.guild.profile_manager[self.user_id]
     
 ################################################################################
     def is_qualified(self, position_id: str) -> bool:
@@ -930,22 +944,21 @@ class TUser:
                 member = await self.guild.parent.fetch_member(self.user_id)
                 if job.position.linked_role not in member.roles:
                     return False
+
+        if check_profile:
+            if not self.profile or self.profile.post_message is None:
+                return False
     
         # If comparing schedules, check if the user is available during the job's times
-        if compare_schedule:
+        if compare_schedule and check_profile:
             # Adjust for 0-indexed weekday where 0 is Monday, to match your custom 0-indexed day where 0 is Sunday
             job_day = (job.start_time.weekday() + 1) % 7 
-            for availability in self.availability:
+            for availability in self.profile.availability:
                 if availability.day.value == job_day:
                     start_time, end_time = job.start_time.time(), job.end_time.time()
                     if availability.contains(start_time, end_time):
                         return True
             return False  # If no matching availability was found
-        
-        if check_profile:
-            profile = self.guild.profile_manager[self.user_id]
-            if not profile or profile.post_message is None:
-                return False
     
         # If not comparing schedules or none of the above conditions matched, the user is eligible
         return True
