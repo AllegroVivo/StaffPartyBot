@@ -83,7 +83,8 @@ class Database:
 
         try:
             self._cursor.execute("SELECT 1")
-        except (OperationalError, AttributeError):
+        except:
+            self._connection.rollback()
             self._connect()
 
         load_dotenv()
