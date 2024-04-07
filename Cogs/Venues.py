@@ -46,25 +46,6 @@ class Venues(Cog):
 
 ################################################################################
     @venues.command(
-        name="post",
-        description="Post or update your venue internship profile."
-    )
-    async def post_venue(
-        self,
-        ctx: ApplicationContext,
-        name: Option(
-            SlashCommandOptionType.string,
-            name="name",
-            description="The name of the venue.",
-            required=True
-        )
-    ) -> None:
-
-        guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.post_venue(ctx.interaction, name)
-        
-################################################################################
-    @venues.command(
         name="signup",
         description="Sign up a new venue for the internship program."
     )
@@ -143,25 +124,6 @@ class Venues(Cog):
 
         guild = self.bot[ctx.guild_id]
         await guild.venue_manager.import_venue(ctx.interaction, name)
-        
-################################################################################
-    @venues.command(
-        name="update",
-        description="Update a venue from the FFXIV Venues API."
-    )
-    async def venue_update(
-        self,
-        ctx: ApplicationContext,
-        name: Option(
-            SlashCommandOptionType.string,
-            name="name",
-            description="The name of the venue to update.",
-            required=True
-        )
-    ) -> None:
-
-        guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.update_venue(ctx.interaction, name)
         
 ################################################################################
     @venues.command(

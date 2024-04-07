@@ -287,29 +287,6 @@ class ProfileImages(ProfileSection):
         return ret
         
 ################################################################################
-    def create_pages(self, interaction: Interaction) -> List[Page]:
-
-        pages: List[Page] = []
-        for img in self.additional:
-            pages.append(img.page(interaction, self))
-
-        if not pages:
-            pages.append(
-                Page(
-                    embeds=[
-                        U.make_embed(
-                            title="Additional Images",
-                            description="`No Images Uploaded!`",
-                            timestamp=False
-                        )
-                    ],
-                    custom_view=AdditionalImageView(interaction.user, self)
-                )
-            )
-
-        return pages
-
-################################################################################
     def get_additional(self, image_id: str) -> Optional[AdditionalImage]:
 
         for img in self.additional:
@@ -354,11 +331,21 @@ class ProfileImages(ProfileSection):
         self.main_image = url
         
 ################################################################################
-    def add_additional(self, url: str, caption: Optional[str]) -> None:
+    async def add_additional(self, interaction: Interaction, url: str, caption: Optional[str]) -> None:
         
         self.additional.append(
             AdditionalImage.new(parent=self, url=url, caption=caption)
         )
+
+        confirm = U.make_embed(
+            color=self.color,
+            title="Image Assigned",
+            description=(
+                f"The additional image has been assigned to your profile.\n"
+                "Run the `/profile images` command to view the changes!"
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
     def progress(self) -> str:

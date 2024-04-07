@@ -221,11 +221,6 @@ class VenueManager:
 
 ################################################################################
     async def post_venue(self, interaction: Interaction, name: str) -> None:
-        
-        if self.post_channel is None:
-            error = VenueChannelNotSetError()
-            await interaction.respond(embed=error, ephemeral=True)
-            return
 
         venue = self.get_venue(name)
         if venue is None:

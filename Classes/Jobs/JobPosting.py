@@ -71,7 +71,7 @@ class JobPosting:
         self._rejections: List[TUser] = []
         
         self._description: Optional[str] = kwargs.pop("description", None)
-        self._type: Optional[JobPostingType] = kwargs.pop("type", None)
+        self._type: Optional[JobPostingType] = JobPostingType.Temporary
         self._position: Optional[Position] = kwargs.pop("position", None)
         self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
         
@@ -103,7 +103,7 @@ class JobPosting:
         self._rejections = [mgr.guild.training_manager[r] for r in data[14]] if data[14] else []
         
         self._description = data[6]
-        self._type = JobPostingType(data[4]) if data[4] else None
+        self._type = JobPostingType.Temporary
         self._position = mgr.guild.position_manager.get_position(data[5]) if data[5] else None
 
         self._post_msg = None
@@ -246,7 +246,7 @@ class JobPosting:
     def complete(self) -> bool:
         
         return all(
-            [self._type, self._position, self._salary, self._description]
+            [self._position, self._salary, self._description]
         )
     
 ################################################################################
@@ -322,7 +322,7 @@ class JobPosting:
             fields=[
                 self._position_field(),
                 self._salary_field(),
-                self._post_type_field(),
+                EmbedField("** **", "** **", False),
                 self._hours_field(),
                 self._total_time_field(),
                 self._post_url_field(),
@@ -367,7 +367,7 @@ class JobPosting:
 
         return EmbedField(
             name="__Posting URL__",
-            value=f"{U.draw_line(extra=30)}\n" + description,
+            value=description,
             inline=False
         )
 
@@ -416,7 +416,8 @@ class JobPosting:
                 f"{start_ts}\n\n"
                 
                 f"__**End Time**__\n"
-                f"{end_ts}"
+                f"{end_ts}\n"
+                f"{U.draw_line(extra=12)}"
             ),
             inline=True
         )

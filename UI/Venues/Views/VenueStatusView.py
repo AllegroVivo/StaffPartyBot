@@ -41,6 +41,8 @@ class VenueStatusView(FroggeView):
             SetPositionsButton(self.venue.positions),
             # RemoveManagerButton(self.venue),
             MuteReportButton(),
+            PostVenueButton(),
+            UpdateVenueButton(),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -356,5 +358,45 @@ class MuteReportButton(FroggeButton):
         
     async def callback(self, interaction: Interaction) -> None:
         await self.view.venue.mute_list_report(interaction)
+        
+################################################################################
+class PostVenueButton(Button):
+
+    def __init__(self):
+
+        super().__init__(
+            style=ButtonStyle.secondary,
+            label="Post This Venue Listing",
+            disabled=False,
+            row=2,
+            emoji=BotEmojis.FlyingEnvelope
+        )
+
+    async def callback(self, interaction):
+        await self.view.venue.post(interaction, None)
+        await edit_message_helper(
+            interaction, embed=self.view.posting.status()
+        )
+
+################################################################################
+class UpdateVenueButton(Button):
+    
+    def __init__(self) -> None:
+        
+        super().__init__(
+            style=ButtonStyle.secondary,
+            label="Update This Venue from FFXIV Venues",
+            disabled=False,
+            row=2,
+            emoji=BotEmojis.Cycle
+        )
+        
+    async def callback(self, interaction: Interaction) -> None:
+        await interaction.response.defer()
+        await self.view.venue.update_from_xiv_venue(interaction)
+        
+        await edit_message_helper(
+            interaction, embed=self.view.posting.status()
+        )
         
 ################################################################################

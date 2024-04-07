@@ -808,7 +808,14 @@ class Venue:
         self._schedule.append(VenueHours.new(self, weekday, open_time, close_time))
 
 ################################################################################
-    async def post(self, interaction: Interaction, channel: ForumChannel) -> None:
+    async def post(self, interaction: Interaction, channel: Optional[ForumChannel]) -> None:
+        
+        if channel is None:
+            if self._mgr.post_channel is None:
+                error = VenueChannelNotSetError()
+                await interaction.respond(embed=error, ephemeral=True)
+                return
+            channel = self._mgr.post_channel
         
         # Find threads with a matching name
         target_threads = [t for t in channel.threads if t.name.lower() == self.name.lower()]

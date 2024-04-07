@@ -220,7 +220,7 @@ class Profile:
                 return
 
             image_url = await self.bot.dump_image(file)
-            self._images.add_additional(image_url, modal.value)
+            await self._images.add_additional(interaction, image_url, modal.value)
             return
         
         await interaction.response.defer()

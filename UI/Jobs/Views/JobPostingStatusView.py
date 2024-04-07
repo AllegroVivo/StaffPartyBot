@@ -28,7 +28,7 @@ class JobPostingStatusView(FroggeView):
             DescriptionButton(posting.description),
             PositionButton(posting.position),
             SalaryButton(posting.salary),
-            PostingTypeButton(posting.post_type),
+            # PostingTypeButton(posting.post_type),
             HoursButton(posting.end_time),
             PostMessageButton(),
             DeletePostingButton(),
