@@ -652,7 +652,9 @@ class JobPosting:
         if not view.complete or view.value is False:
             return
     
-        post_view = JobPostingPickupView(self)        
+        post_view = JobPostingPickupView(self)
+        self.bot.add_view(post_view)
+        
         channel = (
             self._mgr.temporary_jobs_channel 
             if self.post_type == JobPostingType.Temporary 
