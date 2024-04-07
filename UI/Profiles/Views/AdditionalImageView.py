@@ -88,6 +88,6 @@ class ViewImagesStatusButton(Button):
         self.view._close_on_complete = True
         await self.view.cancel()  # type: ignore
 
-        await images.set(interaction)
+        await images.menu(interaction)
 
 ################################################################################

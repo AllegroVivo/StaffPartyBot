@@ -1,3 +1,4 @@
+from .AdditionalImageSelectView import AdditionalImageSelectView
 from .AdditionalImageView import AdditionalImageView
 from .AtAGlanceStatusView import AtAGlanceStatusView
 from .DetailsStatusView import ProfileDetailsStatusView

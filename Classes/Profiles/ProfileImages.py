@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
-from discord import Interaction, Embed, EmbedField
+from discord import Interaction, Embed, EmbedField, SelectOption
 from discord.ext.pages import Page
 
 from Assets import BotEmojis, BotImages
@@ -14,7 +14,8 @@ from UI.Profiles import (
     ImageFrogginator,
     AdditionalImageView, 
     AdditionalImageCaptionModal,
-    ProfileImageStatusView
+    ProfileImageStatusView,
+    AdditionalImageSelectView
 )
 
 if TYPE_CHECKING:
@@ -231,19 +232,60 @@ class ProfileImages(ProfileSection):
         self.main_image = None
 
 ################################################################################
-    async def paginate_additional(self, interaction: Interaction) -> None:
-
-        frogginator = ImageFrogginator(
-            pages=self.create_pages(interaction),
-            images=self,
-            show_disabled=True,
-            close_on_complete=True,
-            loop_pages=True,
-            default_button_row=3,
-            timeout=10
+    def _manage_additional_embed(self, image: Optional[AdditionalImage]) -> Embed:
+        
+        if image is None:
+            image = self.additional[0]
+        
+        return U.make_embed(
+            color=self.parent.color,
+            title="Additional Images Management",
+            description=(
+                "Use the select box below to select an additional image to edit or remove."
+            ),
+            footer_text=f"Caption: {str(image.caption)}",
+            image_url=image.url
         )
-        await frogginator.respond(interaction)
+        
+################################################################################
+    async def manage_additional(
+        self, 
+        interaction: Interaction,
+        image: AdditionalImage = None
+    ) -> None:
+        
+        prompt = self._manage_additional_embed(image)
+        view = AdditionalImageSelectView(interaction.user, self, image)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        addl_image = self.get_additional(view.value)
+        await self.manage_additional(interaction, addl_image)
 
+################################################################################
+    def _additional_image_options(self) -> List[SelectOption]:
+        
+        ret = []
+        
+        for img in self.additional:
+            image_name = img.url.split("/")[-1].split("?")[0]
+            if len(image_name) >= 95:
+                image_name = f"{image_name[:95]}..."
+            
+            ret.append(
+                SelectOption(
+                    label=img.caption or "No Caption Provided",
+                    value=img.id,
+                    description=image_name
+                )
+            )
+            
+        return ret
+        
 ################################################################################
     def create_pages(self, interaction: Interaction) -> List[Page]:
 
@@ -275,9 +317,7 @@ class ProfileImages(ProfileSection):
                 return img
             
 ################################################################################
-    async def remove_additional(self, interaction: Interaction, img_id: str) -> None:
-        
-        additional = self.get_additional(img_id)
+    async def remove_additional(self, interaction: Interaction, additional: AdditionalImage) -> None:
 
         confirm = U.make_embed(
             color=self.parent.color,

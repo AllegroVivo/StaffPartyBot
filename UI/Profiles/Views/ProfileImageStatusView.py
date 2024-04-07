@@ -91,7 +91,7 @@ class PaginateAdditionalImagesButton(FroggeButton):
     def __init__(self, images: List[AdditionalImage]) -> None:
         
         super().__init__(
-            label="Edit Additional Images",
+            label="Manage Additional Images",
             disabled=False,
             row=0
         )
@@ -101,7 +101,7 @@ class PaginateAdditionalImagesButton(FroggeButton):
         
     async def callback(self, interaction: Interaction) -> None:
         images: ProfileImages = self.view.images
-        await images.paginate_additional(interaction)
+        await images.manage_additional(interaction)
 
         self.disabled = len(images.additional) == 0
 
