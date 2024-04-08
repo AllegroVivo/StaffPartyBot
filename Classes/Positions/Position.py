@@ -33,26 +33,21 @@ class Position:
         "_requirements",
         "_role",
         "_trainer_pay",
+        "_followup",
     )
     
 ################################################################################
-    def __init__(
-        self, 
-        mgr: PositionManager, 
-        _id: str,
-        name: str, 
-        reqs: Optional[List[Requirement]] = None,
-        role: Optional[Role] = None,
-        trainer_pay: Optional[int] = None
-    ) -> None:
+    def __init__(self, mgr: PositionManager, _id: str, name: str, **kwargs) -> None:
 
         self._manager: PositionManager = mgr
         
         self._id: str = _id
         self._name: str = name
-        self._requirements: List[Requirement] = reqs or []
-        self._role: Optional[Role] = role
-        self._trainer_pay: Optional[int] = trainer_pay
+        
+        self._requirements: List[Requirement] = kwargs.get("reqs", None) or []
+        self._role: Optional[Role] = kwargs.get("role")
+        self._trainer_pay: Optional[int] = kwargs.get("trainer_pay")
+        self._followup: bool = kwargs.get("followup", False)
         
 ################################################################################
     @classmethod
@@ -83,7 +78,8 @@ class Position:
             name=data[2], 
             reqs=reqs,
             role=role,
-            trainer_pay=data[4]
+            trainer_pay=data[4],
+            followup=data[5]
         ) 
     
 ################################################################################
@@ -165,6 +161,18 @@ class Position:
         self.update()
         
 ################################################################################
+    @property
+    def followup_included(self) -> bool:
+        
+        return self._followup
+    
+    @followup_included.setter
+    def followup_included(self, value: bool) -> None:
+        
+        self._followup = value
+        self.update()
+        
+################################################################################
     def get_requirement(self, req_id: str) -> Requirement:
         
         for r in self._requirements:
@@ -188,6 +196,12 @@ class Position:
             [f"{r.description} - **(Global)**" for r in self._manager.global_requirements]
         )
         field_value = ("* " + "\n* ".join(reqs_list)) if reqs_list else "`Not Set`"
+        
+        trainer_pay = "`Not Set`"
+        if self.trainer_pay is not None:
+            trainer_pay = f"{self.trainer_pay:,}"
+            if self.followup_included:
+                trainer_pay += "\n*(Includes Follow-up/On-Site Assistance)*"
 
         return U.make_embed(
             title=f"Position Status for: {self.name}",
@@ -201,10 +215,8 @@ class Position:
                 ),
                 EmbedField(
                     name="__Trainer Pay__",
-                    value=(
-                        f"{self.trainer_pay:,}"
-                    ) if self.trainer_pay else "`Not Set`",
-                    inline=True
+                    value=trainer_pay,
+                    inline=False
                 ),
                 EmbedField(
                     name="__Training Requirements__",
@@ -363,4 +375,8 @@ class Position:
         self.trainer_pay = trainer_pay
     
 ################################################################################
-    
+    def toggle_followup(self) -> None:
+        
+        self.followup_included = not self.followup_included
+        
+################################################################################

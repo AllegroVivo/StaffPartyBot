@@ -1,5 +1,6 @@
 import math
 import re
+import textwrap
 from datetime import datetime, time
 from typing import Any, List, Optional, Tuple, Union, Literal
 
@@ -8,7 +9,6 @@ from discord import Colour, Embed, EmbedField
 
 from .Colors import CustomColor
 from .Enums import Timezone
-
 ################################################################################
 
 __all__ = ("Utilities", )
@@ -297,4 +297,10 @@ class Utilities:
         except ValueError:
             return
 
+################################################################################
+    @staticmethod
+    def wrap_text(text: str, line_length: int) -> str:
+        
+        return "\n".join(textwrap.wrap(text, width=line_length))
+    
 ################################################################################

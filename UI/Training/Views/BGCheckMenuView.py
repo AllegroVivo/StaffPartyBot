@@ -75,7 +75,9 @@ class AddVenueButton(FroggeButton):
         if len(self.view.bg_check.venues) > 0:
             self.view.children[2].disabled = False
         
-        await interaction.edit(embed=self.view.bg_check.status(), view=self.view)
+        await edit_message_helper(
+            interaction, embed=self.view.bg_check.status(), view=self.view
+        )
         
 ################################################################################
 class RemoveVenueButton(FroggeButton):

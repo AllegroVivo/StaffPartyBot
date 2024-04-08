@@ -40,7 +40,6 @@ class DataCenterSelect(Select):
         await edit_message_helper(interaction, view=self.view)
     
 ################################################################################
-
 class WorldSelect(Select):
     
     def __init__(self, dc: DataCenter):
@@ -57,10 +56,10 @@ class WorldSelect(Select):
         self.dc = dc
         
     async def callback(self, interaction: Interaction):
-        self.view.value = self.dc, GameWorld(int(self.values[0]))
+        self.view.value = (self.dc, GameWorld(int(self.values[0])))
         self.view.complete = True
         
-        await edit_message_helper(interaction)
+        await interaction.edit()
         await self.view.stop()  # type: ignore
     
 ################################################################################

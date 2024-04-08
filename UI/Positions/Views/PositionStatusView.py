@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Any
 
 from discord import Interaction, Role, User, ButtonStyle
 from discord.ui import Button
 
+from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
@@ -27,6 +28,7 @@ class PositionStatusView(FroggeView):
             PositionNameButton(),  
             PositionRoleButton(self.position.linked_role),
             PositionTrainerPayButton(self.position.trainer_pay),
+            ToggleFollowupButton(self.position.followup_included),
             PositionAddReqButton(), 
             PositionRemoveReqButton(),
             CloseMessageButton()
@@ -40,11 +42,11 @@ class PositionStatusView(FroggeView):
     def set_button_style(self) -> None:
         
         if len(self.position.requirements) > 0:
-            self.children[3].style = ButtonStyle.danger  # type: ignore
-            self.children[3].disabled = False  # type: ignore
+            self.children[5].style = ButtonStyle.danger  # type: ignore
+            self.children[5].disabled = False  # type: ignore
         else:
-            self.children[3].style = ButtonStyle.secondary  # type: ignore
-            self.children[3].disabled = True  # type: ignore
+            self.children[5].style = ButtonStyle.secondary  # type: ignore
+            self.children[5].disabled = True  # type: ignore
             
 ################################################################################
 class PositionNameButton(Button):
@@ -146,4 +148,31 @@ class PositionTrainerPayButton(FroggeButton):
         await interaction.edit(embed=self.view.position.status(), view=self.view)
         
 ################################################################################
+class ToggleFollowupButton(FroggeButton):
+    
+    def __init__(self, cur_val: bool):
         
+        super().__init__(
+            label="Follow-Up Incl.",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(cur_val)
+        
+    def set_style(self, attribute: Optional[Any]) -> None:
+        
+        if attribute:
+            self.style = ButtonStyle.success
+            self.emoji = BotEmojis.Check
+        else:
+            self.style = ButtonStyle.secondary
+            self.emoji = None
+        
+    async def callback(self, interaction: Interaction):
+        self.view.position.toggle_followup()
+        self.set_style(self.view.position.followup_included) 
+        
+        await interaction.edit(embed=self.view.position.status(), view=self.view)
+        
+################################################################################

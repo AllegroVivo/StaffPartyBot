@@ -332,6 +332,10 @@ class JobPosting:
     
 ################################################################################
     def compile(self) -> Embed:
+        
+        job_desc = "`No description provided.`"
+        if self.description is not None:
+            job_desc = U.wrap_text(job_desc, 50)
 
         description = (
             "__**Venue Contact:**__\n"
@@ -339,7 +343,7 @@ class JobPosting:
             f"({self._user.mention})\n\n"
 
             "__**Job Description:**__\n"
-            f"{self._description or '`No description provided.`'}\n"
+            f"{job_desc}\n"
 
             f"{U.draw_line(extra=30)}\n"
         )
@@ -350,7 +354,6 @@ class JobPosting:
             fields=[
                 self._position_field(),
                 self._salary_field(),
-                self._post_type_field(),
                 self._hours_field(),
             ],
             footer_text=f"Posting ID: {self._id}",
@@ -372,15 +375,6 @@ class JobPosting:
         )
 
 ################################################################################
-    def _post_type_field(self) -> EmbedField:
-        
-        return EmbedField(
-            name="__Job Type__",
-            value=f"{self._type.proper_name if self._type is not None else  '`Not Set`'}",
-            inline=False
-        )
-    
-################################################################################
     def _position_field(self) -> EmbedField:
         
         return EmbedField(
@@ -395,7 +389,7 @@ class JobPosting:
         return EmbedField(
             name="__Salary__",
             value=self._salary.format(),
-            inline=True
+            inline=False
         )
     
 ################################################################################

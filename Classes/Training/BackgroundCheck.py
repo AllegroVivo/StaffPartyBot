@@ -21,6 +21,7 @@ from Utilities import (
     MissingNameError,
     RoleType,
     edit_message_helper,
+    ExperienceExistsError,
 )
 from .BGCheckVenue import BGCheckVenue
 
@@ -275,6 +276,12 @@ class BackgroundCheck:
             return
 
         data_center, world = view.value
+        
+        matching_venues = [v for v in self.venues if v.name.lower() == name.lower()]
+        if matching_venues:
+            error = ExperienceExistsError(name)
+            await interaction.respond(embed=error, ephemeral=True)
+            return
 
         self._venues.append(BGCheckVenue(name, data_center, world, jobs))
         self.update()

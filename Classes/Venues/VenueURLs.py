@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 
-from discord import Interaction
+from discord import Interaction, NotFound
 
 from UI.Venues import VenueDiscordURLModal, VenueWebsiteURLModal, VenueApplicationURLModal
 from Utilities import Utilities as U, FroggeColor
@@ -184,7 +184,14 @@ class VenueURLs:
             self._logo_url = await self.bot.dump_image(message.attachments[0])
             self.update()
 
-        await message.delete()
-        await response.delete_original_response()
+        try:
+            await message.delete()
+        except NotFound:
+            pass
+        
+        try:
+            await response.delete_original_response()
+        except NotFound:
+            pass
 
 ################################################################################
