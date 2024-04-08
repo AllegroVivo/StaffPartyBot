@@ -301,11 +301,15 @@ class Venue:
     @property
     def thread_tags(self) -> List[ForumTag]:
         
-        return [
+        ret = [
             t for t in self._mgr.post_channel.available_tags
             if t.name.lower() in
             [t.tag_text.lower() for t in self.tags]
         ]
+        if len(ret) > 5:
+            ret = ret[:5]
+        
+        return ret
     
 ################################################################################    
     @property
