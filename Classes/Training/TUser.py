@@ -939,7 +939,7 @@ class TUser:
         compare_data_centers: bool = True,
         compare_linked_role: bool = True,
         compare_schedule: bool = True,
-        check_profile: bool = False
+        check_profile: bool = True
     ) -> bool:
         
         # Check user and venue mute lists
@@ -951,6 +951,10 @@ class TUser:
         # Check if on hiatus
         if compare_hiatus:
             if self.on_hiatus:
+                return False
+
+        if check_profile:
+            if not self.profile or self.profile.post_message is None:
                 return False
     
         # Check if job's data center is in the user's data centers list
@@ -965,10 +969,6 @@ class TUser:
                 if job.position.linked_role not in member.roles:
                     return False
 
-        if check_profile:
-            if not self.profile or self.profile.post_message is None:
-                return False
-    
         # If comparing schedules, check if the user is available during the job's times
         if compare_schedule and check_profile:
             # Adjust for 0-indexed weekday where 0 is Monday, to match your custom 0-indexed day where 0 is Sunday
