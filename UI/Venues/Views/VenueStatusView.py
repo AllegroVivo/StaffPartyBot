@@ -375,7 +375,7 @@ class PostVenueButton(Button):
     async def callback(self, interaction):
         await self.view.venue.post(interaction, None)
         await edit_message_helper(
-            interaction, embed=self.view.posting.status()
+            interaction, embed=self.view.venue.status()
         )
 
 ################################################################################
@@ -396,7 +396,7 @@ class UpdateVenueButton(Button):
         self.view.venue.update_from_xiv_venue(interaction)
         
         await edit_message_helper(
-            interaction, embed=self.view.posting.status()
+            interaction, embed=self.view.venue.status()
         )
         
 ################################################################################
