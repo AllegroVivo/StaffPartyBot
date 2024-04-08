@@ -206,6 +206,7 @@ class TUser:
     @property
     def qualifications(self) -> List[Qualification]:
 
+        self._qualifications.sort(key=lambda q: q.position.name)
         return self._qualifications
 
 ################################################################################
@@ -953,8 +954,8 @@ class TUser:
                 return False
     
         # Check if job's data center is in the user's data centers list
-        if compare_data_centers:
-            if not any(dc.contains(job.venue.location.data_center) for dc in self.data_centers):
+        if compare_data_centers and len(self.profile.data_centers) > 0:
+            if not any(dc.contains(job.venue.location.data_center) for dc in self.profile.data_centers):
                 return False
     
         # Check if the user has the linked role for the job position, if applicable

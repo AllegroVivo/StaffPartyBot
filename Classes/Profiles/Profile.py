@@ -43,6 +43,7 @@ from Utilities import (
     AvailabilityNotCompleteError,
     AboutMeNotSetError,
     NoVenuesFoundError,
+    GlobalDataCenter,
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -189,6 +190,12 @@ class Profile:
     def aboutme(self) -> Optional[str]:
         
         return self._personality.aboutme
+    
+################################################################################
+    @property
+    def data_centers(self) -> List[GlobalDataCenter]:
+        
+        return self._aag.data_centers
     
 ################################################################################
     async def set_details(self, interaction: Interaction) -> None:
