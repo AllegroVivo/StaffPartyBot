@@ -246,7 +246,7 @@ class JobPosting:
     def complete(self) -> bool:
         
         return all(
-            [self._position, self._salary, self._description]
+            [self._position, self._salary, self._description, self.end_time]
         )
     
 ################################################################################
