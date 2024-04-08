@@ -79,8 +79,8 @@ class ProfileDetails(ProfileSection):
         try:
             url_parts = data[5].split("/") if data[5] else []
             if len(url_parts) >= 2:
-                thread: Thread = await parent.bot.get_or_fetch_channel(int(url_parts[-2]))  # type: ignore
-                post_msg = await thread.fetch_message(int(url_parts[-1]))
+                if thread := await parent.bot.get_or_fetch_channel(int(url_parts[-2])):
+                    post_msg = await thread.fetch_message(int(url_parts[-1]))
         except NotFound:
             pass
         
