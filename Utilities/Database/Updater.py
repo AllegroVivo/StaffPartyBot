@@ -168,11 +168,10 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE ataglance SET gender = %s, pronouns = %s, race = %s, "
             "clan = %s, orientation = %s, height = %s, age = %s, mare = %s, "
-            "data_center = %s, world = %s WHERE _id = %s;",
+            "data_centers = %s WHERE _id = %s;",
             gender, [p.value for p in aag.pronouns], race, clan, orientation,
-            aag.height, aag.age, aag.mare, 
-            aag.data_center.value if aag.data_center is not None else None,
-            aag.world.value if aag.world is not None else None, aag.profile_id
+            aag.height, aag.age, aag.mare, [dc.value for dc in aag.data_centers],
+            aag.profile_id
         )
        
 ################################################################################ 

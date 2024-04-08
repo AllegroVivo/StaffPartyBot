@@ -110,8 +110,8 @@ class Profile:
         
         self._details = await ProfileDetails.load(self, profile[3:10], hours)
         self._personality = ProfilePersonality.load(self, profile[10:14])
-        self._aag = ProfileAtAGlance.load(self, profile[14:24])
-        self._images = ProfileImages.load(self, profile[24:26], addl_imgs)
+        self._aag = ProfileAtAGlance.load(self, profile[14:23])
+        self._images = ProfileImages.load(self, profile[23:25], addl_imgs)
         
         return self
         

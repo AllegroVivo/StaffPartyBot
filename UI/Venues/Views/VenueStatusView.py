@@ -26,19 +26,19 @@ class VenueStatusView(FroggeView):
 
         # If uncommenting any buttons, make sure to check/adjust row numbers accordingly
         button_list = [
+            RPLevelButton(self.venue.rp_level),
+            ToggleHiringButton(self.venue.hiring),
+            ApplicationURLButton(self.venue.application_url),
+            SetPositionsButton(self.venue.positions),
+            LogoButton(self.venue.logo_url),
             # EditNameButton(),
             # EditDescriptionButton(self.venue.description),
             # SetScheduleButton(self.venue.schedule),
             # LocationButton(self.venue.location.format()),
             # DiscordURLButton(self.venue.discord_url),
-            ToggleHiringButton(self.venue.hiring),
-            RPLevelButton(self.venue.rp_level),
             # NSFWToggleButton(self.venue.nsfw),
             # VenueTagsButton(self.venue.tags),
-            WebsiteURLButton(self.venue.website_url),
-            ApplicationURLButton(self.venue.application_url),
-            LogoButton(self.venue.logo_url),
-            SetPositionsButton(self.venue.positions),
+            # WebsiteURLButton(self.venue.website_url),
             # RemoveManagerButton(self.venue),
             MuteReportButton(),
             PostVenueButton(),
@@ -200,7 +200,7 @@ class ToggleHiringButton(Button):
             style=ButtonStyle.success if accepting else ButtonStyle.danger,
             label="Hiring",
             disabled=False,
-            row=1,
+            row=0,
             emoji=BotEmojis.Check if accepting else BotEmojis.ThumbsDown
         )
         
@@ -246,7 +246,7 @@ class SetPositionsButton(FroggeButton):
 
         super().__init__(
             label="Employed Jobs",
-            row=1,
+            row=0,
             disabled=False
         )
         

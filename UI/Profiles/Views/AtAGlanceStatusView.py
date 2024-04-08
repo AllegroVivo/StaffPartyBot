@@ -23,8 +23,7 @@ class AtAGlanceStatusView(FroggeView):
         self.aag: ProfileAtAGlance = aag
 
         button_list = [
-            DataCenterButton(self.aag.data_center),
-            HomeWorldButton(self.aag.world),
+            HomeRegionButton(self.aag.data_centers),
             RaceClanButton(self.aag.race),
             GenderPronounButton(self.aag.gender),
             OrientationButton(self.aag.orientation),
@@ -163,12 +162,12 @@ class MareButton(FroggeButton):
         await interaction.edit(embed=self.view.aag.status(), view=self.view)
 
 ################################################################################
-class DataCenterButton(FroggeButton):
+class HomeRegionButton(FroggeButton):
 
     def __init__(self, data_center: Optional[Any]) -> None:
 
         super().__init__(
-            label="Data Center",
+            label="Home Region(s)",
             disabled=False,
             row=0
         )
@@ -176,33 +175,11 @@ class DataCenterButton(FroggeButton):
         self.set_style(data_center)
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.aag.set_data_center(interaction)
-        self.set_style(self.view.aag.data_center)
+        await self.view.aag.set_data_centers(interaction)
+        self.set_style(self.view.aag.data_centers)
 
         await edit_message_helper(
             interaction, embed=self.view.aag.status(), view=self.view
         )
         
 ################################################################################
-class HomeWorldButton(FroggeButton):
-
-    def __init__(self, world: Optional[Any]) -> None:
-
-        super().__init__(
-            label="Home World",
-            disabled=False,
-            row=0
-        )
-        
-        self.set_style(world)
-
-    async def callback(self, interaction: Interaction) -> None:
-        await self.view.aag.set_world(interaction)
-        self.set_style(self.view.aag.world)
-
-        await edit_message_helper(
-            interaction, embed=self.view.aag.status(), view=self.view
-        )
-        
-################################################################################
-        

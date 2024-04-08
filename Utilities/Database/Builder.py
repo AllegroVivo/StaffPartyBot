@@ -63,9 +63,8 @@ class DatabaseBuilder(DBWorkerBranch):
             "a.height,"
             "a.age,"
             "a.mare,"
-            "a.data_center,"
-            "a.world,"
-            # Data indices 24 - 25 Images
+            "a.data_centers,"
+            # Data indices 23 - 24 Images
             "i.thumbnail,"
             "i.main_image "
             "FROM profiles p "

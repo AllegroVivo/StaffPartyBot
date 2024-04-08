@@ -4,7 +4,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import DataCenter, edit_message_helper
+from Utilities import edit_message_helper, GlobalDataCenter
 ################################################################################
 
 __all__ = ("DataCenterSelectView",)
@@ -25,16 +25,16 @@ class DataCenterSelect(Select):
     def __init__(self):
                                    
         super().__init__(
-            placeholder="Select a data center...",
-            options=DataCenter.select_options(),
+            placeholder="Select your home region(s)...",
+            options=GlobalDataCenter.select_options(),
             min_values=1,
-            max_values=1,
+            max_values=len(GlobalDataCenter.select_options()),
             disabled=False,
             row=0
         )
         
     async def callback(self, interaction: Interaction):
-        self.view.value = DataCenter(int(self.values[0]))
+        self.view.value = [GlobalDataCenter(int(dc)) for dc in self.values]
         self.view.complete = True
         
         await edit_message_helper(interaction)
