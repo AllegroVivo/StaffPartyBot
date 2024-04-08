@@ -407,6 +407,9 @@ class TrainingManager:
     @staticmethod
     def _calculate_distance(user_preference: Enum, venue_attribute: Enum):
         
+        if user_preference is None or venue_attribute is None:
+            return 0
+        
         return abs(user_preference.value - venue_attribute.value)
     
 ################################################################################

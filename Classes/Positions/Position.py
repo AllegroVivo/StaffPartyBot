@@ -296,7 +296,13 @@ class Position:
         response = await interaction.respond(embed=prompt)
 
         def check(m):
-            return m.author == interaction.user 
+            if m.author != interaction.user:
+                return False
+            if not re.match(r"<@&(\d+)>", m.content):
+                if m.content.lower() == "cancel":
+                    return True
+                return False
+            return True
 
         try:
             message = await self.bot.wait_for("message", check=check, timeout=180)
