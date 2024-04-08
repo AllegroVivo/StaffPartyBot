@@ -34,6 +34,7 @@ from Utilities import (
     VenueSize,
     Weekday,
     VenueChannelNotSetError,
+    VenueImportNotFoundError
 )
 from .VenueAtAGlance import VenueAtAGlance
 from .VenueHours import VenueHours
@@ -554,11 +555,16 @@ class Venue:
     async def update_from_xiv_venue(self, interaction: Interaction, venue: Optional[XIVVenue] = None) -> None:
         
         if venue is None:
-            venue = [
+            results = [
                 v for v in
                 await self.bot.veni_client.get_venues_by_manager(interaction.user.id)
                 if v.name.lower() == self.name.lower()
-            ][0]
+            ]
+            if not results:
+                error = VenueImportNotFoundError()
+                await interaction.respond(embed=error, ephemeral=True)
+                return
+            venue = results[0]
 
         self._name: str = venue.name
         self._description: List[str] = venue.description.copy() if venue.description else []
@@ -579,7 +585,10 @@ class Venue:
         
         for s in self._schedule:
             s.delete()
-        self._schedule = [VenueHours.from_xiv_schedule(self, h) for h in venue.schedule]
+        self._schedule = [
+            VenueHours.from_xiv_schedule(self, h) 
+            for h in venue.schedule
+        ]
         
         self.update()
     

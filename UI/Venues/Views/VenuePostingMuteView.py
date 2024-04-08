@@ -1,36 +1,42 @@
 from __future__ import annotations
 
-from discord import Interaction, User
-from discord.ui import Select
+from typing import TYPE_CHECKING
 
+from discord import Interaction, User, ButtonStyle
+from discord.ui import Button, View
+
+from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton
 from Utilities import DataCenter, edit_message_helper
+
+if TYPE_CHECKING:
+    from Classes import Venue
 ################################################################################
 
 __all__ = ("VenuePostingMuteView",)
 
 ################################################################################
-class VenuePostingMuteView(FroggeView):
+class VenuePostingMuteView(View):
 
-    def __init__(self,  user: User):
+    def __init__(self,  venue: Venue):
         
-        super().__init__(user, close_on_complete=True)
+        super().__init__(timeout=None)
         
-        self.add_item(DataCenterSelect())
-        self.add_item(CloseMessageButton())
+        self.venue: Venue = venue
+        self.add_item(VenueMuteButton(self.venue.id))
         
 ################################################################################
-class DataCenterSelect(Select):
+class VenueMuteButton(Button):
     
-    def __init__(self):
+    def __init__(self, venue_id: str):
                                    
         super().__init__(
-            placeholder="Select a data center...",
-            options=DataCenter.select_options(),
-            min_values=1,
-            max_values=1,
+            style=ButtonStyle.secondary,
+            label="Mute Venue Pings (For Staff)",
             disabled=False,
-            row=0
+            row=0,
+            emoji=BotEmojis.Mute,
+            custom_id=f"venue_mute_{venue_id}"
         )
         
     async def callback(self, interaction: Interaction):

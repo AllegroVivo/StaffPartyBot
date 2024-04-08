@@ -364,11 +364,9 @@ class Profile:
 ################################################################################
     async def _update_post_components(self) -> None:
         
-        print("Updating post components")
         if self.post_message is None:
             return
         
-        print("Updating post view")
         view = ProfileUserMuteView(self)
         self.bot.add_view(view, message_id=self.post_message.id)
         
@@ -376,9 +374,6 @@ class Profile:
             await self.post_message.edit(view=view)
         except NotFound:
             self.post_message = None
-            print("Failed to update post view")
-        else:
-            print("Success")
         
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
