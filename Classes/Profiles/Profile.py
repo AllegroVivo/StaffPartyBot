@@ -284,7 +284,7 @@ class Profile:
 ################################################################################
     async def post(self, interaction: Interaction) -> None:
 
-        await interaction.response.defer()
+        await interaction.response.defer(invisible=False)
         
         if self.manager.guild.channel_manager.profiles_channel is None:
             error = ProfileChannelNotSetError()
