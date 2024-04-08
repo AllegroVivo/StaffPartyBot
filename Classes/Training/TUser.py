@@ -938,8 +938,16 @@ class TUser:
         compare_data_centers: bool = True,
         compare_linked_role: bool = True,
         compare_schedule: bool = True,
-        check_profile: bool = False
+        check_profile: bool = False,
+        check_mutes: bool = True
     ) -> bool:
+        
+        # Check user and venue mute lists
+        if check_mutes:
+            if self.user in job.venue.muted_users:
+                return False
+            if job.venue in self.muted_venues:
+                return False
         
         # Check if on hiatus
         if compare_hiatus:

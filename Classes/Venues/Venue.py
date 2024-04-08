@@ -551,7 +551,14 @@ class Venue:
         self.bot.database.delete.venue(self)
         
 ################################################################################
-    def update_from_xiv_venue(self, interaction: Interaction, venue: XIVVenue) -> None:
+    async def update_from_xiv_venue(self, interaction: Interaction, venue: Optional[XIVVenue] = None) -> None:
+        
+        if venue is None:
+            venue = [
+                v for v in
+                await self.bot.veni_client.get_venues_by_manager(interaction.user.id)
+                if v.name.lower() == self.name.lower()
+            ][0]
 
         self._name: str = venue.name
         self._description: List[str] = venue.description.copy() if venue.description else []

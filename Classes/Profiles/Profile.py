@@ -15,13 +15,20 @@ from discord import (
     EmbedField,
     Message,
     Thread,
-    File
+    File,
+    SelectOption
 )
 from dotenv import load_dotenv
 
 from Assets import BotEmojis, BotImages
 from UI.Common import CloseMessageView, ConfirmCancelView
-from UI.Profiles import AdditionalImageCaptionModal, ProfilePreView, ProfileMainMenuView
+from UI.Profiles import (
+    AdditionalImageCaptionModal, 
+    ProfilePreView,
+    ProfileMainMenuView,
+    VenueMuteSelectView,
+    ProfileUserMuteView
+)
 from Utilities import (
     Utilities as U,
     FroggeColor,
@@ -35,6 +42,7 @@ from Utilities import (
     ProfileChannelNotSetError,
     AvailabilityNotCompleteError,
     AboutMeNotSetError,
+    NoVenuesFoundError,
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -313,11 +321,15 @@ class Profile:
     
         # Prepare embeds
         embeds = [main_profile, availability] + ([aboutme] if aboutme else [])
+        
+        # Prepare persistent view
+        view = ProfileUserMuteView(self)
     
         # Attempt to edit an existing post
         if self.post_message:
             try:
-                await self.post_message.edit(embeds=embeds)
+                self.bot.add_view(view, message_id=self.post_message.id)
+                await self.post_message.edit(embeds=embeds, view=view)
                 await interaction.respond(embed=self.success_message())
                 return
             except NotFound:
@@ -334,10 +346,12 @@ class Profile:
         else:
             # Or create a new thread if no matching one
             action = lambda **kw: channel.create_thread(name=self.char_name, **kw)
-    
+
+        self.bot.add_view(view)
+        
         # Post or create thread and handle permissions error
         try:
-            result = await action(embeds=embeds)
+            result = await action(embeds=embeds, view=view)
             if isinstance(result, Thread):
                 self.post_message = await result.fetch_message(result.last_message_id)
             else:
@@ -347,6 +361,25 @@ class Profile:
             error = InsufficientPermissionsError(channel, "Send Messages")
             await interaction.respond(embed=error, ephemeral=True)
 
+################################################################################
+    async def _update_post_components(self) -> None:
+        
+        print("Updating post components")
+        if self.post_message is None:
+            return
+        
+        print("Updating post view")
+        view = ProfileUserMuteView(self)
+        self.bot.add_view(view, message_id=self.post_message.id)
+        
+        try:
+            await self.post_message.edit(view=view)
+        except NotFound:
+            self.post_message = None
+            print("Failed to update post view")
+        else:
+            print("Success")
+        
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
 
@@ -535,3 +568,43 @@ class Profile:
         await view.wait()
         
 ################################################################################
+    async def venue_mute(self, interaction: Interaction) -> None:
+        
+        venues = self._mgr.guild.venue_manager.get_venues_by_user(interaction.user.id)
+        if not venues:
+            error = NoVenuesFoundError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if len(venues) == 1:
+            await venues[0].toggle_user_mute(interaction, self.user)
+            await interaction.edit()
+            return
+        
+        options = [
+            SelectOption(
+                label=venue.name,
+                value=str(venue.id),
+            ) for venue in venues
+        ]
+        
+        prompt = U.make_embed(
+            title="Select Venue",
+            description=(
+                "Pick a venue from the list below to mute or unmute the user for."
+            )
+        )
+        view = VenueMuteSelectView(interaction.user, options)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        for venue_id in view.value:
+            venue = self._mgr.guild.venue_manager[venue_id]
+            await venue.toggle_user_mute(interaction, self.user)
+        
+################################################################################
+        

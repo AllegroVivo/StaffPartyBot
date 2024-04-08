@@ -4,7 +4,16 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
 import pytz
-from discord import Colour, Embed, Interaction, EmbedField, Message, SelectOption
+from discord import (
+    Colour, 
+    Embed, 
+    Interaction, 
+    EmbedField, 
+    Message,
+    SelectOption, 
+    Thread,
+    NotFound,
+)
 
 from Assets import BotEmojis
 from UI.Training import TimeSelectView, WeekdayTZSelectView
@@ -70,20 +79,11 @@ class ProfileDetails(ProfileSection):
         try:
             url_parts = data[5].split("/") if data[5] else []
             if len(url_parts) >= 2:
-                channel = await parent.bot.get_or_fetch_channel(int(url_parts[-2]))
-                if channel.threads:
-                    named_threads = [
-                        t for t in channel.threads 
-                        if t.name.lower() == data[0].lower()
-                    ] if data[0] else []
-                    post_msg = named_threads[0].last_message if named_threads else None
-        except:
+                thread: Thread = await parent.bot.get_or_fetch_channel(int(url_parts[-2]))  # type: ignore
+                post_msg = await thread.fetch_message(int(url_parts[-1]))
+        except NotFound:
             pass
         
-        positions = [
-            parent.manager.guild.position_manager.get_position(p) for p in data[6]
-        ] if data[6] else []
-            
         return cls(
             parent=parent,
             name=data[0],
@@ -92,7 +92,10 @@ class ProfileDetails(ProfileSection):
             jobs=data[3] or [],
             rates=data[4],
             post_msg=post_msg,
-            positions=positions,
+            positions=[
+                parent.manager.guild.position_manager.get_position(p) 
+                for p in data[6]
+            ] if data[6] else [],
             availability=[PAvailability.load(parent, h) for h in hours]
         )
     

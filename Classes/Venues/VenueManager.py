@@ -538,34 +538,13 @@ class VenueManager:
         
         xiv_venue = results[0]
         venue = Venue.new(self, xiv_venue.name)
-        venue.update_from_xiv_venue(interaction, xiv_venue)
+        await venue.update_from_xiv_venue(interaction, xiv_venue)
         self._venues.append(venue)
         
         await self.guild.log.venue_created(venue)
         
         await venue.menu(interaction)
     
-################################################################################
-    async def update_venue(self, interaction: Interaction, name: str) -> None:
-        
-        venue = self.get_venue(name)
-        if venue is None:
-            error = VenueDoesntExistError(name)
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
-        if not await self.authenticate(venue, interaction.user, interaction):
-            return
-
-        results = [
-            v for v in
-            await self.bot.veni_client.get_venues_by_manager(interaction.user.id)
-            if v.name.lower() == venue.name.lower()
-        ]
-        venue.update_from_xiv_venue(interaction, results[0])
-        
-        await venue.menu(interaction)
-
 ################################################################################
     async def toggle_user_mute(self, interaction: Interaction, name: str, user: User) -> None:
 
@@ -579,5 +558,13 @@ class VenueManager:
             return
         
         await venue.toggle_user_mute(interaction, user)
+
+################################################################################
+    def get_venues_by_user(self, user_id: int) -> List[Venue]:
+        
+        return [
+            v for v in self.venues 
+            if user_id in [u.id for u in v.authorized_users]
+        ]
 
 ################################################################################

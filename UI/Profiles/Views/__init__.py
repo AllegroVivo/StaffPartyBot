@@ -9,5 +9,7 @@ from .PersonalityStatusView import PersonalityStatusView
 from .ProfileImageStatusView import ProfileImageStatusView
 from .ProfileMainMenuView import ProfileMainMenuView
 from .ProfilePreView import ProfilePreView
+from .ProfileUserMuteView import ProfileUserMuteView
 from .RaceClanSelectView import RaceClanSelectView
+from .VenueMuteSelectView import VenueMuteSelectView
 ################################################################################

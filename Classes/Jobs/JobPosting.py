@@ -717,8 +717,8 @@ class JobPosting:
             title="Job Posting Alert",
             description=(
                 f"An opportunity has been posted for a `{self.position.name}` position at "
-                f"`{self._venue.name}`. If you're interested, you can view the posting "
-                f"[here]({self.post_message.jump_url})."
+                f"`{self._venue.name}`. If you're interested, you can [view the posting "
+                f"here]({self.post_message.jump_url})."
             )
         )
         
@@ -738,7 +738,8 @@ class JobPosting:
             compare_data_centers=False,
             compare_linked_role=True, 
             compare_schedule=False, 
-            check_profile=True
+            check_profile=True,
+            check_mutes=False
         ):
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
@@ -805,7 +806,8 @@ class JobPosting:
         
         tuser = self._mgr.guild.training_manager[interaction.user.id]
         if not tuser or not await tuser.is_eligible(
-            self, False, False, True, False
+            self, False, False, 
+                True, False, False, True
         ):
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
