@@ -738,8 +738,7 @@ class JobPosting:
             compare_data_centers=False,
             compare_linked_role=True, 
             compare_schedule=False, 
-            check_profile=True,
-            check_mutes=False
+            check_profile=True
         ):
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
@@ -806,8 +805,7 @@ class JobPosting:
         
         tuser = self._mgr.guild.training_manager[interaction.user.id]
         if not tuser or not await tuser.is_eligible(
-            self, False, False, 
-                True, False, False, True
+            self, False, False, True, False
         ):
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
