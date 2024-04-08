@@ -401,10 +401,7 @@ class TrainingManager:
         venues = [venue for venue, score in sorted(venue_dict.items(), key=lambda x: x[1])]
         max_results = 5 if len(venues) >= 5 else len(venues)
         
-        ret = []
-        for _ in range(max_results):
-            ret.append(self.guild.venue_manager[venues.pop(0)])
-        return ret
+        return [self.guild.venue_manager[venues.pop(0)] for _ in range(max_results)]
     
 ################################################################################
     @staticmethod

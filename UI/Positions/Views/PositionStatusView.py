@@ -24,8 +24,11 @@ class PositionStatusView(FroggeView):
         self.position = position
         
         button_list = [
-            PositionNameButton(),  PositionRoleButton(self.position.linked_role),
-            PositionAddReqButton(), PositionRemoveReqButton(),
+            PositionNameButton(),  
+            PositionRoleButton(self.position.linked_role),
+            PositionTrainerPayButton(self.position.trainer_pay),
+            PositionAddReqButton(), 
+            PositionRemoveReqButton(),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -124,3 +127,23 @@ class PositionRoleButton(FroggeButton):
         )
         
 ################################################################################
+class PositionTrainerPayButton(FroggeButton):
+    
+    def __init__(self, trainer_pay: Optional[int]):
+        
+        super().__init__(
+            label="Edit Trainer Pay",
+            disabled=False,
+            row=0
+        )
+        
+        self.set_style(trainer_pay)
+        
+    async def callback(self, interaction):
+        await self.view.position.set_trainer_pay(interaction)
+        self.set_style(self.view.position.trainer_pay)
+        
+        await interaction.edit(embed=self.view.position.status(), view=self.view)
+        
+################################################################################
+        

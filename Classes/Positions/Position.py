@@ -348,13 +348,13 @@ class Position:
         if not modal.complete:
             return
         
-        raw_pay = U.parse_salary(modal.value)
-        if raw_pay is None:
+        trainer_pay = U.parse_salary(modal.value)
+        if trainer_pay is None:
             embed = InvalidSalaryError(modal.value)
             await interaction.respond(embed=embed, ephemeral=True)
             return
         
-        self.trainer_pay = raw_pay
+        self.trainer_pay = trainer_pay
     
 ################################################################################
     
