@@ -214,12 +214,13 @@ class Training:
 ################################################################################
     def requirements_status(self, emoji: bool = False) -> EmbedField:
         
-        requirements = self._position.manager.global_requirements.copy()
-        requirements.extend(self._position.requirements)
-        
+        requirements = self.position.requirements.copy()
         value = ""
         for requirement in requirements:
             value += self._requirement_line(emoji, requirement) + "\n"
+        for req in self._position.manager.global_requirements:
+            if req not in requirements:
+                value += self._requirement_line(emoji, req) + " - *(Global)*\n"
 
         return EmbedField(
             name="__Position Training Requirements__",

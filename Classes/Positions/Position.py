@@ -9,9 +9,10 @@ from UI.Positions import (
     PositionStatusView,
     PositionRequirementModal,
     RemoveRequirementView,
-    PositionNameModal
+    PositionNameModal,
+    PositionTrainerPayModal,
 )
-from Utilities import Utilities as U, FroggeColor
+from Utilities import Utilities as U, FroggeColor, InvalidSalaryError
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 
 __all__ = ("Position", )
 
-GUILD_ID = 303742308874977280
 P = TypeVar("P", bound="Position")
 
 ################################################################################
@@ -32,6 +32,7 @@ class Position:
         "_name",
         "_requirements",
         "_role",
+        "_trainer_pay",
     )
     
 ################################################################################
@@ -41,7 +42,8 @@ class Position:
         _id: str,
         name: str, 
         reqs: Optional[List[Requirement]] = None,
-        role: Optional[Role] = None
+        role: Optional[Role] = None,
+        trainer_pay: Optional[int] = None
     ) -> None:
 
         self._manager: PositionManager = mgr
@@ -50,7 +52,8 @@ class Position:
         self._name: str = name
         self._requirements: List[Requirement] = reqs or []
         self._role: Optional[Role] = role
-
+        self._trainer_pay: Optional[int] = trainer_pay
+        
 ################################################################################
     @classmethod
     def new(cls: Type[P], mgr: PositionManager, name: str) -> P:
@@ -74,7 +77,14 @@ class Position:
         )
         reqs = [Requirement.load(mgr.bot, r) for r in requirements]
         
-        return cls(mgr, data[0], data[2], reqs, role) 
+        return cls(
+            mgr=mgr, 
+            _id=data[0],
+            name=data[2], 
+            reqs=reqs,
+            role=role,
+            trainer_pay=data[4]
+        ) 
     
 ################################################################################
     def update(self) -> None:
@@ -143,6 +153,18 @@ class Position:
         self.update()
         
 ################################################################################
+    @property
+    def trainer_pay(self) -> Optional[int]:
+        
+        return self._trainer_pay
+    
+    @trainer_pay.setter
+    def trainer_pay(self, value: int) -> None:
+        
+        self._trainer_pay = value
+        self.update()
+        
+################################################################################
     def get_requirement(self, req_id: str) -> Requirement:
         
         for r in self._requirements:
@@ -165,7 +187,7 @@ class Position:
         reqs_list.extend(
             [f"{r.description} - **(Global)**" for r in self._manager.global_requirements]
         )
-        field_value = ("* " + "\n* ".join(reqs_list)) if reqs_list else "`None`"
+        field_value = ("* " + "\n* ".join(reqs_list)) if reqs_list else "`Not Set`"
 
         return U.make_embed(
             title=f"Position Status for: {self.name}",
@@ -173,9 +195,16 @@ class Position:
                 EmbedField(
                     name="__Linked Role__",
                     value=(
-                        f"{self.linked_role.mention if self.linked_role else '`None`'}"
+                        f"{self.linked_role.mention if self.linked_role else '`Not Set`'}"
                     ),
-                    inline=False
+                    inline=True
+                ),
+                EmbedField(
+                    name="__Trainer Pay__",
+                    value=(
+                        f"{self.trainer_pay:,}"
+                    ) if self.trainer_pay else "`Not Set`",
+                    inline=True
                 ),
                 EmbedField(
                     name="__Training Requirements__",
@@ -309,3 +338,23 @@ class Position:
         await response.delete_original_response()
     
 ################################################################################
+    async def set_trainer_pay(self, interaction: Interaction) -> None:
+
+        modal = PositionTrainerPayModal(self.trainer_pay)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        raw_pay = U.parse_salary(modal.value)
+        if raw_pay is None:
+            embed = InvalidSalaryError(modal.value)
+            await interaction.respond(embed=embed, ephemeral=True)
+            return
+        
+        self.trainer_pay = raw_pay
+    
+################################################################################
+    

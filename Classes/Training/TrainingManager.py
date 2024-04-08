@@ -379,7 +379,7 @@ class TrainingManager:
         tags: List[VenueForumTag]
     ) -> List[Venue]:
         
-        ret = {}
+        venue_dict = {}
         
         for venue in self.guild.venue_manager.venues:
             if venue.post_url is None or not venue.hiring:
@@ -396,11 +396,15 @@ class TrainingManager:
     
             overall_score = level_diff * (tags_scalar - nsfw_match)
     
-            ret[venue] = overall_score
+            venue_dict[venue.id] = overall_score
             
-        venues = [venue for venue, score in sorted(ret.items(), key=lambda x: x[1])]
+        venues = [venue for venue, score in sorted(venue_dict.items(), key=lambda x: x[1])]
         max_results = 5 if len(venues) >= 5 else len(venues)
-        return venues[:max_results]
+        
+        ret = []
+        for _ in range(max_results):
+            ret.append(self.guild.venue_manager[venues.pop(0)])
+        return ret
     
 ################################################################################
     @staticmethod
