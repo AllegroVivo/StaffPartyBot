@@ -948,20 +948,24 @@ class TUser:
         if job.venue in self.muted_venues:
             return False
         
+        print("Checking eligibility for", self.name, "in", job.position.name)
         # Check if on hiatus
         if compare_hiatus:
             if self.on_hiatus:
                 return False
 
+        print("Not on hiatus")
         if check_profile:
             if not self.profile or self.profile.post_message is None:
                 return False
     
+        print("Profile exists")
         # Check if job's data center is in the user's data centers list
         if compare_data_centers and len(self.profile.data_centers) > 0:
             if not any(dc.contains(job.venue.location.data_center) for dc in self.profile.data_centers):
                 return False
     
+        print("Data center matches")
         # Check if the user has the linked role for the job position, if applicable
         if compare_linked_role:
             if job.position.linked_role is not None:
@@ -969,6 +973,7 @@ class TUser:
                 if job.position.linked_role not in member.roles:
                     return False
 
+        print("Linked role matches")
         # If comparing schedules, check if the user is available during the job's times
         if compare_schedule and check_profile:
             # Adjust for 0-indexed weekday where 0 is Monday, to match your custom 0-indexed day where 0 is Sunday
