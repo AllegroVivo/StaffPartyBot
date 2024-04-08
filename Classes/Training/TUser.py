@@ -994,8 +994,25 @@ class TUser:
             await self.user.send(*args, **kwargs)
         except:
             pass
-        
+
 ################################################################################
+    async def mute_venue(self, interaction: Interaction, venue: Venue) -> None:
         
+        if venue in self.muted_venues:
+            self._mutes.remove(venue)
+            flag = False
+        else:
+            self._mutes.append(venue)
+            flag = True
         
-        
+        confirm = U.make_embed(
+            title="Venue Mute Toggle",
+            description=(
+                f"Venue pings for {venue.name} have been "
+                f"{'enabled' if flag else 'disabled'}.\n\n"
+                f"{U.draw_line(extra=25)}"
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
+
+################################################################################

@@ -27,6 +27,7 @@ from UI.Venues import (
     ScheduleCloseSelectView,
     VenueWeekdaySelectView,
     VenueStatusView,
+    VenuePostingMuteView,
 )
 from Utilities import (
     Utilities as U,
@@ -173,6 +174,14 @@ class Venue:
                 self._post_msg = await channel.fetch_message(post_url_parts[-1])  # type: ignore
         
         return self
+    
+################################################################################
+    def __eq__(self, other: Venue) -> bool:
+        
+        if not isinstance(other, Venue):
+            raise TypeError(f"Cannot compare Venue with {type(other)}")
+        
+        return self.id == other.id
     
 ################################################################################
     @property
@@ -840,6 +849,10 @@ class Venue:
         # Find threads with a matching name
         target_threads = [t for t in channel.threads if t.name.lower() == self.name.lower()]
         thread = target_threads[0] if target_threads else None
+        
+        # Prepare the persistent view
+        view = VenuePostingMuteView(self)
+        self.bot.add_view(view)
     
         # If there's a thread, update it and clear bot messages if _post_msg is None
         if thread:
@@ -853,7 +866,7 @@ class Venue:
         # Attempt to edit the existing message if it exists
         if self._post_msg is not None:
             try:
-                await self._post_msg.edit(embed=self.status())
+                await self._post_msg.edit(embed=self.status(), view=view)
             except NotFound:
                 self._post_msg = None  # Reset if the message was not found
     
@@ -862,7 +875,8 @@ class Venue:
             if not thread:
                 # If no existing thread, create a new one
                 thread = await channel.create_thread(
-                    name=self.name, embed=self.status(), applied_tags=self.thread_tags
+                    name=self.name, embed=self.status(),
+                    applied_tags=self.thread_tags, view=view
                 )
             # Post a new message in the thread
             self._post_msg = thread.last_message
@@ -941,4 +955,19 @@ class Venue:
         await interaction.respond(embed=confirm, ephemeral=True)
 
 ################################################################################
-    
+    async def _update_post_components(self) -> None:
+        
+        if self.post_url is None:
+            return
+
+        view = VenuePostingMuteView(self)
+        self.bot.add_view(view, message_id=self._post_msg.id)
+
+        try:
+            await self._post_msg.edit(view=view)
+        except NotFound:
+            self._post_msg = None
+            self.update()
+            
+################################################################################
+            

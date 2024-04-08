@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from discord import Interaction, User, ButtonStyle
+from discord import Interaction, ButtonStyle
 from discord.ui import Button, View
 
 from Assets import BotEmojis
-from UI.Common import FroggeView, CloseMessageButton
-from Utilities import DataCenter, edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import Venue
@@ -40,10 +38,12 @@ class VenueMuteButton(Button):
         )
         
     async def callback(self, interaction: Interaction):
-        self.view.value = DataCenter(int(self.values[0]))
-        self.view.complete = True
+        venue: Venue = self.view.venue
+        tuser = venue.guild.training_manager[interaction.user.id]
+        if tuser is None:
+            await interaction.edit()
+            return
         
-        await edit_message_helper(interaction)
-        await self.view.stop()  # type: ignore
+        await tuser.mute_venue(interaction, venue)
     
 ################################################################################

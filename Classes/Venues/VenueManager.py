@@ -50,6 +50,9 @@ class VenueManager:
 
         for vdata in data["venues"]:
             self._venues.append(await Venue.load(self, vdata))
+            
+        for venue in self._venues:
+            await venue._update_post_components()
         
 ################################################################################
     def __getitem__(self, venue_id: str) -> Venue:
