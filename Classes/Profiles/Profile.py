@@ -283,6 +283,8 @@ class Profile:
 
 ################################################################################
     async def post(self, interaction: Interaction) -> None:
+
+        await interaction.response.defer()
         
         if self.manager.guild.channel_manager.profiles_channel is None:
             error = ProfileChannelNotSetError()
@@ -306,9 +308,6 @@ class Profile:
             error = ExceedsMaxLengthError(len(main_profile))
             await interaction.response.send_message(embed=error, ephemeral=True)
             return
-        
-        # Defer to accommodate role assignment
-        await interaction.response.defer()
         
         member = self._mgr.guild.parent.get_member(self._user.id)
         
