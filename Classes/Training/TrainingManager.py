@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional, Any, Dict
+from itertools import islice
+from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
 from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField
 
@@ -357,10 +358,13 @@ class TrainingManager:
         venues = self._matching_routine(*view.value)
         description = ""
         
-        for v in venues:
+        for v_id, score in venues:
+            v = self.guild.venue_manager[v_id]
             desc = '\n'.join(v.description)
+            if len(desc) > 150:
+                desc = desc[:150] + "..."
             description += (
-                f"**{v.name}:**\n"
+                f"**[{v.name}]({v.post_url}): {score:.0f}% Match!**\n"
                 f"*{desc}*\n\n"
             )
         
@@ -377,31 +381,33 @@ class TrainingManager:
         rp_level: RPLevel, 
         nsfw_pref: NSFWPreference,
         tags: List[VenueForumTag]
-    ) -> List[Venue]:
-        
-        venue_dict = {}
-        
+    ) -> List[Tuple[str, float]]:
+
+        venue_scores = {}
+    
         for venue in self.guild.venue_manager.venues:
             if venue.post_url is None or not venue.hiring:
                 continue
     
+            # Normalize level difference (assuming _calculate_distance returns a non-negative number)
             level_diff = self._calculate_distance(rp_level, venue.rp_level)
-            nsfw_match = nsfw_pref == venue.nsfw
-            
+            normalized_level_diff = 1 - (level_diff / 10)
+    
+            # NSFW match (1 for match, 0 for mismatch)
+            nsfw_score = 1 if nsfw_pref == venue.nsfw else 0
+    
+            # Calculate tag similarity as a ratio
             venue_tags = [v.tag_text.lower() for v in venue.tags]
-            tags_scalar = 0
-            for tag in tags:
-                if tag.proper_name.lower() in venue_tags:
-                    tags_scalar += 1
+            tags_scalar = sum(1 for tag in tags if tag.proper_name.lower() in venue_tags) / len(tags)
     
-            overall_score = level_diff * (tags_scalar - nsfw_match)
+            # Calculate the overall score as an average of the three normalized scores, then convert to percentage
+            overall_score = ((normalized_level_diff + nsfw_score + tags_scalar) / 3) * 100
     
-            venue_dict[venue.id] = overall_score
-            
-        venues = [venue for venue, score in sorted(venue_dict.items(), key=lambda x: x[1])]
-        max_results = 5 if len(venues) >= 5 else len(venues)
-        
-        return [self.guild.venue_manager[venues.pop(0)] for _ in range(max_results)]
+            venue_scores[venue.id] = overall_score
+    
+        # Sort venues by score, if more than 5, then slice the first 5
+        max_results = 5 if len(venue_scores) >= 5 else len(venue_scores)    
+        return sorted(venue_scores.items(), key=lambda x: x[1], reverse=True)[:max_results]
     
 ################################################################################
     @staticmethod

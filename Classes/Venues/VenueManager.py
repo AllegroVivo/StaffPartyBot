@@ -507,7 +507,7 @@ class VenueManager:
                 "* Mare ID\n"
                 "* Mare Password\n"
                 "* Normal Operating Schedule\n"
-                "*(Overrides will not be imported.)*\n"
+                "*(Schedule overrides are not imported.)*\n"
                 f"{U.draw_line(text=final_line, extra=-2)}\n"
                 f"{final_line}"
             )

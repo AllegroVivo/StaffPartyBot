@@ -35,7 +35,8 @@ from Utilities import (
     VenueSize,
     Weekday,
     VenueChannelNotSetError,
-    VenueImportNotFoundError
+    VenueImportNotFoundError,
+    VenueProfileNotCompleteError,
 )
 from .VenueAtAGlance import VenueAtAGlance
 from .VenueHours import VenueHours
@@ -422,7 +423,28 @@ class Venue:
         return self._mutes
     
 ################################################################################
-    def status(self) -> Embed:
+    @property
+    def complete(self) -> bool:
+        
+        return all([
+            self._name,
+            self._aag.level,
+        ])
+    
+################################################################################
+    def status(self, post: bool = False) -> Embed:
+
+        fields = [
+            self._authorized_users_field(),
+            self._venue_hours_field(),
+            self._accepting_field(),
+            self._venue_location_field(),
+            self._ataglance_field(),
+            self._urls_status_field(),
+            self._positions_field(),
+        ]
+        if not post:
+            fields.append(self._post_message_field())
         
         return U.make_embed(
             title=f"Venue Profile: __{self.name}__",
@@ -434,15 +456,7 @@ class Venue:
                 + f"\n{U.draw_line(extra=33)}"
             ),
             thumbnail_url=self.logo_url,
-            fields=[
-                self._authorized_users_field(),
-                self._venue_hours_field(),
-                self._accepting_field(),
-                self._venue_location_field(),
-                self._ataglance_field(),
-                self._urls_status_field(),
-                self._positions_field(),
-            ]
+            fields=fields
         )
     
 ################################################################################
@@ -542,6 +556,20 @@ class Venue:
             inline=True,
         )
 
+################################################################################
+    def _post_message_field(self) -> EmbedField:
+        
+        return EmbedField(
+            name="__Post Status__",
+            value=(
+                f"{BotEmojis.ArrowRight}{BotEmojis.ArrowRight}{BotEmojis.ArrowRight} "
+                f"[Click to View]({self.post_url}) "
+                f"{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}{BotEmojis.ArrowLeft}\n"
+                if self._post_msg else f"{BotEmojis.Cross}  `Not Posted`\n"
+            ),
+            inline=False,
+        )
+    
 ################################################################################
     def add_user(self, user: User) -> None:
 
@@ -846,6 +874,11 @@ class Venue:
                 return
             channel = self._mgr.post_channel
         
+        if not self.complete:
+            error = VenueProfileNotCompleteError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
         # Find threads with a matching name
         target_threads = [t for t in channel.threads if t.name.lower() == self.name.lower()]
         thread = target_threads[0] if target_threads else None
@@ -866,7 +899,7 @@ class Venue:
         # Attempt to edit the existing message if it exists
         if self._post_msg is not None:
             try:
-                await self._post_msg.edit(embed=self.status(), view=view)
+                await self._post_msg.edit(embed=self.status(post=True), view=view)
             except NotFound:
                 self._post_msg = None  # Reset if the message was not found
     
@@ -875,11 +908,11 @@ class Venue:
             if not thread:
                 # If no existing thread, create a new one
                 thread = await channel.create_thread(
-                    name=self.name, embed=self.status(),
+                    name=self.name, embed=self.status(post=True),
                     applied_tags=self.thread_tags, view=view
                 )
-            # Post a new message in the thread
-            self._post_msg = thread.last_message
+            # Grab the message we just posted
+            self._post_msg = await thread.fetch_message(thread.last_message_id)
     
         self.update()
         

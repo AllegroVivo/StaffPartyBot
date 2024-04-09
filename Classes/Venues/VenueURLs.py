@@ -161,7 +161,9 @@ class VenueURLs:
                 m.author == interaction.user and (
                     (
                         len(m.attachments) > 0 
-                        and m.attachments[0].content_type in ("image/png", "image/jpeg")
+                        and m.attachments[0].content_type in (
+                            "image/png", "image/jpeg", "image/gif"
+                        )
                     )
                     or m.content.lower() == "cancel"
                 )
