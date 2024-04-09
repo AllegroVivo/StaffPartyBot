@@ -14,7 +14,8 @@ from discord import (
     Member,
     NotFound,
     Forbidden,
-    User
+    User,
+    EmbedField
 )
 
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
@@ -282,16 +283,25 @@ class Logger:
 ################################################################################
     async def bg_check_submitted(self, bg_check: BackgroundCheck) -> None:
         
-        venue_string = "\n".join([f'* {v.format()}' for v in bg_check.venues])
-        desc = f"A background check for `{bg_check.names[0]}` has been submitted!"
         embed = U.make_embed(
             title="Background Check Submitted!",
-            description=(
-                f"{desc}\n"
-                f"{U.draw_line(text=desc, extra=1)}\n"
-                f"__Venues:__\n"
-                f"{venue_string}"
-            ),
+            fields=[
+                EmbedField(
+                    name="__Names__",
+                    value="* " + ("\n* ".join(bg_check.names)),
+                    inline=True
+                ),
+                EmbedField(
+                    name="** **",
+                    value=f"({bg_check.parent.user.mention})",
+                    inline=True
+                ),
+                EmbedField(
+                    name="__Venue Experience__",
+                    value="\n".join([f'* {v.format()}' for v in bg_check.venues]),
+                    inline=False
+                )
+            ],
             timestamp=True
         )
         view = BGCheckApprovalView(bg_check)

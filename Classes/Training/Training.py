@@ -337,8 +337,9 @@ class Training:
 
                 "**You are now ready to take on your new role!**\n\n"
                 
-                "Visit the server and run the `/training match` command to\n"
-                "find what venues might be best suited to hire you!\n\n"
+                "Visit the server and use the `/trainee match` command to find venues "
+                "who can offer you a temporary internship! (The goal of these is to give "
+                "you on-site training without any risk or obligation on your part.)\n\n"
                 
                 "Additionally, you need to run any of the `/staff_profile` "
                 "commands to set up your profile! (Follow the instructions "
