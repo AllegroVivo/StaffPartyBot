@@ -302,6 +302,10 @@ class JobPosting:
 ################################################################################
     def status(self) -> Embed:
 
+        job_desc = "`No description provided.`"
+        if self.description:
+            job_desc = U.wrap_text(self.description, 50)
+
         description = (
             "__**Venue Name:**__\n"
             f"`{self._venue.name}`\n\n"
@@ -311,7 +315,7 @@ class JobPosting:
             f"({self._user.mention})\n\n"
 
             "__**Job Description:**__\n"
-            f"{self._description or '`No description provided.`'}\n\n"
+            f"{job_desc}\n\n"
             
             f"{U.draw_line(extra=30)}\n"
         )
@@ -322,7 +326,6 @@ class JobPosting:
             fields=[
                 self._position_field(),
                 self._salary_field(),
-                EmbedField("** **", "** **", False),
                 self._hours_field(),
                 self._total_time_field(),
                 self._post_url_field(),
@@ -335,7 +338,7 @@ class JobPosting:
         
         job_desc = "`No description provided.`"
         if self.description is not None:
-            job_desc = U.wrap_text(job_desc, 50)
+            job_desc = U.wrap_text(self.description, 50)
 
         description = (
             "__**Venue Contact:**__\n"

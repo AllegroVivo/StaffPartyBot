@@ -36,8 +36,11 @@ class DataCenterSelect(Select):
     async def callback(self, interaction: Interaction):
         dc = DataCenter(int(self.values[0]))
         
+        self.placeholder = dc.proper_name
+        self.disabled = True
         self.view.add_item(WorldSelect(dc))
-        await edit_message_helper(interaction, view=self.view)
+        
+        await interaction.edit(view=self.view)
     
 ################################################################################
 class WorldSelect(Select):

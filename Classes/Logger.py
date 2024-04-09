@@ -213,7 +213,7 @@ class Logger:
             description=(
                 f"New venue `{venue.name}` has been created!\n\n"
                 
-                f"__Proposed Users:__\n"
+                f"__Managers:__\n"
                 f"{users}"
                 
             ),
@@ -283,11 +283,12 @@ class Logger:
     async def bg_check_submitted(self, bg_check: BackgroundCheck) -> None:
         
         venue_string = "\n".join([f'* {v.format()}' for v in bg_check.venues])
+        desc = f"A background check for `{bg_check.names[0]}` has been submitted!"
         embed = U.make_embed(
             title="Background Check Submitted!",
             description=(
-                f"A background check for `{bg_check.names[0]}` has been submitted!\n"
-                f"{U.draw_line(extra=25)}\n"
+                f"{desc}\n"
+                f"{U.draw_line(text=desc, extra=1)}\n"
                 f"__Venues:__\n"
                 f"{venue_string}"
             ),

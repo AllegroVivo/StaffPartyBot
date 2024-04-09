@@ -487,6 +487,7 @@ class VenueManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
+        final_line = f"Are you sure you want to import venue __`{name}`__?"
         prompt = U.make_embed(
             title="Confirm Venue Import",
             description=(
@@ -507,8 +508,8 @@ class VenueManager:
                 "* Mare Password\n"
                 "* Normal Operating Schedule\n"
                 "*(Overrides will not be imported.)*\n"
-                f"{U.draw_line(extra=25)}\n"
-                "Are you sure you want to import venue `{name}`?"
+                f"{U.draw_line(text=final_line, extra=-2)}\n"
+                f"{final_line}"
             )
         )
         view = ConfirmCancelView(interaction.user)

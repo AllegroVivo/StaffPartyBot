@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from Utilities import RateType
+from Utilities import Utilities as U, RateType
 
 if TYPE_CHECKING:
     from Classes import JobPosting
@@ -91,8 +91,8 @@ class PayRate:
             return "`Not Set`"
         
         return (
-            f"`{self.amount:,} gil {self.frequency.proper_name}`\n" +
-            (f"*({self.details})*" if self.details else "")
+            f"> `{self.amount:,} gil {self.frequency.proper_name}`\n" +
+            (f"*({U.wrap_text(self.details, 40)})*" if self.details else "")
         )
     
 ################################################################################
