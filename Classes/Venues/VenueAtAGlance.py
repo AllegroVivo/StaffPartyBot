@@ -52,7 +52,7 @@ class VenueAtAGlance:
         raw_tags = [VenueTag(t) for t in data[3]] if data[3] is not None else []
         tags = [
             t for t in raw_tags 
-            if t.tag_text.lower() in [tag.proper_name for tag in VenueForumTag]
+            if t.tag_text.lower() in [tag.proper_name.lower() for tag in VenueForumTag]
         ]
         
         return cls(
@@ -167,7 +167,7 @@ class VenueAtAGlance:
         self._nsfw = not venue.sfw
         self._tags = [
             VenueTag(t) for t in venue.tags
-            if t.lower() in [tag.proper_name for tag in VenueForumTag]
+            if t.lower() in [tag.proper_name.lower() for tag in VenueForumTag]
         ]
         
         self.update()
