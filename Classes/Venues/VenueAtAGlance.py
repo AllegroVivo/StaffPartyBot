@@ -9,7 +9,7 @@ from UI.Venues import RPLevelSelectView, VenueTagSelectView, RPSizeSelectView
 from Utilities import (
     Utilities as U,
     RPLevel,
-    VenueSize,
+    VenueForumTag,
 )
 
 if TYPE_CHECKING:
@@ -49,11 +49,17 @@ class VenueAtAGlance:
     @classmethod
     def load(cls: Type[AAG], parent: Venue, data: Tuple[Any, ...]) -> AAG:
         
+        raw_tags = [VenueTag(t) for t in data[3]] if data[3] is not None else []
+        tags = [
+            t for t in raw_tags 
+            if t.tag_text.lower() in [tag.proper_name for tag in VenueForumTag]
+        ]
+        
         return cls(
             parent,
             level=RPLevel(data[0]) if data[0] is not None else None,
             nsfw=data[1],
-            tags=[VenueTag(t) for t in data[3]] if data[3] is not None else None,
+            tags=tags,
         )
     
 ################################################################################
@@ -159,7 +165,10 @@ class VenueAtAGlance:
     def update_from_xiv_venue(self, venue: XIVVenue) -> None:
         
         self._nsfw = not venue.sfw
-        self._tags = [VenueTag(t) for t in venue.tags]
+        self._tags = [
+            VenueTag(t) for t in venue.tags
+            if t.lower() in [tag.proper_name for tag in VenueForumTag]
+        ]
         
         self.update()
 
