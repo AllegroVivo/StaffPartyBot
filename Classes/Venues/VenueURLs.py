@@ -148,9 +148,9 @@ class VenueURLs:
                 "Please note that for best results, the image\n"
                 "should be a square image.\n\n"
                 
-                "**(The bot is currently listening and will cache the\n"
-                "next `.PNG` or `.JPG` image you upload to this channel.)**\n"
-                f"{U.draw_line(extra=33)}\n"
+                "**(The bot is currently listening and will cache the next\n"
+                "`.GIF`, `.PNG`, or `.JPG` image you upload to this channel.)**\n"
+                f"{U.draw_line(extra=34)}\n"
                 "*(Type 'Cancel' to cancel this operation.)*"
             )
         )

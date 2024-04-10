@@ -352,3 +352,12 @@ class PositionManager:
         await interaction.respond(embed=embed)
         
 ################################################################################
+    async def trainer_pos_report(self, interaction: Interaction) -> None:
+        
+        embed = U.make_embed(
+            title="All Positions",
+            description=("* " + "\n* ".join([f"`{p.name}`" for p in self.positions]))
+        )
+        await interaction.respond(embed=embed)
+        
+################################################################################

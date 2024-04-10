@@ -43,6 +43,16 @@ class Trainers(Cog):
         await guild.training_manager.tuser_status(ctx.interaction)
 
 ################################################################################
+    @trainer.command(
+        name="position_info",
+        description="View information about a specific training position."
+    )
+    async def register_trainer(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.position_manager.trainer_pos_report(ctx.interaction)
+        
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Trainers(bot))

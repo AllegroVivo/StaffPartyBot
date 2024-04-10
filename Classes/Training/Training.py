@@ -335,14 +335,14 @@ class Training:
                 f"Congratulations! You have completed your training for\n"
                 f"the position of `{self._position.name}`!\n\n"
 
-                "**You are now ready to take on your new role!**\n\n"
+                "__**You are now ready to take on your new role!**__\n\n"
                 
                 "Visit the server and use the `/trainee match` command to find venues "
                 "who can offer you a temporary internship! (The goal of these is to give "
                 "you on-site training without any risk or obligation on your part.)\n\n"
                 
-                "Additionally, you need to run any of the `/staff_profile` "
-                "commands to set up your profile! (Follow the instructions "
+                "Additionally, you need to run the `/staffing profile` "
+                "command to set up your profile! (Follow the instructions "
                 "at https://discord.com/channels/1104515062187708525/1219788797223374938 "
                 "to get started!)\n\n"
                 f"{U.draw_line(extra=25)}\n"
