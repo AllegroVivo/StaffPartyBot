@@ -5,7 +5,8 @@ from discord import (
     Cog,
     SlashCommandGroup,
     Option,
-    SlashCommandOptionType
+    SlashCommandOptionType,
+    guild_only
 )
 
 if TYPE_CHECKING:
@@ -29,6 +30,7 @@ class JobPostings(Cog):
         name="create_post",
         description="Create a new job classified posting."
     )
+    @guild_only()
     async def jobs_create_post(
         self,
         ctx: ApplicationContext,
@@ -48,6 +50,7 @@ class JobPostings(Cog):
         name="post_status",
         description="Check or modify the status of a job classified posting."
     )
+    @guild_only()
     async def jobs_post_status(
         self,
         ctx: ApplicationContext,

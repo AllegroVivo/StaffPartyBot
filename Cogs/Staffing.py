@@ -7,6 +7,7 @@ from discord import (
     Option,
     OptionChoice,
     SlashCommandOptionType,
+    guild_only,
 )
 
 from Utilities import ImageType
@@ -32,6 +33,7 @@ class Profiles(Cog):
         name="add_profile_image",
         description="Add a Thumbnail, Main Image, or Additional Image to your staff profile."
     )
+    @guild_only()
     async def profile_add_image(
         self,
         ctx: ApplicationContext,
@@ -70,6 +72,7 @@ class Profiles(Cog):
         name="profile",
         description="View and edit your staff profile."
     )
+    @guild_only()
     async def profile_menu(self, ctx: ApplicationContext):
 
         profile = self.bot[ctx.guild_id].get_profile(ctx.user)

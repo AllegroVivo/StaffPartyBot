@@ -6,7 +6,8 @@ from discord import (
     Cog,
     SlashCommandGroup,
     Option,
-    SlashCommandOptionType
+    SlashCommandOptionType,
+    guild_only,
 )
 
 if TYPE_CHECKING:
@@ -30,6 +31,7 @@ class Positions(Cog):
         name="add",
         description="Add a new position to the database."
     )
+    @guild_only()
     async def add_position(
         self,
         ctx: ApplicationContext,
@@ -49,6 +51,7 @@ class Positions(Cog):
         name="status",
         description="View and edit the status of a given job position."
     )
+    @guild_only()
     async def position_status(
         self,
         ctx: ApplicationContext,
@@ -68,6 +71,7 @@ class Positions(Cog):
         name="global_reqs",
         description="View and edit the global requirements for all positions."
     )
+    @guild_only()
     async def global_requirements(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]

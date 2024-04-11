@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from discord import (
     ApplicationContext,
     Cog,
-    slash_command
+    slash_command,
+    guild_only
 )
 
 if TYPE_CHECKING:
@@ -20,6 +21,7 @@ class GlobalCommands(Cog):
         name="bg_check",
         description="Fill out the mandatory background check form."
     )
+    @guild_only()
     async def start_bg_check(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]

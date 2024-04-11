@@ -6,7 +6,8 @@ from discord import (
     SlashCommandGroup,
     Option,
     SlashCommandOptionType,
-    OptionChoice
+    OptionChoice,
+    guild_only,
 )
 
 if TYPE_CHECKING:
@@ -30,6 +31,7 @@ class Venues(Cog):
         name="profile",
         description="View and edit your venue's internship profile & status."
     )
+    @guild_only()
     async def venue_profile(
         self,
         ctx: ApplicationContext,
@@ -49,6 +51,7 @@ class Venues(Cog):
         name="signup",
         description="Sign up a new venue for the internship program."
     )
+    @guild_only()
     async def signup_venue(
         self,
         ctx: ApplicationContext,
@@ -86,6 +89,7 @@ class Venues(Cog):
         name="add_user",
         description="Add and Owner or Authorized User to a venue listing."
     )
+    @guild_only()
     async def venue_add_user(
         self,
         ctx: ApplicationContext,
@@ -111,6 +115,7 @@ class Venues(Cog):
         name="import",
         description="Import a venue from the FFXIV Venues API."
     )
+    @guild_only()
     async def venue_import(
         self,
         ctx: ApplicationContext,
@@ -130,6 +135,7 @@ class Venues(Cog):
         name="toggle_user_mute",
         description="Toggle whether a user will hear about a venue's job postings."
     )
+    @guild_only()
     async def venue_toggle_user_mute(
         self,
         ctx: ApplicationContext,

@@ -4,7 +4,8 @@ from discord import (
     SlashCommandGroup,
     Option,
     SlashCommandOptionType,
-    OptionChoice
+    OptionChoice,
+    guild_only,
 )
 from typing import TYPE_CHECKING
 
@@ -29,6 +30,7 @@ class Admin(Cog):
         name="user_status",
         description="View and edit the trainer/trainee profile & status of a user."
     )
+    @guild_only()
     async def user_status(
         self,
         ctx: ApplicationContext,
@@ -48,6 +50,7 @@ class Admin(Cog):
         name="post_signup",
         description="Post the trainer signup message."
     )
+    @guild_only()
     async def post_signup_message(
         self,
         ctx: ApplicationContext,
@@ -67,6 +70,7 @@ class Admin(Cog):
         name="add_venue",
         description="Add a new venue to the system."
     )
+    @guild_only()
     async def add_venue(
         self,
         ctx: ApplicationContext,
@@ -92,6 +96,7 @@ class Admin(Cog):
         name="add_venue_user",
         description="Add a user as a venue's owner or authorized user."
     )
+    @guild_only()
     async def add_venue_user(
         self,
         ctx: ApplicationContext,
@@ -127,6 +132,7 @@ class Admin(Cog):
         name="remove_venue_user",
         description="Remove a user as a venue's owner or authorized user."
     )
+    @guild_only()
     async def remove_venue_user(
         self,
         ctx: ApplicationContext,
@@ -152,6 +158,7 @@ class Admin(Cog):
         name="venue_profile",
         description="View and edit a venue's internship profile & status."
     )
+    @guild_only()
     async def venue_profile(
         self,
         ctx: ApplicationContext,
@@ -171,6 +178,7 @@ class Admin(Cog):
         name="yeet_venue",
         description="Remove a venue from the system."
     )
+    @guild_only()
     async def yeet_venue(
         self,
         ctx: ApplicationContext,
@@ -190,6 +198,7 @@ class Admin(Cog):
         name="reports",
         description="Generate reports for various system data."
     )
+    @guild_only()
     async def report_menu(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].report_menu(ctx.interaction)
@@ -199,6 +208,7 @@ class Admin(Cog):
         name="roles",
         description="View the status of important roles."
     )
+    @guild_only()
     async def roles_status(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].role_manager.menu(ctx.interaction)
@@ -208,6 +218,7 @@ class Admin(Cog):
         name="channels",
         description="View the status of important channels."
     )
+    @guild_only()
     async def channels_status(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].channel_manager.menu(ctx.interaction)

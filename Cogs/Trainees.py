@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from discord import (
     ApplicationContext,
     Cog,
-    SlashCommandGroup
+    SlashCommandGroup,
+    guild_only
 )
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ class Training(Cog):
         name="profile",
         description="View and edit your training registration profile & status."
     )
+    @guild_only()
     async def training_profile(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
@@ -37,6 +39,7 @@ class Training(Cog):
         name="match",
         description="Match yourself post-training to a venue for internship."
     )
+    @guild_only()
     async def training_match(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
