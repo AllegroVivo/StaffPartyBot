@@ -18,7 +18,7 @@ from discord import (
     EmbedField,
     Message
 )
-
+from Assets import BotEmojis
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
 
 if TYPE_CHECKING:
@@ -293,8 +293,11 @@ class Logger:
                     inline=True
                 ),
                 EmbedField(
-                    name="** **",
-                    value=f"({bg_check.parent.user.mention})",
+                    name="__Want to Train__",
+                    value=(
+                        str(BotEmojis.Check) if bg_check._prev_exp
+                        else str(BotEmojis.Cross)
+                    ),
                     inline=True
                 ),
                 EmbedField(

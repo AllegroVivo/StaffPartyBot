@@ -238,6 +238,12 @@ class TUser:
         ret.sort(key=lambda t: t.position.name)
         return ret
     
+################################################################################
+    @property
+    def unpaid_trainings(self) -> List[Training]:
+
+        return [t for t in self.trainings_as_trainer if not t.trainer_paid]
+    
 ################################################################################    
     @property
     def position_manager(self) -> PositionManager:
@@ -1023,5 +1029,10 @@ class TUser:
             )
         )
         await interaction.respond(embed=confirm, ephemeral=True)
+
+################################################################################
+    async def staff_experience(self, interaction: Interaction) -> None:
+        
+        await interaction.respond(embed=self.bg_check.detail_status())
 
 ################################################################################

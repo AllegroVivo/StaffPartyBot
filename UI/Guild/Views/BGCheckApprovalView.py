@@ -41,7 +41,7 @@ class ApproveButton(Button):
         )
         
     async def callback(self, interaction):
-        await self.view.bg_check.approve()
+        await self.view.bg_check.approve(interaction.user)
         await edit_message_helper(interaction, view=None)
         self.view.stop()
         

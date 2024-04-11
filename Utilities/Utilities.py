@@ -304,3 +304,34 @@ class Utilities:
         return "\n".join(textwrap.wrap(text, width=line_length))
     
 ################################################################################
+    @staticmethod
+    def crop_image_square(fp: str) -> str:
+        """Crops an image to a square aspect ratio.
+
+        Parameters
+        ----------
+        fp: :class:`str`
+            The file path to the image.
+
+        Returns
+        -------
+        :class:`str`
+            The file path to the cropped image.
+        """
+        from PIL import Image
+
+        with Image.open(fp) as img:
+            width, height = img.size
+            size = min(width, height)
+
+            left = (width - size) // 2
+            top = (height - size) // 2
+            right = (width + size) // 2
+            bottom = (height + size) // 2
+
+            img = img.crop((left, top, right, bottom))
+            img.save(fp)
+
+        return fp
+    
+################################################################################

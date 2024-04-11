@@ -57,7 +57,7 @@ class UnpaidTrainerButton(Button):
         
         super().__init__(
             style=ButtonStyle.primary,
-            label="Unpaid Trainers",
+            label="Trainer Payments",
             disabled=False,
             row=0
         )

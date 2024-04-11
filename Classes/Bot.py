@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Dict, Any, Optional
 
-from discord import Attachment, Bot, TextChannel
+from discord import Attachment, Bot, TextChannel, File
 from discord.abc import GuildChannel
 from dotenv import load_dotenv
 
+from Utilities import Utilities
 from Utilities.Database import Database
 from .GuildManager import GuildManager
 from .XIVVenues import XIVVenuesClient
@@ -179,23 +180,16 @@ class TrainingBot(Bot):
         return ret
     
 ################################################################################
-    async def dump_image(self, image: Attachment) -> str:
-        """Dumps an image into the image dump channel and returns the URL.
+    async def dump_image(self, image: Attachment, crop_square: bool = False) -> str:
         
-        Parameters:
-        -----------
-        image : :class:`Attachment`
-            The image to dump.
-            
-        Returns:
-        --------
-        :class:`str`
-            The URL of the dumped image.
-        """
-
-        file = await image.to_file()
-        post = await self._img_dump.send(file=file)   # type: ignore
-
+        if crop_square:
+            await image.save(fp="Assets/ImageDump/" + image.filename)  # type: ignore
+            cropped = Utilities.crop_image_square("Assets/ImageDump/" + image.filename)
+            file = File(cropped, filename=image.filename)
+        else:
+            file = await image.to_file()
+        
+        post = await self._img_dump.send(file=file)
         return post.attachments[0].url
 
 ################################################################################

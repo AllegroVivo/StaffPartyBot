@@ -6,8 +6,9 @@ from itertools import islice
 from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
 from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField
+from discord.ext.pages import Page
 
-from UI.Common import ConfirmCancelView, CloseMessageView
+from UI.Common import ConfirmCancelView, CloseMessageView, Frogginator
 from UI.Training import TUserAdminStatusView, TUserStatusView, InternshipMatchingView
 from Utilities import (
     Utilities as U,
@@ -419,62 +420,6 @@ class TrainingManager:
         return abs(user_preference.value - venue_attribute.value)
     
 ################################################################################
-    async def unpaid_report(self, interaction: Interaction) -> None:
-
-        positions = {
-            p.name: {}
-            for p in self.guild.position_manager.positions
-        }
-        
-        for training in [
-            t for t in self._trainings if t.trainer is not None and not t.trainer_paid
-        ]:
-            try:
-                positions[training.position.name][training.trainer.user_id].append(training)
-            except KeyError:
-                positions[training.position.name][training.trainer.user_id] = [training]
-                
-        fields = []
-        for pos_name, records in positions.items():
-            if not records: 
-                continue
-                
-            value = ""
-            for trainer_id, trainings in records.items():
-                trainer = self[trainer_id]
-                value += f"{trainer.name} - {trainer.user.mention} - `{len(trainings)} unpaid`\n"
-
-            fields.append(
-                EmbedField(
-                    name=f"__{pos_name}__",
-                    value=value,
-                    inline=False
-                )
-            )
-            
-        if not fields:
-            fields.append(
-                EmbedField(
-                    name="__No Unpaid Trainings__",
-                    value="`All trainers have been paid.`",
-                    inline=False
-                )
-            )
-                
-        report = U.make_embed(
-            title="Unpaid Trainer Report",
-            description=(
-                "The following trainers have unpaid trainings:\n"
-                f"{U.draw_line(extra=27)}\n"
-            ),
-            fields=fields,
-        )
-        view = CloseMessageView(interaction.user)
-        
-        await interaction.respond(embed=report, view=view)
-        await view.wait()
-    
-################################################################################
     async def start_bg_check(self, interaction: Interaction) -> None:
 
         tuser = self[interaction.user.id]
@@ -496,3 +441,71 @@ class TrainingManager:
         await interaction.respond(embed=tuser.user_status())
 
 ################################################################################
+    async def unpaid_report(self, interaction: Interaction) -> None:
+        
+        unpaid_trainings = [t for t in self._trainings if not t.trainer_paid]
+        unpaid_trainings.sort(key=lambda x: x.trainer.name)
+        
+        unpaid_trainer_dict = {}
+        for t in unpaid_trainings:
+            try:
+                unpaid_trainer_dict[t.trainer.user_id][t.position.name].append(t)
+            except KeyError:
+                unpaid_trainer_dict[t.trainer.user_id][t.position.name] = [t]
+
+        embed = U.make_embed(
+            title="Unpaid Trainer Report",
+            description=(
+                "The following trainers have unpaid trainings:\n"
+                f"{U.draw_line(extra=27)}\n"
+            )
+        )
+                
+        pages = []
+        fields = []
+        
+        if not unpaid_trainer_dict:
+            embed.description += "`No unpaid trainers found.`"
+            pages.append(Page(embeds=[embed]))
+
+        for trainer_id, trainings in unpaid_trainer_dict.items():
+            trainer = self[trainer_id]
+            value = ""
+            
+            for pos, tlist in trainings.items():
+                position = self.guild.position_manager.get_position_by_name(pos)
+                value += f"[{len(tlist)}] **{pos}** = [{(len(tlist) * position.trainer_pay):,}]\n"
+                
+            fields.append(
+                EmbedField(
+                    name=f"__{trainer.name}__",
+                    value=value,
+                    inline=False
+                )
+            )
+            if len(fields) >= 12:
+                embed_copy = embed.copy()
+                embed_copy.fields = fields
+                pages.append(Page(embeds=[embed_copy]))
+                fields = []
+                
+        if fields:
+            embed.fields = fields
+            pages.append(Page(embeds=[embed]))
+        
+        frogginator = Frogginator(pages=pages)
+        await frogginator.respond(interaction)
+
+################################################################################
+    async def staff_experience(self, interaction: Interaction, user: User) -> None:
+        
+        tuser = self[user.id]
+        if tuser is None:
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        await tuser.staff_experience(interaction)
+
+################################################################################
+    

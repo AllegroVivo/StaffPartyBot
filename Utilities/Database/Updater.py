@@ -301,12 +301,14 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE bg_checks SET agree = %s, names = %s, venues = %s, "
-            "jobs = %s, approved = %s, prev_experience = %s, post_url = %s "
-            "WHERE user_id = %s;",
+            "jobs = %s, approved = %s, prev_experience = %s, post_url = %s, "
+            "submitted_at = %s, approved_at = %s, approved_by = %s WHERE user_id = %s;",
             check.agree, check.names, 
             [v._to_db_string() for v in check.venues], check.positions, 
             check.approved, check.want_to_train, 
             check.post_message.jump_url if check.post_message is not None else None,
+            check.submitted_at, check.approved_at,
+            check.approved_by.id if check.approved_by is not None else None,
             check.user_id
         )
         

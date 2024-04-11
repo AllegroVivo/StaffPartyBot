@@ -1,13 +1,12 @@
+from typing import TYPE_CHECKING
+
 from discord import (
     ApplicationContext,
     Cog,
     SlashCommandGroup,
     Option,
     SlashCommandOptionType,
-    OptionChoice,
-    guild_only,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from Classes.Bot import TrainingBot
@@ -31,7 +30,6 @@ class Admin(Cog):
         name="user_status",
         description="View and edit the trainer/trainee profile & status of a user."
     )
-    @guild_only()
     async def user_status(
         self,
         ctx: ApplicationContext,
@@ -51,7 +49,6 @@ class Admin(Cog):
         name="post_signup",
         description="Post the trainer signup message."
     )
-    @guild_only()
     async def post_signup_message(
         self,
         ctx: ApplicationContext,
@@ -71,7 +68,6 @@ class Admin(Cog):
         name="add_venue",
         description="Add a new venue to the system."
     )
-    @guild_only()
     async def add_venue(
         self,
         ctx: ApplicationContext,
@@ -97,7 +93,6 @@ class Admin(Cog):
         name="add_venue_user",
         description="Add a user as a venue's owner or authorized user."
     )
-    @guild_only()
     async def add_venue_user(
         self,
         ctx: ApplicationContext,
@@ -112,28 +107,17 @@ class Admin(Cog):
             name="user",
             description="The user to add to the venue's authorized user list.",
             required=True
-        ),
-        _type: Option(
-            SlashCommandOptionType.string,
-            name="user_type",
-            description="The user type to assign the user as.",
-            required=True,
-            choices=[
-                OptionChoice(name="Owner", value="Owner"),
-                OptionChoice(name="Authorized User", value="AuthUser")
-            ]
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_user(ctx.interaction, venue, user, _type, True)
+        await guild.venue_manager.add_user(ctx.interaction, venue, user, True)
         
 ################################################################################
     @admin.command(
         name="remove_venue_user",
         description="Remove a user as a venue's owner or authorized user."
     )
-    @guild_only()
     async def remove_venue_user(
         self,
         ctx: ApplicationContext,
@@ -159,7 +143,6 @@ class Admin(Cog):
         name="venue_profile",
         description="View and edit a venue's internship profile & status."
     )
-    @guild_only()
     async def venue_profile(
         self,
         ctx: ApplicationContext,
@@ -179,7 +162,6 @@ class Admin(Cog):
         name="yeet_venue",
         description="Remove a venue from the system."
     )
-    @guild_only()
     async def yeet_venue(
         self,
         ctx: ApplicationContext,
@@ -199,7 +181,6 @@ class Admin(Cog):
         name="reports",
         description="Generate reports for various system data."
     )
-    @guild_only()
     async def report_menu(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].report_menu(ctx.interaction)
@@ -209,7 +190,6 @@ class Admin(Cog):
         name="roles",
         description="View the status of important roles."
     )
-    @guild_only()
     async def roles_status(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].role_manager.menu(ctx.interaction)
@@ -219,21 +199,29 @@ class Admin(Cog):
         name="channels",
         description="View the status of important channels."
     )
-    @guild_only()
     async def channels_status(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].channel_manager.menu(ctx.interaction)
         
 ################################################################################
     @admin.command(
-        name="test",
-        description="View the status of important channels."
+        name="staff_experience",
+        description="View a previously submitted staff background check."
     )
-    @guild_only()
-    async def test_command(self, ctx: ApplicationContext) -> None:
+    async def staff_experience(
+        self,
+        ctx: ApplicationContext,
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to view the background check for.",
+            required=True
+        )
+    ) -> None:
 
-        await self.bot[ctx.guild_id].training_manager.unpaid_report(ctx.interaction)
-        
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.staff_experience(ctx.interaction, user)
+    
 ################################################################################      
 def setup(bot: "TrainingBot") -> None:
 

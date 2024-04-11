@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple, Optional
 
-from discord import Interaction, Embed, EmbedField, Message
+from discord import Interaction, Embed, EmbedField, Message, User
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView
@@ -44,6 +45,9 @@ class BackgroundCheck:
         "_is_trainer",
         "_prev_exp",
         "_post_msg",
+        "_submitted",
+        "_approved_at",
+        "_approved_by",
     )
 
 ################################################################################
@@ -61,6 +65,10 @@ class BackgroundCheck:
         
         self._approved: bool = kwargs.get("approved", False)
         self._post_msg: Optional[Message] = kwargs.get("post_msg", None)
+        
+        self._submitted: Optional[datetime] = kwargs.get("submitted_at", None)
+        self._approved_at: Optional[datetime] = kwargs.get("approved_at", None)
+        self._approved_by: Optional[User] = kwargs.get("approved_by", None)
 
 ################################################################################
     @classmethod
@@ -88,6 +96,10 @@ class BackgroundCheck:
             view = BGCheckApprovalView(self)
             await self.post_message.edit(view=view)
             parent.bot.add_view(view, message_id=self._post_msg.id)
+            
+        self._submitted = data[10]
+        self._approved_at = data[11]
+        self._approved_by = await parent.guild.get_or_fetch_user(data[12])
         
         return self
     
@@ -186,6 +198,30 @@ class BackgroundCheck:
         
         self._post_msg = value
         self.update()
+        
+################################################################################
+    @property
+    def submitted_at(self) -> Optional[datetime]:
+        
+        return self._submitted
+    
+    @submitted_at.setter
+    def submitted_at(self, value: Optional[datetime]) -> None:
+        
+        self._submitted = value
+        self.update()
+        
+################################################################################
+    @property
+    def approved_at(self) -> Optional[datetime]:
+        
+        return self._approved_at
+    
+################################################################################    
+    @property
+    def approved_by(self) -> Optional[User]:
+        
+        return self._approved_by 
         
 ################################################################################
     def update(self) -> None:
@@ -350,14 +386,14 @@ class BackgroundCheck:
         )
         view = ConfirmCancelView(interaction.user)
         
-        msg = await interaction.respond(embed=prompt, view=view)
+        await interaction.respond(embed=prompt, view=view)
         await view.wait()
         
         if not view.complete or view.value is False:
             return
         
         self.agree = agreed
-        
+        self.submitted_at = datetime.utcnow()
         self.post_message = await self.parent.guild.log.bg_check_submitted(self)
         
         if agreed:
@@ -381,7 +417,7 @@ class BackgroundCheck:
         await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
-    async def approve(self) -> None:
+    async def approve(self, user: User) -> None:
         
         if self.approved:
             return
@@ -389,7 +425,10 @@ class BackgroundCheck:
         await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.StaffMain)
         await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.StaffNotValidated)
         
-        self.approved = True
+        self._approved_at = datetime.utcnow()
+        self._approved_by = user
+        self.approved = True  # This will call the update() method
+        
         # 
         # confirm = U.make_embed(
         #     title="User Approved",
@@ -419,3 +458,35 @@ class BackgroundCheck:
         self.want_to_train = not self.want_to_train
         
 ################################################################################
+    def detail_status(self) -> Embed:
+        
+        approval_text = "`Not Approved Yet`"
+        if self.approved:
+            approval_text = U.format_dt(self.approved_at, "F")
+            if self.approved_by is not None:
+                approval_text += f"\nby {self.approved_by.mention}"
+        
+        addl_fields = [
+            EmbedField(
+                name="__Submitted At__",
+                value=(
+                    U.format_dt(self.submitted_at, "F")
+                    if self.submitted_at is not None else "`Not Submitted`"
+                ),
+                inline=True
+            ),
+            EmbedField(
+                name="__Approved At__",
+                value=approval_text,
+                inline=True
+            ),
+        ]
+        
+        ret = self.status()
+        ret.description = "For: " + self.parent.user.mention
+        ret.fields.extend(addl_fields)
+        
+        return ret
+    
+################################################################################
+    

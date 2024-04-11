@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from discord import Guild, User, Interaction, Message, NotFound
+from discord import Guild, User, Interaction, Message, NotFound, Member
 from discord.abc import GuildChannel
 
+from Classes.ChannelManager import ChannelManager
 from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
+from Classes.RoleManager import RoleManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
-from Classes.RoleManager import RoleManager
 from UI.Guild import ReportMenuView
 from Utilities import Utilities as U
-from Classes.ChannelManager import ChannelManager
 
 if TYPE_CHECKING:
     from Classes import TrainingBot, Profile
@@ -186,4 +186,15 @@ class GuildData:
         except NotFound:
             return
 
+################################################################################
+    async def get_or_fetch_user(self, user_id: Optional[int]) -> Optional[Union[Member, User]]:
+        
+        if user_id is None:
+            return
+        
+        if user := self._parent.get_member(user_id):
+            return user
+        
+        return await self.bot.get_or_fetch_user(user_id)
+            
 ################################################################################
