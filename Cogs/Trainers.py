@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING
 from discord import (
     ApplicationContext,
     Cog,
-    SlashCommandGroup
+    SlashCommandGroup,
+    SlashCommandOptionType,
+    Option,
 )
 
 if TYPE_CHECKING:
@@ -51,6 +53,25 @@ class Trainers(Cog):
 
         guild = self.bot[ctx.guild_id]
         await guild.position_manager.trainer_pos_report(ctx.interaction)
+        
+################################################################################
+    @trainer.command(
+        name="trainee_profile",
+        description="View a trainee's profile and training status."
+    )
+    async def register_trainer(
+        self, 
+        ctx: ApplicationContext,
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user whose profile to view.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.trainee_profile(ctx.interaction, user)
         
 ################################################################################
 def setup(bot: "TrainingBot") -> None:

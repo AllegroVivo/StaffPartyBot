@@ -833,7 +833,15 @@ class TUser:
             if not t.is_complete
         ]
         if not pages:
-            error = NoTrainingsError()
+            error = U.make_embed(
+                title="No Trainings Found",
+                description=(
+                    "No active trainings were found for you to manage.\n\n"
+                    "Please check back later or contact the server staff\n"
+                    "if you believe this is in error.\n\n"
+                    f"{U.draw_line(extra=25)}"
+                ),
+            )
             await interaction.respond(embed=error, ephemeral=True)
             return
         

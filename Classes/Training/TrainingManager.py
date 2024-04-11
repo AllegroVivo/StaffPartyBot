@@ -483,5 +483,16 @@ class TrainingManager:
             self._tusers.append(tuser)
 
         await tuser.start_bg_check(interaction)
+
+################################################################################
+    async def trainee_profile(self, interaction: Interaction, user: User) -> None:
         
+        tuser = self[user.id]
+        if tuser is None:
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+            
+        await interaction.respond(embed=tuser.user_status())
+
 ################################################################################

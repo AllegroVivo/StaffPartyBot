@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple, Any, List
+from typing import TYPE_CHECKING, Optional, Tuple, Any, List, Dict
 
 from discord import (
     Message,
@@ -241,7 +241,8 @@ class SignUpMessage:
             title="Trainee Acquired",
             description=(
                 f"Congratulations! You have successfully acquired {training.trainee.name} "
-                f"as a trainee for the `{training.position.name}` position.\n\n"
+                f"({training.trainee.user.mention}) as a trainee for the "
+                f"`{training.position.name}` position.\n\n"
                 
                 "Please reach out to them as soon as possible to begin the training process."
             )
@@ -250,4 +251,3 @@ class SignUpMessage:
         await interaction.respond(embed=confirm, ephemeral=True)
     
 ################################################################################
-    

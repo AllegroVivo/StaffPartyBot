@@ -12,7 +12,7 @@ class NotRegisteredError(ErrorMessage):
 
         super().__init__(
             title="User Not Registered",
-            message="You are not registered in the system.",
+            message="The provided user is not registered in the system.",
             solution="Please speak to administration to get registered."
         )
 

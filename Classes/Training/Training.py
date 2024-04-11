@@ -176,7 +176,8 @@ class Training:
                 f"Your training for `{self._position.name}` has been\n"
                 f"updated with a new trainer.\n\n"
                 
-                f"Your trainer is now `{self._trainer.name}`!\n\n"
+                f"Your trainer is now `{self._trainer.name}` "
+                f"({self._trainer.user.mention})!\n\n"
                 
                 "They will be in touch shortly about your next steps!\n"
                 f"{U.draw_line(extra=25)}\n"
