@@ -22,21 +22,22 @@ class BGCheckApprovalView(View):
         
         self.bg_check: BackgroundCheck = bg_check
         
-        button_list = [ApproveButton()] if not bg_check.approved else []
+        button_list = [ApproveButton(bg_check.user_id)] if not bg_check.approved else []
         for btn in button_list:
-            self.add_item(btn)
+            if not self.bg_check.approved:
+                self.add_item(btn)
         
 ################################################################################
 class ApproveButton(Button):
     
-    def __init__(self):
+    def __init__(self, user_id: int):
         
         super().__init__(
             style=ButtonStyle.success,
             label="Approve",
             disabled=False,
             row=0,
-            custom_id="approve_bg_check"
+            custom_id=f"approve_bg_check_{user_id}"
         )
         
     async def callback(self, interaction):
