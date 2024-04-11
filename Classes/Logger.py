@@ -15,7 +15,8 @@ from discord import (
     NotFound,
     Forbidden,
     User,
-    EmbedField
+    EmbedField,
+    Message
 )
 
 from Utilities import Utilities as U, ChannelTypeError, LOG_COLORS, LogType
@@ -54,7 +55,7 @@ class Logger:
         return self._guild.channel_manager.log_channel
 
 ################################################################################
-    async def _log(self, message: Embed, action: LogType, **kwargs) -> None:
+    async def _log(self, message: Embed, action: LogType, **kwargs) -> Optional[Message]:
 
         if self.log_channel is None:
             return
@@ -65,7 +66,7 @@ class Logger:
             print(f"Invalid action passed to LOG_COLORS: '{action}'")
             message.colour = Colour.embed_background()
 
-        await self.log_channel.send(embed=message, **kwargs)
+        return await self.log_channel.send(embed=message, **kwargs)
        
 ################################################################################
     async def _member_event(self, member: Member, _type: LogType) -> None:
@@ -281,7 +282,7 @@ class Logger:
         await self._log(embed, LogType.TempJobCanceled)
 
 ################################################################################
-    async def bg_check_submitted(self, bg_check: BackgroundCheck) -> None:
+    async def bg_check_submitted(self, bg_check: BackgroundCheck) -> Message:
         
         embed = U.make_embed(
             title="Background Check Submitted!",
@@ -306,7 +307,7 @@ class Logger:
         )
         view = BGCheckApprovalView(bg_check)
 
-        await self._log(embed, LogType.BGCheckSubmitted, view=view)
+        return await self._log(embed, LogType.BGCheckSubmitted, view=view)
 
 ################################################################################
     async def bg_check_approved(self, bg_check: BackgroundCheck) -> None:

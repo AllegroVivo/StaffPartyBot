@@ -69,7 +69,7 @@ class TrainingManager:
             except NotFound:
                 continue
                 
-            tuser = TUser.load(self, user, record)
+            tuser = await TUser.load(self, user, record)
             self._tusers.append(tuser)
                 
         overrides = payload["overrides"]

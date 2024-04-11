@@ -1,4 +1,5 @@
 from .AboutMeNotSet import AboutMeNotSetError
+from .MalformedURL import MalformedURLError
 from .AvailabilityNotComplete import AvailabilityNotCompleteError
 from .BotUserNotAllowed import BotUserNotAllowedError
 from .CannotRemoveUser import CannotRemoveUserError

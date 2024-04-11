@@ -1,23 +1,21 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple
+from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple, Optional
 
-from discord import Interaction, Embed, EmbedField
+from discord import Interaction, Embed, EmbedField, Message
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView
+from UI.Guild import BGCheckApprovalView
 from UI.Training import (
     BGCheckNamesModal,
     BGCheckMenuView,
     BGCheckVenueModal,
-    BGCheckRemoveVenueView, 
+    BGCheckRemoveVenueView,
     DataCenterWorldSelectView
 )
 from Utilities import (
     Utilities as U,
-    DataCenter,
-    InvalidWorldNameError,
-    GameWorld,
     MissingNameError,
     RoleType,
     edit_message_helper,
@@ -26,7 +24,7 @@ from Utilities import (
 from .BGCheckVenue import BGCheckVenue
 
 if TYPE_CHECKING:
-    from Classes import Position, TrainingBot, TUser
+    from Classes import TrainingBot, TUser
 ################################################################################
 
 __all__ = ("BackgroundCheck",)
@@ -45,6 +43,7 @@ class BackgroundCheck:
         "_approved",
         "_is_trainer",
         "_prev_exp",
+        "_post_msg",
     )
 
 ################################################################################
@@ -61,24 +60,36 @@ class BackgroundCheck:
         self._prev_exp: bool = kwargs.get("prev_exp", False)
         
         self._approved: bool = kwargs.get("approved", False)
+        self._post_msg: Optional[Message] = kwargs.get("post_msg", None)
 
 ################################################################################
     @classmethod
-    def load(cls: Type[BC], parent: TUser, data: Tuple[Any, ...]) -> BC:
+    async def load(cls: Type[BC], parent: TUser, data: Tuple[Any, ...]) -> BC:
         
-        return cls(
-            parent=parent,
-            agree=data[1],
-            names=data[2] if data[2] is not None else [],
-            venues=(
-                [BGCheckVenue.from_db_string(v) for v in data[3]] 
-                if data[3] is not None else []
-            ),
-            positions=data[4] if data[4] is not None else [],
-            approved=data[5],
-            is_trainer=data[7],
-            prev_exp=data[8]
+        self: BC = cls.__new__(cls)
+
+        self._parent = parent
+        
+        self._agree = data[1]
+        self._names = data[2] if data[2] is not None else []
+        
+        self._venues = (
+            [BGCheckVenue.from_db_string(v) for v in data[3]]
+            if data[3] is not None else []
         )
+        self._positions = data[4] if data[4] is not None else []
+        
+        self._approved = data[5]
+        self._is_trainer = data[7]
+        self._prev_exp = data[8]
+        
+        self._post_msg = await parent.guild.get_or_fetch_message(data[9])
+        if self._post_msg is not None:
+            view = BGCheckApprovalView(self)
+            await self.post_message.edit(view=view)
+            parent.bot.add_view(view, message_id=self._post_msg.id)
+        
+        return self
     
 ################################################################################
     @property
@@ -162,6 +173,18 @@ class BackgroundCheck:
     def want_to_train(self, value: bool) -> None:
             
         self._prev_exp = value
+        self.update()
+        
+################################################################################
+    @property
+    def post_message(self) -> Optional[Message]:
+        
+        return self._post_msg
+    
+    @post_message.setter
+    def post_message(self, value: Optional[Message]) -> None:
+        
+        self._post_msg = value
         self.update()
         
 ################################################################################
@@ -335,7 +358,7 @@ class BackgroundCheck:
         
         self.agree = agreed
         
-        await self.parent.guild.log.bg_check_submitted(self)
+        self.post_message = await self.parent.guild.log.bg_check_submitted(self)
         
         if agreed:
             description = (

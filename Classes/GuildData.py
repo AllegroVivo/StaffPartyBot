@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from discord import Guild, User, Interaction, Role, Embed, EmbedField
+from discord import Guild, User, Interaction, Message, NotFound
 from discord.abc import GuildChannel
 
 from Classes.Jobs.JobsManager import JobsManager
@@ -165,10 +165,25 @@ class GuildData:
         channel = self._parent.get_channel(channel_id)
         if channel is not None:
             try:
-                channel = await self._parent.fetch_channel(channel_id)
+                return await self._parent.fetch_channel(channel_id)
             except:
-                pass
-            else:
-                return channel
-    
+                return
+
+################################################################################
+    async def get_or_fetch_message(self, message_url: Optional[str]) -> Optional[Message]:
+        
+        if message_url is None:
+            return
+        
+        url_parts = message_url.split("/")
+        
+        channel = await self.get_or_fetch_channel(int(url_parts[-2]))
+        if channel is None:
+            return
+        
+        try:
+            return await channel.fetch_message(int(url_parts[-1]))  # type: ignore
+        except NotFound:
+            return
+
 ################################################################################

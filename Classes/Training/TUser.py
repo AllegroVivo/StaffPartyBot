@@ -112,7 +112,7 @@ class TUser:
 
 ################################################################################
     @classmethod
-    def load(cls: Type[TU], mgr: TrainingManager, user: User, data: Dict[str, Any]) -> Optional[TU]:
+    async def load(cls: Type[TU], mgr: TrainingManager, user: User, data: Dict[str, Any]) -> Optional[TU]:
 
         tuser = data["tuser"]
 
@@ -126,7 +126,7 @@ class TUser:
         self._availability = [Availability.load(self, a) for a in data["availability"]]
         self._qualifications = [Qualification.load(self, q) for q in data["qualifications"]]
         
-        self._bg_check = BackgroundCheck.load(self, data["bg_check"])
+        self._bg_check = await BackgroundCheck.load(self, data["bg_check"])
         self._mutes = [
             mgr.guild.venue_manager.get_venue(venue_id)
             for venue_id in tuser[2]

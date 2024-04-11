@@ -26,7 +26,7 @@ from UI.Profiles import (
     ProfileRatesModal
 )
 from UI.Venues import PositionSelectView
-from Utilities import Utilities as U, NS
+from Utilities import Utilities as U, NS, MalformedURLError
 from .PAvailability import PAvailability
 from .ProfileSection import ProfileSection
 
@@ -274,6 +274,11 @@ class ProfileDetails(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            return
+        
+        if not modal.value.startswith("http://") or not modal.value.startswith("https://"):
+            error = MalformedURLError(modal.value)
+            await interaction.respond(embed=error, ephemeral=True)
             return
         
         self.url = modal.value
