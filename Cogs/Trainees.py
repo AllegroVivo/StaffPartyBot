@@ -20,7 +20,8 @@ class Training(Cog):
 
     trainees = SlashCommandGroup(
         name="trainee",
-        description="Commands for trainee-related tasks and queries."
+        description="Commands for trainee-related tasks and queries.",
+        guild_only=True
     )
 
 ################################################################################

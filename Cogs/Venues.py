@@ -23,7 +23,8 @@ class Venues(Cog):
 
     venues = SlashCommandGroup(
         name="venue",
-        description="Commands for venue- and internship-related tasks and queries."
+        description="Commands for venue- and internship-related tasks and queries.",
+        guild_only=True
     )
 
 ################################################################################

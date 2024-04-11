@@ -25,7 +25,8 @@ class Profiles(Cog):
 
     staffing = SlashCommandGroup(
         name="staffing",
-        description="Commands for staffing sign-up and management."
+        description="Commands for staffing sign-up and management.",
+        guild_only=True
     )
 
 ################################################################################

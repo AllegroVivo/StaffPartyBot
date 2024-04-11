@@ -23,7 +23,8 @@ class Positions(Cog):
 
     positions = SlashCommandGroup(
         name="positions",
-        description="Commands for job position management."
+        description="Commands for job position management.",
+        guild_only=True
     )
 
 ################################################################################

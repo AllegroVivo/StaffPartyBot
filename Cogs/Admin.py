@@ -22,7 +22,8 @@ class Admin(Cog):
 
     admin = SlashCommandGroup(
         name="admin",
-        description="Administrator commands for user/system configuration & management."
+        description="Administrator commands for user/system configuration & management.",
+        guild_only=True
     )
 
 ################################################################################
@@ -222,6 +223,16 @@ class Admin(Cog):
     async def channels_status(self, ctx: ApplicationContext) -> None:
 
         await self.bot[ctx.guild_id].channel_manager.menu(ctx.interaction)
+        
+################################################################################
+    @admin.command(
+        name="test",
+        description="View the status of important channels."
+    )
+    @guild_only()
+    async def test_command(self, ctx: ApplicationContext) -> None:
+
+        await self.bot[ctx.guild_id].training_manager.unpaid_report(ctx.interaction)
         
 ################################################################################      
 def setup(bot: "TrainingBot") -> None:

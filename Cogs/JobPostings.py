@@ -22,7 +22,8 @@ class JobPostings(Cog):
 
     jobs = SlashCommandGroup(
         name="jobs",
-        description="Commands for job classified-related tasks and queries."
+        description="Commands for job classified-related tasks and queries.",
+        guild_only=True
     )
 
 ################################################################################

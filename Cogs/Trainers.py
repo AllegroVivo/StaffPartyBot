@@ -22,7 +22,8 @@ class Trainers(Cog):
 
     trainer = SlashCommandGroup(
         name="trainer",
-        description="Commands for trainer-related tasks and data."
+        description="Commands for trainer-related tasks and data.",
+        guild_only=True
     )
 
 ################################################################################
