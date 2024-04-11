@@ -350,7 +350,7 @@ class BackgroundCheck:
         )
         view = ConfirmCancelView(interaction.user)
         
-        await interaction.respond(embed=prompt, view=view)
+        msg = await interaction.respond(embed=prompt, view=view)
         await view.wait()
         
         if not view.complete or view.value is False:
@@ -378,7 +378,7 @@ class BackgroundCheck:
             timestamp=True
         )
         
-        await edit_message_helper(interaction, embed=confirm, view=None)
+        await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
     async def approve(self) -> None:

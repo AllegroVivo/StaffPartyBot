@@ -19,7 +19,7 @@ class BGCheckMenuView(FroggeView):
 
     def __init__(self, user: User, bg_check: BackgroundCheck) -> None:
 
-        super().__init__(user)
+        super().__init__(user, close_on_complete=True)
 
         self.bg_check: BackgroundCheck = bg_check
 

@@ -4,8 +4,9 @@ import asyncio
 from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from discord import Interaction, EmbedField, Embed, SelectOption
+from discord.ext.pages import Page, PageGroup
 
-from UI.Common import ConfirmCancelView
+from UI.Common import ConfirmCancelView, Frogginator
 from UI.Positions import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
 from Utilities import Utilities as U, PositionExistsError
 from .Position import Position
@@ -354,10 +355,16 @@ class PositionManager:
 ################################################################################
     async def trainer_pos_report(self, interaction: Interaction) -> None:
         
-        embed = U.make_embed(
-            title="All Positions",
-            description=("* " + "\n* ".join([f"`{p.name}`" for p in self.positions]))
+        page_groups = [
+            PageGroup(label=pos.name, pages=[Page(embeds=[pos.status()])])
+            for pos in self.positions
+        ]
+        
+        frogginator = Frogginator(
+            pages=page_groups,
+            show_menu=True,
+            menu_placeholder="Select a position to view details...",
         )
-        await interaction.respond(embed=embed)
+        await frogginator.respond(interaction)
         
 ################################################################################
