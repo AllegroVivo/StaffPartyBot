@@ -69,10 +69,10 @@ class Logger:
         return await self.log_channel.send(embed=message, **kwargs)
        
 ################################################################################
-    async def _member_event(self, member: Member, _type: LogType) -> None:
+    async def member_join(self, member: Member) -> None:
 
         tuser = self._guild.bot[member.guild.id].training_manager[member.id]
-        
+
         qualifications = trainings = "`None`"
         if tuser is not None:
             qualifications = "* " + "\n* ".join(
@@ -82,10 +82,9 @@ class Logger:
                 [f"{t.position.name}" for t in tuser.trainings_as_trainee]
             )
 
-        word = "joined" if _type == LogType.MemberJoin else "left"
         embed = U.make_embed(
-            title=f"Member {word.title()}!",
-            description=f"{member.mention} has {word} the server!",
+            title=f"Member Joined!",
+            description=f"{member.mention} has joined the server!",
             fields=[
                 ("__Owned Qualifications__", qualifications, True),
                 ("__Requested Trainings__", trainings, True)
@@ -94,17 +93,51 @@ class Logger:
             timestamp=True
         )
 
-        await self._log(embed, _type)
+        await self._log(embed, LogType.MemberJoin)
 
 ################################################################################
-    async def member_join(self, member: Member) -> None:
+    async def member_left(
+        self,
+        member: Member,
+        venue_deleted: bool,
+        profile_deleted: bool,
+        trainings_modified: int,
+        trainings_deleted: int,
+        jobs_deleted: int
+    ) -> None:
 
-        await self._member_event(member, LogType.MemberJoin)
+        tuser = self._guild.bot[member.guild.id].training_manager[member.id]
 
-################################################################################
-    async def member_left(self, member: Member) -> None:
+        qualifications = trainings = "`None`"
+        if tuser is not None:
+            qualifications = "* " + "\n* ".join(
+                [f"{q.position.name}" for q in tuser.qualifications]
+            )
+            trainings = "* " + "\n* ".join(
+                [f"{t.position.name}" for t in tuser.trainings_as_trainee]
+            )
 
-        await self._member_event(member, LogType.MemberLeave)
+        venue_emoji = BotEmojis.Check if venue_deleted else BotEmojis.Cross
+        profile_emoji = BotEmojis.Check if profile_deleted else BotEmojis.Cross
+
+        embed = U.make_embed(
+            title=f"Member Left!",
+            description=f"{member.mention} has left the server!",
+            fields=[
+                ("__Owned Qualifications__", qualifications, True),
+                ("__Requested Trainings__", trainings, True),
+                ("** **", "** **", False),
+                ("__Trainings Reassigned__", f"`{trainings_modified}`", True),
+                ("__Trainings Deleted__", f"`{trainings_deleted}`", True),
+                ("__Jobs Deleted__", f"`{jobs_deleted}`", True),
+                ("__Venue Deleted__", str(venue_emoji), True),
+                ("__Profile Deleted__", str(profile_emoji), True)
+            ],
+            thumbnail_url=member.display_avatar.url,
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.MemberLeave)
 
 ################################################################################
     async def training_signup(self, training: Training) -> None:

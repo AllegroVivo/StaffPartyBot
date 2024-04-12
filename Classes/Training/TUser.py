@@ -1182,6 +1182,22 @@ class TUser:
         
         for training_id in view.value:
             await self.training_manager.get_training(training_id).set_trainer(None)
-    
+
+################################################################################
+    async def on_server_leave(self) -> Tuple[int, int]:
+        
+        modified = 0
+        deleted = 0
+        
+        for t in self.trainings_as_trainer:
+            await t.set_trainer(None)
+            modified += 1
+            
+        for t in self.trainings_as_trainee:
+            await self.training_manager.remove_training(t.id)
+            deleted += 1
+            
+        return modified, deleted
+
 ################################################################################
     

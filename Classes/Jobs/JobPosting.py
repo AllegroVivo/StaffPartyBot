@@ -141,6 +141,12 @@ class JobPosting:
     
 ################################################################################
     @property
+    def user(self) -> User:
+        
+        return self._user
+    
+################################################################################
+    @property
     def venue(self) -> Venue:
         
         return self._venue

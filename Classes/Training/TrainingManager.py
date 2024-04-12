@@ -5,7 +5,7 @@ from enum import Enum
 from itertools import islice
 from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
-from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField
+from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField, Member
 from discord.ext.pages import Page
 
 from UI.Common import ConfirmCancelView, CloseMessageView, Frogginator
@@ -541,6 +541,15 @@ class TrainingManager:
             return
         
         await tuser.manage_trainings(interaction)
+
+################################################################################
+    async def on_member_leave(self, member: Member) -> int:
+
+        tuser = self[member.id]
+        if tuser is None:
+            return 0
         
+        return await tuser.on_server_leave()
+
 ################################################################################
         

@@ -588,8 +588,17 @@ class Venue:
         self.bot.database.update.venue(self)
         
 ################################################################################
-    def delete(self) -> None:
+    async def delete(self) -> None:
     
+        if self._post_msg is not None:
+            try:
+                await self._post_msg.channel.delete()
+            except NotFound:
+                pass
+        
+        await self.guild.jobs_manager.delete_all_by_venue(self)
+        
+        self._mgr._venues.remove(self)
         self.bot.database.delete.venue(self)
         
 ################################################################################

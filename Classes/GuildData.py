@@ -201,3 +201,13 @@ class GuildData:
         return await self.bot.get_or_fetch_user(user_id)
             
 ################################################################################
+    async def on_member_leave(self, member: Member) -> None:
+        
+        venue_deleted = await self.venue_manager.on_member_leave(member)
+        profile_deleted = await self.profile_manager.on_member_leave(member)
+        num_modified, num_deleted = await self.training_manager.on_member_leave(member)
+        jobs_deleted = await self.jobs_manager.on_member_leave(member)
+        
+        await self.log.member_left(member)        
+        
+################################################################################

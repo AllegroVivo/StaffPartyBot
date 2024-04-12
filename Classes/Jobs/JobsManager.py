@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING, Any, List, Dict, Optional
 
 from discord import (
     Interaction,
-    ForumChannel, 
-    NotFound, 
-    ChannelType,
+    ForumChannel,
+    Member,
     EmbedField
 )
 from discord.ext.pages import Page
@@ -16,10 +15,8 @@ from UI.Common import Frogginator
 from UI.Jobs import JobReportRangeModal
 from Utilities import (
     Utilities as U,
-    VenueDoesntExistError, 
-    JobPostingNotFoundError, 
-    ChannelTypeError, 
-    JobPostingType,
+    VenueDoesntExistError,
+    JobPostingNotFoundError,
     DateTimeFormatError,
     DateTimeMismatchError,
 )
@@ -252,5 +249,29 @@ class JobsManager:
         # Send report paginator
         frogginator = Frogginator(pages=pages)
         await frogginator.respond(interaction)
+
+################################################################################
+    async def delete_all_by_venue(self, venue: Venue) -> int:
         
+        count = 0
+        
+        for p in self._postings:
+            if p.venue == venue:
+                await p.delete()
+                count += 1
+                
+        return count
+
+################################################################################
+    async def on_member_leave(self, member: Member) -> int:
+        
+        count = 0
+        
+        for posting in self._postings:
+            if posting.user.id == member.id:
+                await posting.delete()
+                count += 1
+                
+        return count
+
 ################################################################################

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord import User
+from discord import User, Member
 from typing import TYPE_CHECKING, List, Optional, Any, Tuple, Dict
 
 from .Profile import Profile
@@ -75,6 +75,14 @@ class ProfileManager:
         self._profiles.append(profile)
         
         return profile
-    
+
+################################################################################
+    async def on_member_leave(self, member: Member) -> bool:
+        
+        for profile in self._profiles:
+            if profile.user.id == member.id:
+                self._profiles.remove(profile)
+                return True
+
 ################################################################################
     

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Any, Dict, Optional
 
-from discord import Interaction, User, ForumChannel, SelectOption, ForumTag
+from discord import Interaction, User, ForumChannel, Member
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
@@ -468,8 +468,7 @@ class VenueManager:
         if not view.complete or view.value is False:
             return
         
-        self._venues.remove(venue)
-        venue.delete()
+        await venue.delete()
         
         confirm = U.make_embed(
             title="Venue Removed",
@@ -571,4 +570,19 @@ class VenueManager:
             if user_id in [u.id for u in v.authorized_users]
         ]
 
+################################################################################
+    async def on_member_leave(self, member: Member) -> bool:
+        """Returns True if a venue was deleted as a result of the member leaving."""
+        
+        for v in self.venues:
+            if member in v.authorized_users:
+                if len(v.authorized_users) == 1:
+                    self._venues.remove(v)
+                    await v.delete()
+                    return True
+                else:
+                    v.remove_user(member._user)
+        
+        return False
+    
 ################################################################################
