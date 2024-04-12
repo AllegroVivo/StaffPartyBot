@@ -438,12 +438,19 @@ class TrainingManager:
             await interaction.respond(embed=error, ephemeral=True)
             return
             
-        await interaction.respond(embed=tuser.user_status())
+        await interaction.respond(embed=tuser.user_status(), ephemeral=True)
 
 ################################################################################
     async def unpaid_report(self, interaction: Interaction) -> None:
         
-        unpaid_trainings = [t for t in self._trainings if not t.trainer_paid]
+        unpaid_trainings = [
+            t 
+            for t in self._trainings 
+            if (
+                not t.trainer_paid 
+                and t.trainer is not None
+            )
+        ]
         unpaid_trainings.sort(key=lambda x: x.trainer.name)
         
         unpaid_trainer_dict = {}
