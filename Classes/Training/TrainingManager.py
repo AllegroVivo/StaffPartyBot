@@ -455,6 +455,8 @@ class TrainingManager:
         
         unpaid_trainer_dict = {}
         for t in unpaid_trainings:
+            if t.trainer.user_id not in unpaid_trainer_dict:
+                unpaid_trainer_dict[t.trainer.user_id] = {}
             try:
                 unpaid_trainer_dict[t.trainer.user_id][t.position.name].append(t)
             except KeyError:
