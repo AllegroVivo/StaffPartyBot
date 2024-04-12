@@ -543,11 +543,11 @@ class TrainingManager:
         await tuser.manage_trainings(interaction)
 
 ################################################################################
-    async def on_member_leave(self, member: Member) -> int:
+    async def on_member_leave(self, member: Member) -> Tuple[int, int]:
 
         tuser = self[member.id]
         if tuser is None:
-            return 0
+            return 0, 0
         
         return await tuser.on_server_leave()
 
