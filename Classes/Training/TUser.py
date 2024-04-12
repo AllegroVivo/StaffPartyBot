@@ -242,7 +242,11 @@ class TUser:
     @property
     def unpaid_trainings(self) -> List[Training]:
 
-        return [t for t in self.trainings_as_trainer if not t.trainer_paid]
+        return [
+            t for t in self.trainings_as_trainer if (
+                t.is_complete and not t.trainer_paid
+            )
+        ]
     
 ################################################################################    
     @property
@@ -1034,5 +1038,71 @@ class TUser:
     async def staff_experience(self, interaction: Interaction) -> None:
         
         await interaction.respond(embed=self.bg_check.detail_status())
+
+################################################################################
+    async def settle_training_balance(self, interaction: Interaction) -> None:
+
+        if not self.unpaid_trainings:
+            error = U.make_embed(
+                title="No Unpaid Trainings",
+                description=(
+                    "No unpaid trainings were found to settle.\n"
+                    f"{U.draw_line(extra=25)}"
+                ),
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        pos_dict = {}
+        for t in self.unpaid_trainings:
+            if t.position.name not in pos_dict:
+                pos_dict[t.position.name] = []
+            pos_dict[t.position.name].append(t)
+
+        amount = 0
+        training_str = ""
+        
+        for pos, trainings in pos_dict.items():
+            position = self.position_manager.get_position_by_name(pos)
+            amount += position.trainer_pay * len(trainings)
+            training_str += (
+                f"[{len(trainings)}] **{position}** = "
+                f"`{(position.trainer_pay * len(trainings)):,}`\n"
+            )
+            
+        embed = U.make_embed(
+            title="Settle Training Balance",
+            description=(
+                "Please confirm you want to settle the following "
+                "unpaid training balances.\n\n"
+
+                f"{training_str}\n\n"
+                
+                "__**Total Amount Due:**__\n"
+                f"`{amount:,}`\n"
+                f"{U.draw_line(extra=25)}"
+            ),
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        for t in self.unpaid_trainings:
+            t.trainer_paid = True
+            
+        confirm = U.make_embed(
+            title="Settle Training Balance",
+            description=(
+                "All unpaid training balances have been settled.\n"
+                f"__**Total Amount Paid:**__ `{amount:,}`\n"
+                f"{U.draw_line(extra=25)}"
+            ),
+        )
+        
+        await interaction.respond(embed=confirm)
 
 ################################################################################

@@ -447,7 +447,8 @@ class TrainingManager:
             t 
             for t in self._trainings 
             if (
-                not t.trainer_paid 
+                t.is_complete 
+                and not t.trainer_paid 
                 and t.trainer is not None
             )
         ]
@@ -520,4 +521,14 @@ class TrainingManager:
         await tuser.staff_experience(interaction)
 
 ################################################################################
-    
+    async def settle_trainer(self, interaction: Interaction, user: User) -> None:
+
+        tuser = self[user.id]
+        if tuser is None:
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        await tuser.settle_training_balance(interaction)
+        
+################################################################################
