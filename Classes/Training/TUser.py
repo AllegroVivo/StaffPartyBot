@@ -1076,7 +1076,7 @@ class TUser:
                 "Please confirm you want to settle the\n"
                 "following unpaid training balances.\n\n"
 
-                f"{training_str}\n\n"
+                f"{training_str}\n"
                 
                 "__**Total Amount Due:**__\n"
                 f"`{amount:,}`\n"
