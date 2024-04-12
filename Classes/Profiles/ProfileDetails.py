@@ -499,6 +499,7 @@ class ProfileDetails(ProfileSection):
     def _compile_availability(self) -> Embed:
         
         return U.make_embed(
+            color=self.color,
             title="__Availability__",
             description=PAvailability.long_availability_status(self.availability),
             footer_text=self._url
