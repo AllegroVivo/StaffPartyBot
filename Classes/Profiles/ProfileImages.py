@@ -338,7 +338,6 @@ class ProfileImages(ProfileSection):
         )
 
         confirm = U.make_embed(
-            color=self.color,
             title="Image Assigned",
             description=(
                 f"The additional image has been assigned to your profile.\n"
