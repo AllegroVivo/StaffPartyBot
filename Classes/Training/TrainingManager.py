@@ -491,7 +491,7 @@ class TrainingManager:
             fields.append(
                 EmbedField(
                     name=f"__{trainer.name}__",
-                    value=value + f"\n\n__**Total Due:**__\n`{amount:,}`",
+                    value=value + f"__**Total Due:**__\n`{amount:,}`",
                     inline=False
                 )
             )
