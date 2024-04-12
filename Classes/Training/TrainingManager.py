@@ -452,7 +452,7 @@ class TrainingManager:
                 and t.trainer is not None
             )
         ]
-        unpaid_trainings.sort(key=lambda x: x.trainer.name)
+        unpaid_trainings.sort(key=lambda t: t.trainer.name)
         
         unpaid_trainer_dict = {}
         for t in unpaid_trainings:

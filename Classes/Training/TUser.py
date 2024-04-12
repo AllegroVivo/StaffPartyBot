@@ -1066,7 +1066,7 @@ class TUser:
             position = self.position_manager.get_position_by_name(pos)
             amount += position.trainer_pay * len(trainings)
             training_str += (
-                f"[{len(trainings)}] **{position}** = "
+                f"[{len(trainings)}] **{position.name}** = "
                 f"`{(position.trainer_pay * len(trainings)):,}`\n"
             )
             
@@ -1080,7 +1080,7 @@ class TUser:
                 
                 "__**Total Amount Due:**__\n"
                 f"`{amount:,}`\n"
-                f"{U.draw_line(extra=25)}"
+                f"{U.draw_line(extra=10)}"
             ),
         )
         view = ConfirmCancelView(interaction.user)
