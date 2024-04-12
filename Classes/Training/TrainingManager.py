@@ -479,7 +479,7 @@ class TrainingManager:
 
         for trainer_id, trainings in unpaid_trainer_dict.items():
             trainer = self[trainer_id]
-            value = ""
+            value = f"({trainer.user.mention})\n"
             amount = 0
             
             for pos, tlist in trainings.items():
