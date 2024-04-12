@@ -241,6 +241,25 @@ class Admin(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.training_manager.settle_trainer(ctx.interaction, user)
         
+################################################################################
+    @admin.command(
+        name="trainer_workload",
+        description="Manage a trainer's training assignments."
+    )
+    async def settle_trainee(
+        self,
+        ctx: ApplicationContext,
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The user to manage training assignments for.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.trainer_management(ctx.interaction, user)
+        
 ################################################################################      
 def setup(bot: "TrainingBot") -> None:
 

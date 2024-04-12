@@ -532,3 +532,15 @@ class TrainingManager:
         await tuser.settle_training_balance(interaction)
         
 ################################################################################
+    async def trainer_management(self, interaction: Interaction, user: User) -> None:
+
+        tuser = self[user.id]
+        if tuser is None:
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        await tuser.manage_trainings(interaction)
+        
+################################################################################
+        

@@ -4,6 +4,7 @@ from datetime import datetime, time
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple, Union
 
 from discord import User, Embed, EmbedField, Interaction, SelectOption, Member
+from discord.ext.pages import Page
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView, Frogginator
@@ -15,6 +16,8 @@ from UI.Training import (
     ModifyQualificationView,
     RemoveQualificationView,
     RemoveTrainingView,
+    ManageTrainingsView,
+    DecoupleTrainingSelectView,
 )
 from Utilities import (
     Utilities as U,
@@ -1106,3 +1109,79 @@ class TUser:
         await interaction.respond(embed=confirm)
 
 ################################################################################
+    async def manage_trainings(self, interaction: Interaction) -> None:
+        
+        source_trainings = [t for t in self.trainings_as_trainer if not t.is_complete]
+        if not source_trainings:
+            error = U.make_embed(
+                title="No Trainings Found",
+                description=(
+                    "No active trainings were found to manage.\n"
+                    f"{U.draw_line(extra=25)}"
+                ),
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        training_dict = {}
+        for t in source_trainings:
+            if t.trainee.user_id not in training_dict:
+                training_dict[t.trainee.user_id] = []
+            training_dict[t.trainee.user_id].append(t)
+            
+        pages = []
+        for user_id, trainings in training_dict.items():
+            tuser = self.training_manager[user_id]
+            training_str = ""
+            for t in trainings:
+                training_str += f"* {t.position.name}\n"
+            
+            embed = U.make_embed(
+                title=f"Trainings for `{self.name}`",
+                description=(
+                    f"__**Trainee:**__ `{tuser.name}`\n"
+                    f"({tuser.user.mention})\n"
+                    f"__**Trainings:**__\n"
+                    f"{training_str}"
+                ),
+            )
+            view = ManageTrainingsView(interaction.user, tuser, self)
+            pages.append(Page(embeds=[embed], custom_view=view))
+            
+        frogginator = Frogginator(pages)
+        await frogginator.respond(interaction)
+    
+################################################################################
+    async def _select_training_to_decouple(self, interaction: Interaction) -> None:
+        
+        options = [
+            SelectOption(
+                label=t.position.name,
+                value=str(t.id)
+            )
+            for t in self.trainings_as_trainee
+            if (
+                t.trainer is not None 
+                and t.trainer.user == interaction.user
+            )
+        ]
+        
+        prompt = U.make_embed(
+            title="Decouple Training",
+            description=(
+                "Please select the training you would like to decouple the trainer from."
+            ),
+        )
+        view = DecoupleTrainingSelectView(interaction.user, options)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        for training_id in view.value:
+            await self.training_manager.get_training(training_id).set_trainer(None)
+    
+################################################################################
+    

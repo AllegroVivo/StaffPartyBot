@@ -170,6 +170,9 @@ class Training:
         self._trainer = trainer
         self.update()
         
+        if trainer is None:
+            return
+        
         confirm = U.make_embed(
             title="Training Updated",
             description=(
