@@ -313,17 +313,18 @@ class Profile:
         
         load_dotenv()
         if os.getenv("DEBUG") == "False":
-            all_pos_roles = [
-                pos.linked_role for pos in self._mgr.guild.position_manager.positions
-                if pos.linked_role is not None
-            ]
-            await member.remove_roles(*all_pos_roles)
-            
-            pos_roles = [
-                pos.linked_role for pos in self._details.positions
-                if pos.linked_role is not None
-            ]    
-            await member.add_roles(*pos_roles)
+            if self.post_message is None:
+                all_pos_roles = [
+                    pos.linked_role for pos in self._mgr.guild.position_manager.positions
+                    if pos.linked_role is not None
+                ]
+                await member.remove_roles(*all_pos_roles)
+                
+                pos_roles = [
+                    pos.linked_role for pos in self._details.positions
+                    if pos.linked_role is not None
+                ]    
+                await member.add_roles(*pos_roles)
     
         # Prepare embeds
         embeds = [main_profile, availability] + ([aboutme] if aboutme else [])

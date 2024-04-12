@@ -195,6 +195,9 @@ class GuildData:
         if user := self._parent.get_member(user_id):
             return user
         
+        if member := await self._parent.fetch_member(user_id):
+            return member
+        
         return await self.bot.get_or_fetch_user(user_id)
             
 ################################################################################

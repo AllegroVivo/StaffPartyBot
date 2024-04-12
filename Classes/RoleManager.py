@@ -259,11 +259,11 @@ class RoleManager:
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
-        if role not in user.roles:
-            try:
+        try:
+            if role not in user.roles:
                 await user.add_roles(role)
-            except:
-                pass
+        except:
+            pass
             
 ################################################################################
     async def remove_role(self, user: Union[Member, User], _type: RoleType) -> None:
@@ -291,4 +291,19 @@ class RoleManager:
             except:
                 pass
             
+################################################################################
+    async def add_role_manual(self, user: Union[Member, User], role: Optional[Role]) -> None:
+        
+        if role is None:
+            return
+
+        if isinstance(user, User):
+            user = await self._guild.parent.fetch_member(user.id)
+
+        try:
+            if role not in user.roles:
+                await user.add_roles(role)
+        except:
+            pass
+        
 ################################################################################
