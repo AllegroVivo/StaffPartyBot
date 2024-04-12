@@ -208,6 +208,13 @@ class GuildData:
         num_modified, num_deleted = await self.training_manager.on_member_leave(member)
         jobs_deleted = await self.jobs_manager.on_member_leave(member)
         
-        await self.log.member_left(member)        
+        await self.log.member_left(
+            member=member,
+            venue_deleted=venue_deleted,
+            profile_deleted=profile_deleted,
+            trainings_modified=num_modified,
+            trainings_deleted=num_deleted,
+            jobs_deleted=jobs_deleted
+        )        
         
 ################################################################################
