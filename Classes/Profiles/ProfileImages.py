@@ -342,7 +342,7 @@ class ProfileImages(ProfileSection):
             title="Image Assigned",
             description=(
                 f"The additional image has been assigned to your profile.\n"
-                "Run the `/profile images` command to view the changes!"
+                "Run the `/staffing profile` command to view the changes!"
             )
         )
         await interaction.respond(embed=confirm, ephemeral=True)

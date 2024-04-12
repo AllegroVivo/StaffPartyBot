@@ -251,7 +251,7 @@ class Profile:
             title="Image Assigned",
             description=(
                 f"{img_type.proper_name} has been assigned to your profile.\n"
-                "Run the `/profile images` command to view the changes!"
+                "Run the `/staffing profile` command to view the changes!"
             )
         )
         
