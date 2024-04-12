@@ -1073,14 +1073,14 @@ class TUser:
         embed = U.make_embed(
             title="Settle Training Balance",
             description=(
-                "Please confirm you want to settle the following "
-                "unpaid training balances.\n\n"
+                "Please confirm you want to settle the\n"
+                "following unpaid training balances.\n\n"
 
                 f"{training_str}\n\n"
                 
                 "__**Total Amount Due:**__\n"
                 f"`{amount:,}`\n"
-                f"{U.draw_line(extra=10)}"
+                f"{U.draw_line(extra=12)}"
             ),
         )
         view = ConfirmCancelView(interaction.user)
