@@ -167,30 +167,50 @@ class Training:
 ################################################################################
     async def set_trainer(self, trainer: Optional[TUser]) -> None:
 
+        prev_trainer = self.trainer
         self._trainer = trainer
         self.update()
         
         if trainer is None:
-            return
-        
-        confirm = U.make_embed(
-            title="Training Updated",
-            description=(
-                f"Your training for `{self._position.name}` has been\n"
-                f"updated with a new trainer.\n\n"
-                
-                f"Your trainer is now `{self._trainer.name}` "
-                f"({self._trainer.user.mention})!\n\n"
-                
-                "They will be in touch shortly about your next steps!\n"
-                f"{U.draw_line(extra=25)}\n"
-            ),
-        )
+            confirm = U.make_embed(
+                title="Training Updated",
+                description=(
+                    f"Due to unforeseen circumstances, your trainer "
+                    f"`{prev_trainer.name}` ({prev_trainer.user.mention}) has "
+                    f"canceled their training with you. But don't worry, "
+                    f"you don't have to take any actions. You will receive "
+                    f"a message when another trainer picks up the training."
+                )
+            )
+        else:
+            confirm = U.make_embed(
+                title="Training Updated",
+                description=(
+                    f"Your training for `{self._position.name}` has been\n"
+                    f"updated with a new trainer.\n\n"
+                    
+                    f"Your trainer is now `{self._trainer.name}` "
+                    f"({self._trainer.user.mention})!\n\n"
+                    
+                    "They will be in touch shortly about your next steps!\n"
+                    f"{U.draw_line(extra=25)}\n"
+                ),
+            )
         
         try:
             await self._trainee.user.send(embed=confirm)
         except:
             pass
+        
+        if trainer is None:
+            trainer_confirm = U.make_embed(
+                title="Training Updated",
+                description=(
+                    f"Your training for `{self._position.name}` with\n"
+                    f"{self._trainee.name} has been canceled."
+                )
+            )
+            await prev_trainer.send(embed=trainer_confirm)
         
 ################################################################################
     def status_page(self, owner: User) -> Page:
