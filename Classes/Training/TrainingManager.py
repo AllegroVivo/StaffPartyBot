@@ -480,19 +480,22 @@ class TrainingManager:
         for trainer_id, trainings in unpaid_trainer_dict.items():
             trainer = self[trainer_id]
             value = ""
+            amount = 0
             
             for pos, tlist in trainings.items():
                 position = self.guild.position_manager.get_position_by_name(pos)
-                value += f"[{len(tlist)}] **{pos}** = [{(len(tlist) * position.trainer_pay):,}]\n"
+                x = len(tlist) * position.trainer_pay
+                amount += x
+                value += f"[{len(tlist)}] **{pos}** = `{x:,}`\n"
                 
             fields.append(
                 EmbedField(
                     name=f"__{trainer.name}__",
-                    value=value,
+                    value=value + f"\n\n__**Total Due:**__\n`{amount:,}`",
                     inline=False
                 )
             )
-            if len(fields) >= 12:
+            if len(fields) >= 10:
                 embed_copy = embed.copy()
                 embed_copy.fields = fields
                 pages.append(Page(embeds=[embed_copy]))
