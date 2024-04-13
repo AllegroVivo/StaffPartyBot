@@ -13,7 +13,7 @@ class MalformedURLError(ErrorMessage):
         super().__init__(
             title="Malformed URL",
             message=f"The URL '{url}' is malformed and could not be accepted.",
-            solution="Please ensure it is of schema '`http://`' or '`https://`'."
+            solution="Please ensure it is of schema '`https://`'."
         )
 
 ################################################################################

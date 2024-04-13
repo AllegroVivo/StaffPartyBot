@@ -109,10 +109,10 @@ class Profile:
         self._user = user
         self._id = profile[0]
         
-        self._details = await ProfileDetails.load(self, profile[3:10], hours)
-        self._personality = ProfilePersonality.load(self, profile[10:14])
-        self._aag = ProfileAtAGlance.load(self, profile[14:23])
-        self._images = ProfileImages.load(self, profile[23:25], addl_imgs)
+        self._details = await ProfileDetails.load(self, profile[3:11], hours)
+        self._personality = ProfilePersonality.load(self, profile[11:15])
+        self._aag = ProfileAtAGlance.load(self, profile[15:24])
+        self._images = ProfileImages.load(self, profile[24:26], addl_imgs)
         
         return self
         
@@ -385,7 +385,7 @@ class Profile:
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
 
-        char_name, url, color, jobs, rates_field, availability = self._details.compile()
+        char_name, url, color, jobs, rates_field, availability, dm_pref = self._details.compile()
         ataglance = self._aag.compile()
         likes, dislikes, personality, aboutme = self._personality.compile()
         thumbnail, main_image, additional_imgs = self._images.compile()
@@ -394,13 +394,21 @@ class Profile:
             char_name = f"Character Name: {str(NS)}"
         elif url is not None:
             char_name = f"{BotEmojis.Envelope}  {char_name}  {BotEmojis.Envelope}"
+        
+        dm_emoji = BotEmojis.Check if dm_pref else BotEmojis.Cross 
+        dm_text = str(dm_emoji) + (
+            " **Accepting staffing-oriented DMs** " 
+            if dm_pref 
+            else " **Not accepting staffing-oriented DMs** "
+        ) + str(dm_emoji)
 
         description = "** **"
         if jobs:
             description = (
+                f"{dm_text}\n"
                 f"{U.draw_line(text=jobs)}\n"
                 f"{jobs}\n"
-                f"{U.draw_line(text=jobs)}"
+                f"{U.draw_line(text=jobs)}\n"
             )
 
         fields: List[EmbedField] = []

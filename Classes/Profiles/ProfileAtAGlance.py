@@ -505,7 +505,7 @@ class ProfileAtAGlance(ProfileSection):
         return EmbedField(
             name=f"{BotEmojis.Eyes}  __At A Glance__ {BotEmojis.Eyes}",
             value=self._raw_string(),
-            inline=False
+            inline=True
         )
 
 ################################################################################

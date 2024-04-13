@@ -41,7 +41,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "SELECT p._id,"
             "p.user_id,"
             "p.guild_id,"
-            # Data indices 3 - 9 Details
+            # Data indices 3 - 10 Details
             "d.char_name,"
             "d.url AS custom_url,"
             "d.color,"
@@ -49,12 +49,13 @@ class DatabaseBuilder(DBWorkerBranch):
             "d.rates,"
             "d.post_url,"
             "d.positions,"
-            # Data indices 10 - 13 Personality
+            "d.dm_preference,"
+            # Data indices 11 - 14 Personality
             "pr.likes,"
             "pr.dislikes,"
             "pr.personality,"
             "pr.aboutme,"
-            # Data indices 14 - 23 At A Glance
+            # Data indices 15 - 24 At A Glance
             "a.gender,"
             "a.pronouns,"
             "a.race,"
@@ -64,7 +65,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "a.age,"
             "a.mare,"
             "a.data_centers,"
-            # Data indices 23 - 24 Images
+            # Data indices 24 - 25 Images
             "i.thumbnail,"
             "i.main_image "
             "FROM profiles p "

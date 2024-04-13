@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Any
 
-from discord import Interaction, User
+from discord import Interaction, User, ButtonStyle
 
+from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
@@ -30,6 +31,7 @@ class ProfileDetailsStatusView(FroggeView):
             JobsButton(self.details.jobs),
             RatesButton(self.details.rates),
             PositionsButton(self.details.positions),
+            ToggleDMPrefButton(self.details.dm_preference),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -171,5 +173,34 @@ class SetAvailabilityButton(FroggeButton):
         await edit_message_helper(
             interaction, embed=self.view.details.status(), view=self.view
         )
+        
+################################################################################
+class ToggleDMPrefButton(FroggeButton):
+    
+    def __init__(self, dm_pref: bool) -> None:
+        
+        super().__init__(
+            disabled=False,
+            row=1
+        )
+        
+        self.set_style(dm_pref)
+
+    def set_style(self, attribute: Optional[Any]) -> None:
+        
+        if attribute:
+            self.style = ButtonStyle.success
+            self.label = "Accepting DMs"
+            self.emoji = BotEmojis.ThumbsUp
+        else:
+            self.style = ButtonStyle.danger
+            self.label = "Not Accepting DMs"
+            self.emoji = BotEmojis.ThumbsDown
+        
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.details.toggle_dm_preference()
+        self.set_style(self.view.details.dm_preference)
+        
+        await interaction.edit(embed=self.view.details.status(), view=self.view)
         
 ################################################################################

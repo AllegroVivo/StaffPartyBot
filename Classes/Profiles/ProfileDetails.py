@@ -50,6 +50,7 @@ class ProfileDetails(ProfileSection):
         "_post_msg",
         "_positions",
         "_availability",
+        "_dm_pref",
     )
 
 ################################################################################
@@ -65,6 +66,7 @@ class ProfileDetails(ProfileSection):
         self._post_msg: Optional[Message] = kwargs.pop("post_msg", None)
         self._positions: List[Position] = kwargs.pop("positions", None) or []
         self._availability: List[PAvailability] = kwargs.pop("availability", None) or []
+        self._dm_pref: bool = kwargs.pop("dm_preference", False)
 
 ################################################################################
     @classmethod
@@ -96,7 +98,8 @@ class ProfileDetails(ProfileSection):
                 parent.manager.guild.position_manager.get_position(p) 
                 for p in data[6]
             ] if data[6] else [],
-            availability=[PAvailability.load(parent, h) for h in hours]
+            availability=[PAvailability.load(parent, h) for h in hours],
+            dm_preference=data[7]
         )
     
 ################################################################################
@@ -190,6 +193,18 @@ class ProfileDetails(ProfileSection):
         return self._availability
     
 ################################################################################
+    @property
+    def dm_preference(self) -> bool:
+        
+        return self._dm_pref
+    
+    @dm_preference.setter
+    def dm_preference(self, value: bool) -> None:
+        
+        self._dm_pref = value
+        self.update()
+        
+################################################################################
     def update(self) -> None:
         
         self.parent.bot.database.update.profile_details(self)
@@ -220,15 +235,25 @@ class ProfileDetails(ProfileSection):
             # Group the positions in chunks of 4, then join each chunk 
             # with a comma and each group with "\n"
             positions = "\n".join(
-                ", ".join(f"`{p.name}`" for p in self.positions[i:i+4])
-                for i in range(0, len(self.positions), 4)
+                ", ".join(f"`{p.name}`" for p in self.positions[i:i+3])
+                for i in range(0, len(self.positions), 3)
             )
 
         fields = [
             EmbedField("__Color__", color_field, True),
             EmbedField("__Jobs__", jobs, True),
             EmbedField("__Custom URL__", url_field, False),
-            EmbedField("__Employable Positions__", positions, False),
+            EmbedField("__Employable Positions__", positions, True),
+            EmbedField(
+                name="__DM Preference__", 
+                value=(
+                    (str(BotEmojis.Check) if self._dm_pref else str(BotEmojis.Cross)) +
+                    "\n*(This indicates whether\n"
+                    "venue owners are encouraged\n"
+                    "to DM you about work.)*"
+                ), 
+                inline=True
+            ),
             EmbedField(
                 name="__Availability__", 
                 value=PAvailability.short_availability_status(self._availability), 
@@ -276,7 +301,7 @@ class ProfileDetails(ProfileSection):
         if not modal.complete:
             return
         
-        if not modal.value.startswith("http://") or not modal.value.startswith("https://"):
+        if not modal.value.startswith("https://"):
             error = MalformedURLError(modal.value)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -352,7 +377,8 @@ class ProfileDetails(ProfileSection):
         Optional[Colour],
         Optional[str],
         Optional[EmbedField],
-        Embed
+        Embed,
+        bool
     ]:
 
         return (
@@ -361,7 +387,8 @@ class ProfileDetails(ProfileSection):
             self.color,
             "/".join(self._jobs) if self._jobs else None,
             self.rates_field(),
-            self._compile_availability()
+            self._compile_availability(),
+            self._dm_pref,
         )
     
 ################################################################################
@@ -379,6 +406,17 @@ class ProfileDetails(ProfileSection):
             inline=False
         )
 
+################################################################################
+    def _dms_field(self) -> EmbedField:
+        
+        return EmbedField(
+            name="__DM Preference__",
+            value=(
+                f"{BotEmojis.Check if self._dm_pref else BotEmojis.Cross}"
+            ),
+            inline=True
+        )
+    
 ################################################################################
     async def set_positions(self, interaction: Interaction) -> None:
         
@@ -506,4 +544,8 @@ class ProfileDetails(ProfileSection):
         )
     
 ################################################################################
-    
+    def toggle_dm_preference(self) -> None:
+        
+        self.dm_preference = not self.dm_preference
+        
+################################################################################
