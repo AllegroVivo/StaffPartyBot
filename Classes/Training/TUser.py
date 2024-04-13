@@ -986,9 +986,13 @@ class TUser:
         # Check if the user has the linked role for the job position, if applicable
         if compare_linked_role:
             if job.position.linked_role is not None:
-                member = await self.guild.parent.fetch_member(self.user_id)
-                if job.position.linked_role not in member.roles:
+                try:
+                    member = await self.guild.parent.fetch_member(self.user_id)
+                except:
                     return False
+                else:
+                    if job.position.linked_role not in member.roles:
+                        return False
 
         # If comparing schedules, check if the user is available during the job's times
         if compare_schedule and check_profile:
