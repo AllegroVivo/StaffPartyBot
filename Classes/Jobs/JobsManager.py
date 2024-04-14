@@ -129,8 +129,18 @@ class JobsManager:
 ################################################################################
     async def cull_job_postings(self) -> None:
         
+        if self.temporary_jobs_channel is None:
+            return
+        
         for posting in self._postings:
             await posting.expiration_check()
+            
+        for thread in self.temporary_jobs_channel.threads:
+            count = 0
+            async for _ in thread.history():
+                count += 1
+            if count == 0:
+                await thread.delete()
         
 ################################################################################
     async def temp_job_report(self, interaction: Interaction) -> None:
