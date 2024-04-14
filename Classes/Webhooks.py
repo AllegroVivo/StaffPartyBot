@@ -19,11 +19,10 @@ class FroggeHookManager:
 
     __app__: Flask = Flask(__name__)
     
-    # @__app__.before_first_request
-    # def show_urls(self):
-    #     with self.__app__.test_request_context():
-    #         print(url_for('home', _external=True))
-    #         print(url_for('about', _external=True))
+    @__app__.before_first_request
+    def show_urls(self):
+        with self.__app__.test_request_context():
+            print(url_for('self.home', _external=True))
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
