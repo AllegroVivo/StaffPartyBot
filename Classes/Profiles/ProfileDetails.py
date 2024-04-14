@@ -190,6 +190,7 @@ class ProfileDetails(ProfileSection):
     @property
     def availability(self) -> List[PAvailability]:
         
+        self._availability.sort(key=lambda x: x.day.value)
         return self._availability
     
 ################################################################################
