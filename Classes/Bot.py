@@ -89,6 +89,7 @@ class TrainingBot(Bot):
             
         # Start receiving webhooks.
         self._webhooks.run()
+        print("Webhooks initialized...")
 
         print("Done!")
 

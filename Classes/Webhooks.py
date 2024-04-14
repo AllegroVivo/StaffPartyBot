@@ -27,6 +27,11 @@ class FroggeHookManager:
         self.add_routes()
 
 ################################################################################
+    def get_app(self) -> Flask:
+        
+        return self.__app__
+    
+################################################################################
     def add_routes(self):
         # Define routes using a decorator method
         @self.__app__.route("/", methods=["POST"])
