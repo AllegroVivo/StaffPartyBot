@@ -228,7 +228,7 @@ class ChannelManager:
         
         results = re.match(r"<#(\d+)>", message.content)
         if not results:
-            await interaction.respond(embed=error)
+            await interaction.respond(embed=error, ephemeral=True)
             return
             
         channel_id = int(results.group(1))
@@ -237,7 +237,7 @@ class ChannelManager:
             try:
                 channel = self._guild.parent.fetch_channel(channel_id)
             except NotFound:
-                await interaction.respond(embed=error)
+                await interaction.respond(embed=error, ephemeral=True)
                 return                
 
         match _type:

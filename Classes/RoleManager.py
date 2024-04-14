@@ -215,13 +215,13 @@ class RoleManager:
         if message.content.lower() != "cancel":
             results = re.match(r"<@&(\d+)>", message.content)
             if not results:
-                await interaction.respond(embed=error)
+                await interaction.respond(embed=error, ephemeral=True)
                 return
             
             role_id = int(results.group(1))
             role = await self._guild.parent._fetch_role(role_id)
             if not role:
-                await interaction.respond(embed=error)
+                await interaction.respond(embed=error, ephemeral=True)
                 return                
 
             match _type:

@@ -346,10 +346,10 @@ class Position:
                 if role:
                     self.linked_role = role
                 else:
-                    await interaction.respond(embed=error)
+                    await interaction.respond(embed=error, ephemeral=True)
                     return
             else:
-                await interaction.respond(embed=error)
+                await interaction.respond(embed=error, ephemeral=True)
                 return
 
         await message.delete()
