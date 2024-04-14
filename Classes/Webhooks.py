@@ -15,36 +15,31 @@ class FroggeHookManager:
     
     __slots__ = (
         "_state",
+        "__app__",
     )
-
-    __app__: Flask = Flask(__name__)
-    
-    with __app__.test_request_context():
-        print(url_for('self.home', _external=True))
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
-        
+
         self._state: TrainingBot = bot
         
+        self.__app__: Flask = Flask(__name__)
+        self.add_routes()
+
 ################################################################################
-    @property
-    def app(self) -> Flask:
+    def add_routes(self):
+        # Define routes using a decorator method
+        @self.__app__.route("/", methods=["POST"])
+        def home():
+            print(request.data)
+            return "success"
+    
+################################################################################
+    def run(self):
+        # Use a separate method to run the app
+        with self.__app__.test_request_context():
+            print(url_for('home', _external=True))  # Correctly reference 'home'
+        self.__app__.run(debug=True, port=5000)
         
-        return self.__app__
-    
 ################################################################################
-    @property
-    def bot(self) -> TrainingBot:
         
-        return self._state
-    
-################################################################################
-    @__app__.route("/", methods=["POST"])
-    def home(self):
-        
-        print(request.data)
-        return "success"
-    
-################################################################################
-    
