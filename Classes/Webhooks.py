@@ -20,7 +20,7 @@ class FroggeHookManager:
     __app__: Flask = Flask(__name__)
     for rule in __app__.url_map.iter_rules():
         with __app__.test_request_context():
-            print(url_for('venue_update', _external=True))
+            print(url_for('home', _external=True))
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
@@ -40,8 +40,8 @@ class FroggeHookManager:
         return self._state
     
 ################################################################################
-    @__app__.route("/venue_update", methods=["POST"])
-    def venue_update(self):
+    @__app__.route("/", methods=["POST"])
+    def home(self):
         
         print(request.data)
         return "success"
