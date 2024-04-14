@@ -18,7 +18,9 @@ class FroggeHookManager:
     )
 
     __app__: Flask = Flask(__name__)
-    print(__app__.static_url_path)
+    for rule in __app__.url_map.iter_rules():
+        print(rule.endpoint)
+        print(rule.rule)
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
