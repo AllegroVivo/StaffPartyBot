@@ -18,7 +18,7 @@ class FroggeHookManager:
     )
 
     __app__: Flask = Flask(__name__)
-    print(__app__)
+    print(__app__.static_url_path)
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
