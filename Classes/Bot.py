@@ -88,8 +88,8 @@ class TrainingBot(Bot):
             await frogge.load_all(data[frogge.guild_id])
             
         # Start receiving webhooks.
-        self._webhooks.run()
-        print("Webhooks initialized...")
+        # self._webhooks.run()
+        # print("Webhooks initialized...")
 
         print("Done!")
 
