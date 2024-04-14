@@ -16,7 +16,8 @@ from discord import (
     Message,
     Thread,
     File,
-    SelectOption
+    SelectOption,
+    ForumTag
 )
 from dotenv import load_dotenv
 
@@ -352,7 +353,9 @@ class Profile:
             action = matching_thread.send  # type: ignore
         else:
             # Or create a new thread if no matching one
-            action = lambda **kw: channel.create_thread(name=self.char_name, **kw)
+            tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
+            tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
+            action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=tags, **kw)
 
         self.bot.add_view(view)
         
