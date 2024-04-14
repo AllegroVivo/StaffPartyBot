@@ -7,10 +7,10 @@ from discord import Attachment, Bot, TextChannel, File
 from discord.abc import GuildChannel
 from dotenv import load_dotenv
 
-from Utilities import Utilities
 from Utilities.Database import Database
 from .GuildManager import GuildManager
 from .XIVVenues import XIVVenuesClient
+from .Webhooks import FroggeHookManager
 
 if TYPE_CHECKING:
     from Classes import GuildData
@@ -26,6 +26,7 @@ class TrainingBot(Bot):
         "_db",
         "_guild_mgr",
         "_xiv_client",
+        "_webhooks",
     )
 
 ################################################################################
@@ -38,6 +39,7 @@ class TrainingBot(Bot):
         self._db: Database = Database(self)        
         self._guild_mgr: GuildManager = GuildManager(self)
         self._xiv_client: XIVVenuesClient = XIVVenuesClient(self)
+        self._webhooks: FroggeHookManager = FroggeHookManager(self)
 
 ################################################################################
     def __getitem__(self, guild_id: int) -> GuildData:

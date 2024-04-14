@@ -16,5 +16,6 @@ if TYPE_CHECKING:
     from .HelpMessage import HelpMessage
     from .Logger import Logger
     from .RoleManager import RoleManager
+    from .Webhooks import FroggeHookManager
 ################################################################################
     
