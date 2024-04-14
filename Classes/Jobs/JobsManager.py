@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List, Dict, Optional
+from typing import TYPE_CHECKING, Any, List, Dict, Optional, Tuple
 
 from discord import (
     Interaction,
@@ -273,15 +273,18 @@ class JobsManager:
         return count
 
 ################################################################################
-    async def on_member_leave(self, member: Member) -> int:
+    async def on_member_leave(self, member: Member) -> Tuple[int, int]:
         
-        count = 0
+        delete_count = 0
+        cancel_count = 0
         
         for posting in self._postings:
             if posting.user.id == member.id:
                 await posting.delete()
-                count += 1
+                delete_count += 1
+            if posting.candidate is not None and posting.candidate.user_id == member.id:
+                await posting.cancel()
                 
-        return count
+        return delete_count, cancel_count
 
 ################################################################################

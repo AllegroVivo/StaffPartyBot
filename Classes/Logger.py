@@ -103,7 +103,8 @@ class Logger:
         profile_deleted: bool,
         trainings_modified: int,
         trainings_deleted: int,
-        jobs_deleted: int
+        jobs_deleted: int,
+        jobs_canceled: int,
     ) -> None:
 
         tuser = self._guild.bot[member.guild.id].training_manager[member.id]
@@ -129,7 +130,10 @@ class Logger:
                 ("** **", "** **", False),
                 ("__Trainings Reassigned__", f"`{trainings_modified}`", True),
                 ("__Trainings Deleted__", f"`{trainings_deleted}`", True),
+                ("** **", "** **", False),
                 ("__Jobs Deleted__", f"`{jobs_deleted}`", True),
+                ("__Jobs Re-Opened__", f"`{jobs_canceled}`", True),
+                ("** **", "** **", False),
                 ("__Venue Deleted__", str(venue_emoji), True),
                 ("__Profile Deleted__", str(profile_emoji), True)
             ],

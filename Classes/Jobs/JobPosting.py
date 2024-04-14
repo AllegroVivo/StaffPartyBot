@@ -286,8 +286,22 @@ class JobPosting:
                 await self.post_message.delete()
             except:
                 pass
+            
+        if self.candidate is not None:
+            embed = U.make_embed(
+                title="Job Posting Canceled",
+                description=(
+                    "The job posting you've accepted has been canceled by the venue.\n\n"
+                    
+                    "__**Position**__\n"
+                    f"`{self.position.name}`\n"
+                    f"*`({self.venue.name})`*\n\n"
+                    
+                    "If you have any questions or concerns, please reach out to the venue "
+                )
+            )
+            await self.candidate.send(embed=embed)
         
-        # Oh no, being naughty and accessing a private attribute!
         self._mgr._postings.remove(self)
         self.bot.database.delete.job_posting(self)
         
@@ -772,7 +786,7 @@ class JobPosting:
         await self._mgr.guild.log.temp_job_accepted(self)
     
 ################################################################################
-    async def cancel(self, interaction: Interaction) -> None:
+    async def cancel(self, interaction: Optional[Interaction] = None) -> None:
         
         if self.candidate is None:
             return
@@ -782,8 +796,10 @@ class JobPosting:
         
         self.candidate = None
         await self._update_posting()
-        await interaction.edit()
         
+        if interaction is not None:
+            await interaction.edit()
+            
         notify = U.make_embed(
             title="Job Canceled",
             description=(
