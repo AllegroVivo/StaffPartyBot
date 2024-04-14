@@ -7,6 +7,8 @@ from discord import (
     guild_only
 )
 
+from Classes.HelpMessage import HelpMessage
+
 if TYPE_CHECKING:
     from Classes import TrainingBot
 ################################################################################
@@ -27,6 +29,16 @@ class GlobalCommands(Cog):
         guild = self.bot[ctx.guild_id]
         await guild.training_manager.start_bg_check(ctx.interaction)
 
+################################################################################
+    @slash_command(
+        name="help",
+        description="Get help with using the bot."
+    )
+    @guild_only()
+    async def help_menu(self, ctx: ApplicationContext) -> None:
+        
+        await HelpMessage(self.bot).menu(ctx.interaction)
+        
 ################################################################################
 def setup(bot: "TrainingBot") -> None:
 

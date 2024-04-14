@@ -30,7 +30,8 @@ class HelpMessage:
         page_groups = self._prepare_page_groups()
         frogginator = Frogginator(
             pages=page_groups,
-            show_menu=True
+            show_menu=True,
+            menu_placeholder="Select a situation to get more info..."
         )
         await frogginator.respond(interaction)
         
@@ -39,10 +40,15 @@ class HelpMessage:
         
         return [
             PageGroup(
-                label="Welcome",
+                label="Start Here",
                 pages=[
                     self._welcome_page()
                 ]
+            ),
+            PageGroup(
+                label="I Want to Train",
+                description="I am new to one or more jobs and would like to learn new skills.",
+                pages=self._training_pages
             )
         ]
     
@@ -63,10 +69,32 @@ class HelpMessage:
                 "*We offer a complete training to new staff including a "
                 "venue etiquette guide.*\n\n"
                 
+                "* **BG Check** - __All staff members are cleared.__\n"
+                "*We require all staff and trainers to complete a (short) "
+                "background check before they can work with us.*\n\n"
                 
+                "Select your situation from the menu below to get more information."
             )
         )
         
-        return Page(embed=embed)
+        return Page(embeds=[embed])
+    
+################################################################################
+    @staticmethod
+    def _training_pages() -> Page:
+        
+        page1 = Embed(
+            title="Training in New Skills",
+            description=(
+                "**One of the exciting things about SPB is the opportunity to "
+                "learn new skills.**\n\n"
+            )
+        )
+        
+        return Page(
+            embeds=[
+                page1,
+            ]
+        )
     
 ################################################################################
