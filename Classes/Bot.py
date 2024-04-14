@@ -182,12 +182,13 @@ class TrainingBot(Bot):
 ################################################################################
     async def dump_image(self, image: Attachment, crop_square: bool = False) -> str:
         
-        if crop_square:
-            await image.save(fp="Assets/ImageDump/" + image.filename)  # type: ignore
-            cropped = Utilities.crop_image_square("Assets/ImageDump/" + image.filename)
-            file = File(cropped, filename=image.filename)
-        else:
-            file = await image.to_file()
+        # if crop_square:
+        #     with open("Assets/ImageDump/" + image.filename, "wb") as f:
+        #         await image.save(fp=f)  # type: ignore
+        #     cropped = Utilities.crop_image_square("Assets/ImageDump/" + image.filename)
+        #     file = File(cropped, filename=image.filename)
+        # else:
+        file = await image.to_file()
         
         post = await self._img_dump.send(file=file)
         return post.attachments[0].url
