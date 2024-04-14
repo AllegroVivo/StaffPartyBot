@@ -18,6 +18,7 @@ class FroggeHookManager:
     )
 
     __app__: Flask = Flask(__name__)
+    print(__app__)
     
 ################################################################################
     def __init__(self, bot: TrainingBot):
