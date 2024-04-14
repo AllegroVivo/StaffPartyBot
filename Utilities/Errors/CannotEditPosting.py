@@ -3,17 +3,16 @@ from __future__ import annotations
 from ._Error import ErrorMessage
 ################################################################################
 
-__all__ = ("JobPostingExpiredError",)
+__all__ = ("CannotEditPostingError",)
 
 ################################################################################
-class JobPostingExpiredError(ErrorMessage):
+class CannotEditPostingError(ErrorMessage):
 
     def __init__(self):
         super().__init__(
-            title="Job Posting Expired",
+            title="Cannot Edit Job Posting",
             message=(
-                "This job posting has expired. "
-                "Please create a new job posting to continue."
+                "This job posting has been accepted or has expired. You may not edit it."
             ),
             solution=(
                 "Create a new job posting with the same or similar details. "

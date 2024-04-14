@@ -17,7 +17,7 @@ from .InvalidColor import InvalidColorError
 from .InvalidLocation import InvalidLocationValueError
 from .InvalidSalaryError import InvalidSalaryError
 from .InvalidWorldName import InvalidWorldNameError
-from .JobPostingExpired import JobPostingExpiredError
+from .CannotEditPosting import CannotEditPostingError
 from .JobPostingNotFound import JobPostingNotFoundError
 from .MissingNameError import MissingNameError
 from .NoAvailableUsersRemoval import NoAvailableUsersRemovalError

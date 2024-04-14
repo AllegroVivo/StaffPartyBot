@@ -28,7 +28,7 @@ from Utilities import (
     TimeRangeError,
     DateTimeBeforeNowError,
     IneligibleForJobError,
-    JobPostingExpiredError,
+    CannotEditPostingError,
 )
 from .PayRate import PayRate
 
@@ -309,7 +309,7 @@ class JobPosting:
     async def menu(self, interaction: Interaction) -> None:
         
         if self.has_passed:
-            error = JobPostingExpiredError()
+            error = CannotEditPostingError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         
