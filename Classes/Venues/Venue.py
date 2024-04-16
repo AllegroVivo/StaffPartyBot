@@ -439,8 +439,8 @@ class Venue:
             self._venue_hours_field(),
             self._accepting_field(),
             self._venue_location_field(),
-            self._ataglance_field(),
             self._urls_status_field(),
+            self._ataglance_field(),
             self._positions_field(),
         ]
         if not post:
@@ -552,7 +552,7 @@ class Venue:
                 
         return EmbedField(
             name="__Discord Server__",
-            value=value,
+            value=value + f"\n{U.draw_line(extra=15)}",
             inline=True,
         )
 

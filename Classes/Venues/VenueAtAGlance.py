@@ -130,8 +130,6 @@ class VenueAtAGlance:
             ret += '\n'.join(tags_formatted)
         else:
             ret += "`Not Set`"
-        
-        ret += f"\n{U.draw_line(extra=15)}"
             
         return ret
         
