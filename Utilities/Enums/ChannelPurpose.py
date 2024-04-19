@@ -11,6 +11,7 @@ class ChannelPurpose(FroggeEnum):
     Venues = 3
     Profiles = 4
     LogStream = 5
+    Services = 6
 
 ################################################################################
     @staticmethod
@@ -28,6 +29,8 @@ class ChannelPurpose(FroggeEnum):
             return "Permanent Jobs"
         elif self.value == 5:
             return "Log Stream"
+        elif self.value == 6:
+            return "Hireable Services"
         
         return self.name
     

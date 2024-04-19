@@ -65,7 +65,7 @@ class Profiles(Cog):
         )
     ):
 
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
+        profile = self.bot[ctx.guild_id].get_or_create_profile(ctx.user)
         await profile.assign_image(ctx.interaction, ImageType(int(section)), file)
 
 ################################################################################
@@ -76,7 +76,7 @@ class Profiles(Cog):
     @guild_only()
     async def profile_menu(self, ctx: ApplicationContext):
 
-        profile = self.bot[ctx.guild_id].get_profile(ctx.user)
+        profile = self.bot[ctx.guild_id].get_or_create_profile(ctx.user)
         await profile.main_menu(ctx.interaction)
         
 ################################################################################

@@ -9,7 +9,7 @@ from UI.Common import FroggeView, CloseMessageButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import ProfileImages, AdditionalImage
+    from Classes import ProfileImages, PAdditionalImage
 ################################################################################
 
 __all__ = ("AdditionalImageSelectView",)
@@ -17,12 +17,12 @@ __all__ = ("AdditionalImageSelectView",)
 ################################################################################        
 class AdditionalImageSelectView(FroggeView):
 
-    def __init__(self, owner: User, images: ProfileImages, img: AdditionalImage):
+    def __init__(self, owner: User, images: ProfileImages, img: PAdditionalImage):
 
         super().__init__(owner, close_on_complete=True)
     
         self.images: ProfileImages = images
-        self.image: AdditionalImage = img
+        self.image: PAdditionalImage = img
     
         item_list = [
             EditCaptionButton(),

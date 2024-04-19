@@ -8,7 +8,7 @@ from discord.ext.pages import Page
 from Assets import BotEmojis, BotImages
 from UI.Common import ConfirmCancelView
 from Utilities import Utilities as U, NS
-from .AdditionalImage import AdditionalImage
+from .PAdditionalImage import PAdditionalImage
 from .ProfileSection import ProfileSection
 from UI.Profiles import (
     ImageFrogginator,
@@ -42,7 +42,7 @@ class ProfileImages(ProfileSection):
 
         self._thumbnail: Optional[str] = kwargs.pop("thumbnail", None)
         self._main_image: Optional[str] = kwargs.pop("main_image", None)
-        self._additional: List[AdditionalImage] = kwargs.pop("additional", None) or []
+        self._additional: List[PAdditionalImage] = kwargs.pop("additional", None) or []
         
 ################################################################################
     @classmethod
@@ -60,7 +60,7 @@ class ProfileImages(ProfileSection):
         self._thumbnail = data[0]
         self._main_image = data[1]
         self._additional = [
-            AdditionalImage(parent=self, _id=i[0], url=i[2], caption=i[3])
+            PAdditionalImage(parent=self, _id=i[0], url=i[2], caption=i[3])
             for i in additional
         ]
 
@@ -94,7 +94,7 @@ class ProfileImages(ProfileSection):
         
 ################################################################################
     @property
-    def additional(self) -> List[AdditionalImage]:
+    def additional(self) -> List[PAdditionalImage]:
         
         return self._additional
 
@@ -232,7 +232,7 @@ class ProfileImages(ProfileSection):
         self.main_image = None
 
 ################################################################################
-    def _manage_additional_embed(self, image: Optional[AdditionalImage]) -> Embed:
+    def _manage_additional_embed(self, image: Optional[PAdditionalImage]) -> Embed:
         
         if image is None:
             image = self.additional[0]
@@ -251,7 +251,7 @@ class ProfileImages(ProfileSection):
     async def manage_additional(
         self, 
         interaction: Interaction,
-        image: AdditionalImage = None
+        image: PAdditionalImage = None
     ) -> None:
         
         prompt = self._manage_additional_embed(image)
@@ -287,14 +287,14 @@ class ProfileImages(ProfileSection):
         return ret
         
 ################################################################################
-    def get_additional(self, image_id: str) -> Optional[AdditionalImage]:
+    def get_additional(self, image_id: str) -> Optional[PAdditionalImage]:
 
         for img in self.additional:
             if img.id == image_id:
                 return img
             
 ################################################################################
-    async def remove_additional(self, interaction: Interaction, additional: AdditionalImage) -> None:
+    async def remove_additional(self, interaction: Interaction, additional: PAdditionalImage) -> None:
 
         confirm = U.make_embed(
             color=self.parent.color,
@@ -334,7 +334,7 @@ class ProfileImages(ProfileSection):
     async def add_additional(self, interaction: Interaction, url: str, caption: Optional[str]) -> None:
         
         self.additional.append(
-            AdditionalImage.new(parent=self, url=url, caption=caption)
+            PAdditionalImage.new(parent=self, url=url, caption=caption)
         )
 
         confirm = U.make_embed(

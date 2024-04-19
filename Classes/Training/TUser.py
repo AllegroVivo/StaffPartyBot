@@ -27,7 +27,7 @@ from Utilities import (
     Weekday,    
     RoleType
 )
-from .Availability import Availability
+from .TAvailability import TAvailability
 from .BackgroundCheck import BackgroundCheck
 from .Qualification import Qualification
 from .Training import Training
@@ -72,7 +72,7 @@ class TUser:
         mgr: TrainingManager,
         user: User,
         details: Optional[UserDetails] = None,
-        availabilities: Optional[List[Availability]] = None,
+        availabilities: Optional[List[TAvailability]] = None,
         configuration: Optional[UserConfiguration] = None,
         qualifications: Optional[List[Qualification]] = None,
         bg_check: Optional[BackgroundCheck] = None,
@@ -85,7 +85,7 @@ class TUser:
 
         self._details: UserDetails = details or UserDetails(self)
         self._config: UserConfiguration = configuration or UserConfiguration(self)
-        self._availability: List[Availability] = availabilities or []
+        self._availability: List[TAvailability] = availabilities or []
         self._qualifications: List[Qualification] = qualifications or []
         self._bg_check: BackgroundCheck = bg_check or BackgroundCheck(self)
         self._mutes: List[Venue] = mutes or []
@@ -126,7 +126,7 @@ class TUser:
 
         self._details = UserDetails.load(self, tuser[3:7])
         self._config = UserConfiguration.load(self, tuser[7:9])
-        self._availability = [Availability.load(self, a) for a in data["availability"]]
+        self._availability = [TAvailability.load(self, a) for a in data["availability"]]
         self._qualifications = [Qualification.load(self, q) for q in data["qualifications"]]
         
         self._bg_check = await BackgroundCheck.load(self, data["bg_check"])
@@ -220,7 +220,7 @@ class TUser:
     
 ################################################################################
     @property
-    def availability(self) -> List[Availability]:
+    def availability(self) -> List[TAvailability]:
 
         self._availability.sort(key=lambda a: a.day.value)
         return self._availability
@@ -349,7 +349,7 @@ class TUser:
 
         return EmbedField(
             name="__Availability__",
-            value=Availability.availability_status(self.availability),
+            value=TAvailability.availability_status(self.availability),
             inline=inline
         )
 
@@ -504,7 +504,7 @@ class TUser:
                 self._availability.pop(i).delete()
 
         if start_time is not None:
-            availability = Availability.new(self, weekday, start_time, end_time)
+            availability = TAvailability.new(self, weekday, start_time, end_time)
             self._availability.append(availability)
 
         await self._manager.notify_of_availability_change(self)
@@ -740,7 +740,7 @@ class TUser:
         if not any(dc in training.trainee.data_centers for dc in self.data_centers):
             return
 
-        return Availability.combine_availability(training.trainee, self)
+        return TAvailability.combine_availability(training.trainee, self)
         
 ################################################################################
     async def notify_of_training_signup(self, training: Training) -> None:

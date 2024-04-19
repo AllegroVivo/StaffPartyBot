@@ -5,10 +5,11 @@ from datetime import datetime, time
 from typing import Any, List, Optional, Tuple, Union, Literal
 
 import pytz
-from discord import Colour, Embed, EmbedField
+from discord import Colour, Embed, EmbedField, NotFound, Interaction
+from discord.abc import Mentionable
 
 from .Colors import CustomColor
-from .Enums import Timezone
+from .Enums import Timezone, MentionableType
 ################################################################################
 
 __all__ = ("Utilities", )
@@ -335,3 +336,90 @@ class Utilities:
         return fp
     
 ################################################################################
+    @staticmethod
+    async def listen_for_mentionable(
+        interaction: Interaction,
+        prompt: Embed,
+        _type: MentionableType
+    ) -> Optional[Mentionable]:
+
+        match _type:
+            case MentionableType.User:
+                pattern = r"<@!?(\d+)>"
+            case MentionableType.Role:
+                pattern = r"<@&(\d+)>"
+            case MentionableType.Channel:
+                pattern = r"<#(\d+)>"
+            case MentionableType.Emoji:
+                pattern = r"<a?:\w+:(\d+)>"
+            case _:
+                raise ValueError(f"Invalid MentionableType: {_type}")
+
+        response = await interaction.respond(embed=prompt)
+
+        def check(m):
+            return (
+                m.author == interaction.user
+                and (x := re.match(pattern, m.content))
+            ) or m.content.lower() == "cancel"
+
+        try:
+            message = await interaction.client.wait_for("message", check=check, timeout=180)
+        except TimeoutError:
+            embed = Utilities.make_embed(
+                title="Timeout",
+                description=(
+                    "You took too long to respond. Please try again."
+                ),
+                color=CustomColor.brand_red()
+            )
+            await response.respond(embed=embed)
+            return
+
+        error = Utilities.make_embed(
+            title="Invalid Mention",
+            description="You did not provide a valid mention. Please try again.",
+            color=CustomColor.brand_red()
+        )
+
+        if message.content.lower() == "cancel":
+            return
+
+        results = re.match(pattern, message.content)
+        if not results:
+            await interaction.respond(embed=error)
+            return
+
+        mentionable_id = int(results.group(1))
+        guild: GuildData = interaction.client[interaction.guild_id]  # type: ignore
+
+        match _type:
+            case MentionableType.User:
+                mentionable = await guild.get_or_fetch_member_or_user(mentionable_id)
+            case MentionableType.Channel:
+                mentionable = await guild.get_or_fetch_channel(mentionable_id)
+            case MentionableType.Role:
+                mentionable = await guild.get_or_fetch_role(mentionable_id)
+            case MentionableType.Emoji:
+                mentionable = await guild.get_or_fetch_emoji(mentionable_id)
+            case _:
+                raise ValueError(f"Invalid MentionableType: {_type}")
+
+        if not mentionable:
+            await interaction.respond(embed=error)
+            return
+
+        try:
+            await message.delete()
+        except NotFound:
+            pass
+
+        try:
+            await response.delete_original_response()
+        except NotFound:
+            pass
+
+        return mentionable
+
+################################################################################
+

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 ################################################################################
 if TYPE_CHECKING:
-    from .AdditionalImage import AdditionalImage
+    from .PAdditionalImage import PAdditionalImage
     from .Profile import Profile
     from .PAvailability import PAvailability
     from .ProfileAtAGlance import ProfileAtAGlance

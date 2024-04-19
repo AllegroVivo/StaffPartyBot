@@ -1,21 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Any, Dict
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Optional, Any, Dict, Union
 
 from discord import Interaction
-from discord.ext.pages import Page
 
-from UI.Profiles import AdditionalImageView, AdditionalImageCaptionModal
-from Utilities import Utilities as U
+from UI.Profiles import AdditionalImageCaptionModal
 
 if TYPE_CHECKING:
-    from Classes import ProfileImages
+    from Classes import ProfileImages, ServiceProfileImages
 ################################################################################
 
 __all__ = ("AdditionalImage",)
 
 ################################################################################
-class AdditionalImage:
+class AdditionalImage(ABC):
     
     __slots__ = (
         "_parent",
@@ -27,18 +26,18 @@ class AdditionalImage:
 ################################################################################
     def __init__(self, **kwargs) -> None:
         
-        self._parent: ProfileImages = kwargs.pop("parent")
+        self._parent: Union[ProfileImages, ServiceProfileImages] = kwargs.pop("parent")
         
         self._id: str = kwargs.pop("_id")
         self._url: str = kwargs.pop("url")
-        self._caption: Optional[str] = kwargs.pop("caption", None)
+        self._caption: Optional[str] = kwargs.get("caption", None)
     
 ################################################################################
     @classmethod
-    def new(cls, parent: ProfileImages, url: str, caption: Optional[str]) -> AdditionalImage:
+    @abstractmethod
+    def new(cls, parent: Any, url: str, caption: Optional[str]) -> AdditionalImage:
         
-        new_id = parent.parent.bot.database.insert.addl_image(parent.parent.id, url, caption)
-        return cls(parent=parent, _id=new_id, url=url, caption=caption)
+        raise NotImplementedError
     
 ################################################################################
     def __eq__(self, other: AdditionalImage) -> bool:
@@ -63,7 +62,6 @@ class AdditionalImage:
         
         return self._caption
     
-################################################################################
     @caption.setter
     def caption(self, value: Optional[str]) -> None:
         
@@ -71,14 +69,16 @@ class AdditionalImage:
         self.update()
         
 ################################################################################
+    @abstractmethod
     def update(self) -> None:
         
-        self._parent.parent.bot.database.update.profile_addl_image(self)
+        raise NotImplementedError
     
 ################################################################################
+    @abstractmethod
     def delete(self) -> None:
-        
-        self._parent.parent.bot.database.delete.profile_addl_image(self)
+
+        raise NotImplementedError
         
 ################################################################################
     def compile(self) -> str:
@@ -87,21 +87,6 @@ class AdditionalImage:
             return self.url
 
         return f"[{self.caption}]({self.url})"
-
-################################################################################
-    def page(self, interaction: Interaction, parent: ProfileImages) -> Page:
-
-        return Page(
-            embeds=[
-                U.make_embed(
-                    title="Additional Images",
-                    image_url=self.url,
-                    footer_text=f"Caption: {str(self.caption)}",
-                    timestamp=False
-                )
-            ],
-            custom_view=AdditionalImageView(interaction.user, parent, self.id)
-        )
 
 ################################################################################
     async def set_caption(self, interaction: Interaction) -> None:

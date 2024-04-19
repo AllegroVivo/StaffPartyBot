@@ -22,7 +22,7 @@ class DatabaseDeleter(DBWorkerBranch):
         )
       
 ################################################################################  
-    def _delete_availability(self, availability: Availability) -> None:
+    def _delete_availability(self, availability: TAvailability) -> None:
         
         self.execute(
             "DELETE FROM availability WHERE user_id = %s AND day = %s;",
@@ -50,7 +50,7 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################        
-    def _delete_additional_image(self, additional: AdditionalImage) -> None:
+    def _delete_additional_image(self, additional: PAdditionalImage) -> None:
         
         self.execute(
             "DELETE FROM additional_images WHERE _id = %s;",
@@ -98,6 +98,14 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _delete_service_profile_availability(self, availability: SAvailability) -> None:
+        
+        self.execute(
+            "DELETE FROM sp_availability WHERE profile_id = %s AND day = %s;",
+            availability.parent.id, availability.day.value,
+        )
+        
+################################################################################
 
     requirement             = _delete_requirement
     availability            = _delete_availability
@@ -109,6 +117,7 @@ class DatabaseDeleter(DBWorkerBranch):
     job_hours               = _delete_job_hours
     job_posting             = _delete_job_post
     profile_availability    = _delete_profile_availability
+    sp_availability         = _delete_service_profile_availability
     
 ################################################################################
     

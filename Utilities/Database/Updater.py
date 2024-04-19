@@ -76,7 +76,7 @@ class DatabaseUpdater(DBWorkerBranch):
         )
         
 ################################################################################
-    def _update_availability(self, availability: Availability) -> None:
+    def _update_availability(self, availability: TAvailability) -> None:
         
         self.execute(
             "UPDATE availability SET start_time = %s, end_time = %s "
@@ -193,7 +193,7 @@ class DatabaseUpdater(DBWorkerBranch):
         )
     
 ################################################################################        
-    def _update_profile_additional_image(self, image: AdditionalImage) -> None:
+    def _update_profile_additional_image(self, image: PAdditionalImage) -> None:
         
         self.execute(
             "UPDATE additional_images SET url = %s, caption = %s "
@@ -333,13 +333,35 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE channels SET temp_job = %s, perm_job = %s, venues = %s, "
-            "profiles = %s, log_channel = %s WHERE guild_id = %s;",
+            "profiles = %s, log_channel = %s, services = %s WHERE guild_id = %s;",
             channel_mgr.temp_job_channel.id if channel_mgr.temp_job_channel else None,
             channel_mgr.perm_job_channel.id if channel_mgr.perm_job_channel else None,
             channel_mgr.venues_channel.id if channel_mgr.venues_channel else None,
             channel_mgr.profiles_channel.id if channel_mgr.profiles_channel else None,
             channel_mgr.log_channel.id if channel_mgr.log_channel else None,
+            channel_mgr.services_channel.id if channel_mgr.services_channel else None,
             channel_mgr.guild_id
+        )
+        
+################################################################################
+    def _update_service(self, service: HireableService) -> None:
+        
+        self.execute(
+            "UPDATE services SET name = %s, role = %s, color = %s "
+            "WHERE _id = %s;",
+            service.name, service.role.id if service.role else None, 
+            service.color.value if service.color else None, service.id
+        )
+        
+################################################################################
+    def _update_service_profile(self, profile: ServiceProfile) -> None:
+        
+        self.execute(
+            "UPDATE service_profiles SET nsfw = %s, rates = %s, style = %s, "
+            "website = %s, discord = %s, thumbnail = %s, main_image = %s "
+            "WHERE _id = %s;",
+            profile.nsfw, profile.rates, profile.style, profile.website,
+            profile.discord, profile.thumbnail, profile.main_image, profile.id
         )
         
 ################################################################################
@@ -370,6 +392,8 @@ class DatabaseUpdater(DBWorkerBranch):
     background_check        = _update_background_check
     roles                   = _update_roles
     channels                = _update_channels
+    service                 = _update_service
+    service_profile         = _update_service_profile
     
 ################################################################################
     

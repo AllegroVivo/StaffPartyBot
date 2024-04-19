@@ -36,6 +36,11 @@ class DatabaseLoader(DBWorkerBranch):
             "roles" : self._load_roles(),
             "channels": self._load_channels(),
             "profile_availability" : self._load_profile_availability(),
+            "service_configs" : self._load_service_configs(),
+            "service_profiles" : self._load_service_profiles(),
+            "services" : self._load_services(),
+            "sp_availability" : self._load_sp_availability(),
+            "sp_images" : self._load_sp_images(),
         }
 
 ################################################################################
@@ -144,6 +149,36 @@ class DatabaseLoader(DBWorkerBranch):
     def _load_profile_availability(self) -> Tuple[Tuple[Any, ...], ...]:
         
         self.execute("SELECT * FROM profile_availability;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_service_configs(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM service_config;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_service_profiles(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM service_profiles;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_services(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM services;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_sp_availability(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM sp_availability;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_sp_images(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM sp_images;")
         return self.fetchall()
     
 ################################################################################

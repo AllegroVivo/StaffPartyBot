@@ -3,58 +3,29 @@ from __future__ import annotations
 from datetime import time, datetime, timedelta
 from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple, Dict
 
+from Classes.Common import Availability
 from Utilities import Utilities as U, Weekday
 
 if TYPE_CHECKING:
     from Classes import TUser
 ################################################################################
 
-__all_ = ("Availability",)
+__all_ = ("TAvailability",)
 
-A = TypeVar("A", bound="Availability")
+TA = TypeVar("TA", bound="TAvailability")
 
 ################################################################################
-class Availability:
-    """A class to represent a user's availability for training.
+class TAvailability(Availability):
     
-    Attributes:
-    -----------
-    _parent: :class:`TUser`
-        The user this availability belongs to.
-    _day: :class:`Weekday`
-        The day of the week this availability is for.
-    _start: :class:`time`
-        The time this availability starts.
-    _end: :class:`time`
-        The time this availability ends.
-    """
-
-    __slots__ = (
-        "_parent",
-        "_day",
-        "_start",
-        "_end",
-    )
-
-################################################################################
-    def __init__(self, parent: TUser, day: Weekday, start: time, end: time) -> None:
-
-        self._parent: TUser = parent
-
-        self._day: Weekday = day
-        self._start: time = start
-        self._end: time = end
-
-################################################################################
     @classmethod
-    def new(cls, parent: TUser, day: Weekday, start: time, end: time) -> A:
+    def new(cls: Type[TA], parent: TUser, day: Weekday, start: time, end: time) -> TA:
 
         parent.bot.database.insert.availability(parent.user_id, parent.guild_id, day, start, end)
         return cls(parent, day, start, end)
 
 ################################################################################
     @classmethod
-    def load(cls: Type[A], parent: TUser, data: Tuple[Any, ...]) -> A:
+    def load(cls: Type[TA], parent: TUser, data: Tuple[Any, ...]) -> TA:
 
         return cls(
             parent,
@@ -70,44 +41,8 @@ class Availability:
         return self._parent
 
 ################################################################################
-    @property
-    def user_id(self) -> int:
-        
-        return self._parent.user_id
-    
-################################################################################
-    @property
-    def day(self) -> Weekday:
-
-        return self._day
-
-################################################################################
-    @property
-    def start_time(self) -> time:
-
-        return self._start
-
-################################################################################
-    @property
-    def end_time(self) -> time:
-
-        return self._end
-
-################################################################################
-    @property
-    def start_timestamp(self) -> str:
-
-        return U.format_dt(U.time_to_datetime(self._start), "t")
-
-################################################################################
-    @property
-    def end_timestamp(self) -> str:
-
-        return U.format_dt(U.time_to_datetime(self._end), "t")
-
-################################################################################
     @staticmethod
-    def availability_status(availability: List[Availability]) -> str:
+    def availability_status(availability: List[TAvailability]) -> str:
 
         if not availability:
             return "`No Availability Set`"
@@ -165,11 +100,6 @@ class Availability:
                     common_availability[day].append((start_max, end_min))
     
         return common_availability
-
-################################################################################
-    def contains(self, range_start: time, range_end: time) -> bool:
-        
-        return self._start <= range_start and self._end >= range_end
 
 ################################################################################
     

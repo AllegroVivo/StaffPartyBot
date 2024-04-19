@@ -30,31 +30,31 @@ class JobPostingTimesModal(FroggeModal):
             )
         )
 
-        start_str = (
-            f"{cur_start.strftime('%m/%d/%Y %I:%M %p')}"
-            if cur_start is not None else None
-        )
         self.add_item(
             InputText(
                 style=InputTextStyle.singleline,
                 label="Start Time",
                 placeholder="MM/DD/YYYY HH:MM AM/PM",
-                value=start_str,
+                value=(
+                    f"{cur_start.strftime('%m/%d/%Y %I:%M %p')}"
+                    if cur_start is not None 
+                    else None
+                ),
                 required=True,
                 max_length=20
             )
         )
         
-        stop_str = (
-            f"{cur_end.strftime('%m/%d/%Y %I:%M %p')}"
-            if cur_end is not None else None
-        )
         self.add_item(
             InputText(
                 style=InputTextStyle.singleline,
                 label="Stop Time",
                 placeholder="MM/DD/YYYY HH:MM AM/PM",
-                value=stop_str,
+                value=(
+                    f"{cur_end.strftime('%m/%d/%Y %I:%M %p')}"
+                    if cur_end is not None 
+                    else None
+                ),
                 required=True,
                 max_length=20
             )

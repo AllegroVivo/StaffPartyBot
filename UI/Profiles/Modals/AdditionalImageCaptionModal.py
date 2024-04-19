@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional
 
 from discord import Interaction, InputTextStyle
 from discord.ui import InputText
 
 from UI.Common import FroggeModal
-from Utilities import Race, Clan
 ################################################################################
 
 __all__ = ("AdditionalImageCaptionModal",)
@@ -25,7 +24,7 @@ class AdditionalImageCaptionModal(FroggeModal):
                 placeholder="Enter the caption for your image.",
                 value=(
                     "Enter the caption for your additional image. This text will "
-                    "take the place of the ugly-looking link text on your profile."
+                    "take the place of the ugly-looking link text."
                 ),
                 required=False
             )

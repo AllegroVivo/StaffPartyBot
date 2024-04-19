@@ -8,7 +8,7 @@ from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import ProfileImages, AdditionalImage
+    from Classes import ProfileImages, PAdditionalImage
 ################################################################################
 
 __all__ = ("ProfileImageStatusView",)
@@ -88,7 +88,7 @@ class RemoveMainImageButton(FroggeButton):
 ################################################################################
 class PaginateAdditionalImagesButton(FroggeButton):
     
-    def __init__(self, images: List[AdditionalImage]) -> None:
+    def __init__(self, images: List[PAdditionalImage]) -> None:
         
         super().__init__(
             label="Manage Additional Images",

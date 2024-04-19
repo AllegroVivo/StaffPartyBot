@@ -1,7 +1,7 @@
 from .AboutMeNotSet import AboutMeNotSetError
-from .MalformedURL import MalformedURLError
 from .AvailabilityNotComplete import AvailabilityNotCompleteError
 from .BotUserNotAllowed import BotUserNotAllowedError
+from .CannotEditPosting import CannotEditPostingError
 from .CannotRemoveUser import CannotRemoveUserError
 from .ChannelType import ChannelTypeError
 from .CharNameNotSet import CharNameNotSetError
@@ -17,8 +17,8 @@ from .InvalidColor import InvalidColorError
 from .InvalidLocation import InvalidLocationValueError
 from .InvalidSalaryError import InvalidSalaryError
 from .InvalidWorldName import InvalidWorldNameError
-from .CannotEditPosting import CannotEditPostingError
 from .JobPostingNotFound import JobPostingNotFoundError
+from .MalformedURL import MalformedURLError
 from .MissingNameError import MissingNameError
 from .NoAvailableUsersRemoval import NoAvailableUsersRemovalError
 from .NoTrainingsError import NoTrainingsError
@@ -29,6 +29,7 @@ from .PositionNotFound import PositionNotFoundError
 from .PostingNotComplete import PostingNotCompleteError
 from .ProfileChannelNotSet import ProfileChannelNotSetError
 from .ProfileExport import ProfileExportError
+from .ServiceNotFound import ServiceNotFoundError
 from .TimeRange import TimeRangeError
 from .TooManyImages import TooManyImagesError
 from .TooManyUsers import TooManyUsersError

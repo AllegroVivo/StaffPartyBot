@@ -183,9 +183,7 @@ class VenueURLs:
             return
         
         if message.content.lower() != "cancel":
-            self._logo_url = await self.bot.dump_image(
-                message.attachments[0], crop_square=True
-            )
+            self._logo_url = await self.bot.dump_image(message.attachments[0])
             self.update()
 
         try:

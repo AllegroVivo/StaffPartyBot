@@ -1,4 +1,5 @@
 from .ChannelPurpose import ChannelPurpose
+from .MentionableType import MentionableType
 from .Clan import Clan
 from .DataCenter import DataCenter
 from .GameWorld import GameWorld

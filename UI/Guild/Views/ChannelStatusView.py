@@ -30,6 +30,7 @@ class ChannelStatusView(FroggeView):
             VenuesChannelButton(self.channels.venues_channel),
             TempJobsChannelButton(self.channels.temp_job_channel),
             PermJobsChannelButton(self.channels.perm_job_channel),
+            ServicesButton(self.channels.services_channel),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -145,4 +146,26 @@ class PermJobsChannelButton(FroggeButton):
             interaction, embed=self.view.channels.status(), view=self.view
         )
 
+################################################################################
+class ServicesButton(FroggeButton):
+
+    def __init__(self, channel: Optional[GuildChannel]):
+
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Hireable Services",
+            disabled=False,
+            row=1,
+        )
+
+        self.set_style(channel)
+
+    async def callback(self, interaction):
+        await self.view.channels.set_channel(interaction, ChannelPurpose.Services)
+        self.set_style(self.view.channels.services_channel)
+
+        await edit_message_helper(
+            interaction, embed=self.view.channels.status(), view=self.view
+        )
+        
 ################################################################################

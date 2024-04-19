@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import time, datetime, timedelta
-from typing import TYPE_CHECKING, List, Type, TypeVar, Any, Tuple, Dict
+from datetime import time
+from typing import TYPE_CHECKING, List, TypeVar
 
-from Utilities import Utilities as U, Weekday
+from Classes.Common import Availability
+from Utilities import Weekday
 
 if TYPE_CHECKING:
     from Classes import Profile
@@ -14,83 +15,13 @@ __all_ = ("Availability",)
 PA = TypeVar("PA", bound="PAvailability")
 
 ################################################################################
-class PAvailability:
+class PAvailability(Availability):
 
-    __slots__ = (
-        "_parent",
-        "_day",
-        "_start",
-        "_end",
-    )
-
-################################################################################
-    def __init__(self, parent: Profile, day: Weekday, start: time, end: time) -> None:
-
-        self._parent: Profile = parent
-
-        self._day: Weekday = day
-        self._start: time = start
-        self._end: time = end
-
-################################################################################
     @classmethod
     def new(cls, parent: Profile, day: Weekday, start: time, end: time) -> PA:
 
         parent.bot.database.insert.profile_availability(parent.id, day, start, end)
         return cls(parent, day, start, end)
-
-################################################################################
-    @classmethod
-    def load(cls: Type[PA], parent: Profile, data: Tuple[Any, ...]) -> PA:
-
-        return cls(
-            parent,
-            Weekday(data[1]),
-            data[2],
-            data[3]
-        )
-
-################################################################################
-    @property
-    def parent(self) -> Profile:
-
-        return self._parent
-
-################################################################################
-    @property
-    def user_id(self) -> int:
-        
-        return self._parent.user_id
-    
-################################################################################
-    @property
-    def day(self) -> Weekday:
-
-        return self._day
-
-################################################################################
-    @property
-    def start_time(self) -> time:
-
-        return self._start
-
-################################################################################
-    @property
-    def end_time(self) -> time:
-
-        return self._end
-
-################################################################################
-    @property
-    def start_timestamp(self) -> str:
-
-        return U.format_dt(U.time_to_datetime(self._start), "t")
-
-################################################################################
-    @property
-    def end_timestamp(self) -> str:
-
-        return U.format_dt(U.time_to_datetime(self._end), "t")
 
 ################################################################################
     @staticmethod
@@ -133,11 +64,6 @@ class PAvailability:
     def delete(self) -> None:
 
         self._parent.bot.database.delete.profile_availability(self)
-
-################################################################################
-    def contains(self, range_start: time, range_end: time) -> bool:
-
-        return self._start <= range_start and self._end >= range_end
 
 ################################################################################
     

@@ -4,6 +4,7 @@ if TYPE_CHECKING:
     from .Jobs import *
     from .Positions import *
     from .Profiles import *
+    from .Services import *
     from .Training import *
     from .Venues import *
     from .XIVVenues import *

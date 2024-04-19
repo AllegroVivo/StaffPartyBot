@@ -238,6 +238,50 @@ class DatabaseInserter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _add_service(self, guild_id: int, name: str) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO services (_id, guild_id, name) VALUES (%s, %s, %s);",
+            new_id, guild_id, name
+        )
+        self.execute(
+            "INSERT INTO service_config (service_id) VALUES (%s);",
+            new_id
+        )
+        
+        return new_id
+    
+################################################################################
+    def _add_service_profile(self, guild_id: int, user_id: int, service_id: str) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO service_profiles (_id, guild_id, user_id, service_id) "
+            "VALUES (%s, %s, %s, %s);",
+            new_id, guild_id, user_id, service_id
+        )
+        
+        return new_id
+    
+################################################################################
+    def _add_service_availability(
+        self,
+        profile_id: str,
+        day: Weekday, 
+        start: time,
+        end: time
+    ) -> None:
+        
+        self.execute(
+            "INSERT INTO sp_availability (profile_id, day, start_time, end_time) "
+            "VALUES (%s, %s, %s, %s);",
+            profile_id, day.value, start, end
+        )
+        
+################################################################################
 
     position                = _add_position
     requirement             = _add_requirement
@@ -253,6 +297,9 @@ class DatabaseInserter(DBWorkerBranch):
     job_hours               = _add_job_hours
     job_posting             = _add_job_posting
     profile_availability    = _add_profile_availability
+    service                 = _add_service
+    service_profile         = _add_service_profile
+    sp_availability         = _add_service_availability
     
 ################################################################################
     

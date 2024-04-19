@@ -33,7 +33,6 @@ class FroggeHookManager:
     
 ################################################################################
     def add_routes(self):
-        # Define routes using a decorator method
         @self.__app__.route("/", methods=["POST"])
         def home():
             print(request.data)
@@ -41,9 +40,9 @@ class FroggeHookManager:
     
 ################################################################################
     def run(self):
-        # Use a separate method to run the app
+        
         with self.__app__.test_request_context():
-            print(url_for('home', _external=True))  # Correctly reference 'home'
+            print(url_for('home', _external=True))
         self.__app__.run(debug=True, port=5000)
         
 ################################################################################

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 ################################################################################
 if TYPE_CHECKING:
-    from .Availability import Availability
+    from .TAvailability import TAvailability
     from .BackgroundCheck import BackgroundCheck
     from .BGCheckVenue import BGCheckVenue
     from .Qualification import Qualification

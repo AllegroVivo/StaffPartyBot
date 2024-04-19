@@ -112,6 +112,8 @@ class TrainingBot(Bot):
             "bg_checks": [],
             "roles": None,
             "channels": None,
+            "services": [],
+            "service_profiles": [],
         } for g in self.guilds }
         
         load_dotenv()
@@ -183,19 +185,40 @@ class TrainingBot(Bot):
         for jpa in data["hours"]:
             ret[jpa[1]]["job_postings"][jpa[0]]["hours"].append(jpa)  # type: ignore
             
+        ### Services ###
+        for s in data["services"]:
+            sconfig = None
+            for scfg in data["service_configs"]:
+                if scfg[0] == s[0]:
+                    sconfig = scfg
+                    
+            ret[s[1]]["services"].append(
+                {
+                    "service": s,
+                    "config": sconfig
+                }
+            )
+        for sp in data["service_profiles"]:
+            ret[sp[1]]["service_profiles"].append(
+                {
+                    "profile": sp,
+                    "availability": [
+                        avail for avail in data["sp_availability"]
+                        if avail[0] == sp[0]
+                    ],
+                    "images": [
+                        img for img in data["sp_images"]
+                        if img[1] == sp[0]
+                    ]
+                }
+            )
+            
         return ret
     
 ################################################################################
-    async def dump_image(self, image: Attachment, crop_square: bool = False) -> str:
+    async def dump_image(self, image: Attachment) -> str:
         
-        # if crop_square:
-        #     with open("Assets/ImageDump/" + image.filename, "wb") as f:
-        #         await image.save(fp=f)  # type: ignore
-        #     cropped = Utilities.crop_image_square("Assets/ImageDump/" + image.filename)
-        #     file = File(cropped, filename=image.filename)
-        # else:
         file = await image.to_file()
-        
         post = await self._img_dump.send(file=file)
         return post.attachments[0].url
 

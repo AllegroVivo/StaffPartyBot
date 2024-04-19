@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from discord import Guild, User, Interaction, Message, NotFound, Member
+from discord import Guild, User, Interaction, Message, NotFound, Member, Role
 from discord.abc import GuildChannel
 
 from Classes.ChannelManager import ChannelManager
@@ -13,6 +13,7 @@ from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.RoleManager import RoleManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
+from Classes.Services.ServicesManager import ServicesManager
 from UI.Guild import ReportMenuView
 from Utilities import Utilities as U
 
@@ -37,6 +38,7 @@ class GuildData:
         "_job_mgr",
         "_role_mgr",
         "_channel_mgr",
+        "_service_mgr",
     )
 
 ################################################################################
@@ -55,6 +57,7 @@ class GuildData:
         
         self._role_mgr: RoleManager = RoleManager(self)
         self._channel_mgr: ChannelManager = ChannelManager(self)
+        self._service_mgr: ServicesManager = ServicesManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
@@ -68,6 +71,7 @@ class GuildData:
         await self._job_mgr._load_all(data)
         await self._role_mgr._load_all(data["roles"])
         await self._channel_mgr._load_all(data["channels"])
+        await self._service_mgr._load_all(data)
         
 ################################################################################
     @property
@@ -136,7 +140,13 @@ class GuildData:
         return self._channel_mgr
          
 ################################################################################
-    def get_profile(self, user: User) -> Profile:
+    @property
+    def service_manager(self) -> ServicesManager:
+        
+        return self._service_mgr
+    
+################################################################################
+    def get_or_create_profile(self, user: User) -> Profile:
 
         profile = self._profile_mgr[user.id]
         if profile is None:
@@ -200,6 +210,20 @@ class GuildData:
         
         return await self.bot.get_or_fetch_user(user_id)
             
+################################################################################
+    async def get_or_fetch_role(self, role_id: Optional[int]) -> Optional[Role]:
+        
+        if role_id is None:
+            return
+        
+        if role := self._parent.get_role(role_id):
+            return role
+        
+        try:
+            return await self._parent._fetch_role(role_id)
+        except NotFound:
+            return
+    
 ################################################################################
     async def on_member_leave(self, member: Member) -> None:
         

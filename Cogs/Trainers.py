@@ -31,7 +31,6 @@ class Trainers(Cog):
         name="dashboard",
         description="Update training requirements for your trainees."
     )
-    @guild_only()
     async def trainer_dashboard(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
@@ -42,7 +41,6 @@ class Trainers(Cog):
         name="profile",
         description="View and edit your training registration profile & status."
     )
-    @guild_only()
     async def training_profile(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
@@ -53,7 +51,6 @@ class Trainers(Cog):
         name="position_info",
         description="View information about a specific training position."
     )
-    @guild_only()
     async def register_trainer(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
@@ -64,7 +61,6 @@ class Trainers(Cog):
         name="trainee_profile",
         description="View a trainee's profile and training status."
     )
-    @guild_only()
     async def register_trainer(
         self, 
         ctx: ApplicationContext,
