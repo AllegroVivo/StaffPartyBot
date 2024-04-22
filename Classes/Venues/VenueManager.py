@@ -36,6 +36,11 @@ class VenueManager:
         "_venues",
         "_tags",
     )
+    
+    VENUE_ETIQUETTE = (
+        "https://canary.discord.com/channels/955933227372122173/"
+        "957656105092272208/1231769147113738260"
+    )
 
 ################################################################################
     def __init__(self, guild: GuildData) -> None:
@@ -584,5 +589,16 @@ class VenueManager:
                     v.remove_user(member._user)
         
         return False
-    
+
+################################################################################
+    async def venue_etiquette(self, interaction: Interaction) -> None:
+        
+        await interaction.response.defer()
+        
+        channel = await self.bot.fetch_channel(int(self.VENUE_ETIQUETTE.split("/")[-2]))
+        msg = await channel.fetch_message(int(self.VENUE_ETIQUETTE.split("/")[-1]))
+        file = await msg.attachments[0].to_file()
+        
+        await interaction.respond(file=file, delete_after=60)
+
 ################################################################################

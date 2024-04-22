@@ -172,12 +172,10 @@ class GuildData:
         if channel_id is None:
             return
         
-        channel = self._parent.get_channel(channel_id)
-        if channel is not None:
-            try:
-                return await self._parent.fetch_channel(channel_id)
-            except:
-                return
+        if channel := self._parent.get_channel(channel_id):
+            return channel
+        
+        return await self._parent.fetch_channel(channel_id)
 
 ################################################################################
     async def get_or_fetch_message(self, message_url: Optional[str]) -> Optional[Message]:

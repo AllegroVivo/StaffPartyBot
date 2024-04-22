@@ -40,6 +40,17 @@ class GlobalCommands(Cog):
         await HelpMessage(self.bot).menu(ctx.interaction)
         
 ################################################################################
+    @slash_command(
+        name="etiquette",
+        description="Get the Venue Etiquette Guide."
+    )
+    @guild_only()
+    async def venue_etiquette(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.venue_manager.venue_etiquette(ctx.interaction)
+        
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(GlobalCommands(bot))
