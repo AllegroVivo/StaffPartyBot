@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Any, Dict, Optional
 
-from discord import Interaction, User, ForumChannel, Member
+from discord import Interaction, User, ForumChannel, Member, File
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
@@ -35,6 +35,7 @@ class VenueManager:
         "_guild",
         "_venues",
         "_tags",
+        "__etiquette_file",
     )
     
     VENUE_ETIQUETTE = (
@@ -49,6 +50,7 @@ class VenueManager:
         
         self._venues: List[Venue] = []
         self._tags: List[VenueTag] = []
+        self.__etiquette_file: Optional[File] = None
         
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
@@ -593,12 +595,11 @@ class VenueManager:
 ################################################################################
     async def venue_etiquette(self, interaction: Interaction) -> None:
         
-        await interaction.response.defer()
+        if self.__etiquette_file is None:
+            channel = await self.bot.fetch_channel(int(self.VENUE_ETIQUETTE.split("/")[-2]))
+            msg = await channel.fetch_message(int(self.VENUE_ETIQUETTE.split("/")[-1]))
+            self.__etiquette_file = await msg.attachments[0].to_file()
         
-        channel = await self.bot.fetch_channel(int(self.VENUE_ETIQUETTE.split("/")[-2]))
-        msg = await channel.fetch_message(int(self.VENUE_ETIQUETTE.split("/")[-1]))
-        file = await msg.attachments[0].to_file()
-        
-        await interaction.respond(file=file, delete_after=60)
+        await interaction.respond(file=self.__etiquette_file, delete_after=60)
 
 ################################################################################
