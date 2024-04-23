@@ -921,7 +921,11 @@ class Venue:
                     applied_tags=self.thread_tags, view=view
                 )
             # Grab the message we just posted
-            self._post_msg = await thread.fetch_message(thread.last_message_id)
+            try:
+                self._post_msg = await thread.fetch_message(thread.last_message_id)
+            except NotFound:
+                self._post_msg = None
+                self.update()
     
         self.update()
         
