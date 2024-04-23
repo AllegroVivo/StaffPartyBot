@@ -141,12 +141,13 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE details SET char_name = %s, url = %s, color = %s, jobs = %s, "
-            "rates = %s, post_url = %s, positions = %s WHERE _id = %s;",
+            "rates = %s, post_url = %s, positions = %s, dm_preference = %s WHERE _id = %s;",
             details.name, details.url, 
             details.color.value if details.color is not None else None,
             details.jobs, details.rates, 
             details.post_message.jump_url if details.post_message else None,
-            [p.id for p in details.positions], details.profile_id
+            [p.id for p in details.positions], details.dm_preference,
+            details.profile_id
         )
     
 ################################################################################    

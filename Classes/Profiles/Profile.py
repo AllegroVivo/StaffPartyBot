@@ -332,30 +332,33 @@ class Profile:
         
         # Prepare persistent view
         view = ProfileUserMuteView(self)
+
+        # Handling threads
+        channel = self.manager.guild.channel_manager.profiles_channel
+        matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
+        tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
+        tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
     
         # Attempt to edit an existing post
         if self.post_message:
             try:
                 self.bot.add_view(view, message_id=self.post_message.id)
+                await self.post_message.channel.edit(applied_tags=tags)
                 await self.post_message.edit(embeds=embeds, view=view)
                 await interaction.respond(embed=self.success_message())
                 return
             except NotFound:
                 self.post_message = None  # Proceed to post anew if not found
-    
-        # Handling threads
-        channel = self.manager.guild.channel_manager.profiles_channel
-        matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
+        
         if matching_thread:
-            # Clear history in the matching thread
+            # Clear the matching thread
+            await matching_thread.edit(applied_tags=tags)
             async for m in matching_thread.history():
                 await m.delete()
             action = matching_thread.send  # type: ignore
         else:
             # Or create a new thread if no matching one
-            tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
-            tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
-            action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=tags, **kw)
+            action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=tags, **kw)  # type: ignore
 
         self.bot.add_view(view)
         
@@ -405,11 +408,10 @@ class Profile:
             else " **Not accepting staffing-oriented DMs** "
         ) + str(dm_emoji)
 
-        description = "** **"
+        description = dm_text
         if jobs:
-            description = (
-                f"{dm_text}\n"
-                f"{U.draw_line(text=jobs)}\n"
+            description += (
+                f"\n{U.draw_line(text=jobs)}\n"
                 f"{jobs}\n"
                 f"{U.draw_line(text=jobs)}\n"
             )

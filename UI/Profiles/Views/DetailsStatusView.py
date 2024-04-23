@@ -119,7 +119,7 @@ class RatesButton(FroggeButton):
     def __init__(self, rates: Optional[str]) -> None:
         
         super().__init__(
-            label="Professional Rates",
+            label="Freelance Rates",
             disabled=False,
             row=1
         )

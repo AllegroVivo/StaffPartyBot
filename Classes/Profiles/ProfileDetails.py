@@ -260,7 +260,7 @@ class ProfileDetails(ProfileSection):
                 value=PAvailability.short_availability_status(self._availability), 
                 inline=False
             ),
-            EmbedField("__Rates__", rates, False)
+            EmbedField("__Freelance Rates__", rates, False)
         ]
 
         name = f"`{str(self.name)}`" if self.name is not None else str(NS)
@@ -399,7 +399,7 @@ class ProfileDetails(ProfileSection):
             return
 
         return EmbedField(
-            name=f"{BotEmojis.FlyingMoney} __Rates__ {BotEmojis.FlyingMoney}",
+            name=f"{BotEmojis.FlyingMoney} __Freelance Rates__ {BotEmojis.FlyingMoney}",
             value=(
                 f"{self.rates}\n"
                 f"{U.draw_line(extra=15)}"
