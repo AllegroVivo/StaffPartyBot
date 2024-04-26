@@ -407,6 +407,17 @@ class TUser:
         if len(self.qualifications) > 0:
             fields.insert(1, self._qualifications_field())
             fields.insert(4, self._bot_pings_field())
+            fields.append(
+                EmbedField(
+                    name="__Unsettled Wages__",
+                    value=(
+                        f"`{self.unsettled_wages():,} gil`" 
+                        if self.unsettled_wages() > 0 
+                        else "`None`"
+                    ),
+                    inline=True
+                )
+            )
 
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
@@ -416,6 +427,17 @@ class TUser:
             fields=fields,
         )
 
+################################################################################
+    def unsettled_wages(self) -> int:
+
+        return sum(
+            [
+                p.position.trainer_pay
+                for p in self.unpaid_trainings
+                if p
+            ]
+        )
+    
 ################################################################################    
     async def set_name(self, interaction: Interaction) -> None:
 
