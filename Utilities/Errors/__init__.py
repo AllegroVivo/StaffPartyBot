@@ -41,4 +41,5 @@ from .VenueImportError import VenueImportError
 from .VenueImportNotFound import VenueImportNotFoundError
 from .VenuePendingApproval import VenuePendingApprovalError
 from .VenueProfileNotComplete import VenueProfileNotCompleteError
+from .ProfileIncomplete import ProfileIncompleteError
 ################################################################################
