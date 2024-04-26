@@ -55,6 +55,7 @@ class HelpMessage:
                     self.venue_manager_page3(),
                     self.venue_manager_page4(),
                     self.venue_manager_page5(),
+                    self.venue_manager_page7(),
                     self.venue_manager_page6(),
                 ]
             ),
@@ -162,7 +163,8 @@ class HelpMessage:
                 "1. **List your venue with FFXIV Venues**\n"
                 "> Our venue profiles process partners with and relies heavily "
                 "on FFXIV Venues. You'll need to create a venue there before "
-                "you can make one with us.\n\n"
+                "you can make one with us. Check it out at "
+                "https://discord.com/channels/1104515062187708525/1158618747356065902\n\n"
                 
                 "2. **Import your venue with </venue import:1218699777156317185>**\n"
                 "> Once you've created your venue on FFXIV Venues, you can "
@@ -260,7 +262,8 @@ class HelpMessage:
                 "**Update your profile on FFXIV Venues**\n"
                 "> Managers for Staff Party bus profiles are part of the "
                 "information governed by FFXIV Venues, you'll need to make "
-                "those changes on their platform first then return here and run "
+                "those changes on their platform first by asking our close friend "
+                "Veni Ki to add a manager! Then simply return here and run "
                 "an update. (See previous page!)\n\n"
             )
         )
@@ -323,6 +326,28 @@ class HelpMessage:
 
 ################################################################################
     @staticmethod
+    def venue_manager_page7() -> Page:
+
+        embed = Embed(
+            title="__How do I edit/cancel my job posting?__",
+            description=(
+                "Editing or canceling a job posting is a simple process.\n\n"
+                
+                "1. **Locate your job posting and copy the ID**\n"
+                "> You can find the ID of your job posting at the bottom of the "
+                "job posting message. Copy this ID to use in the next step.\n\n"
+                
+                "2. **Use the </jobs post_status:1221244262499221606> with the job ID**\n"
+                "> This command will display a message with buttons allowing you to "
+                "edit or cancel your job posting. You can change the job type, "
+                "description, and pay amount, or cancel the job posting entirely."
+            )
+        )
+
+        return Page(embeds=[embed])
+
+################################################################################
+    @staticmethod
     def staff_member_start() -> Page:
 
         embed = Embed(
@@ -348,9 +373,9 @@ class HelpMessage:
     def staff_member_page1() -> Page:
 
         embed = Embed(
-            title="__How do I become a proper '<@&1104515062187708529> Member' in SPB?__",
+            title="__How do I become a proper 'Staff Member' in SPB?__",
             description=(
-                "Becoming staff in Staff Party Bus required you first complete a"
+                "Becoming staff in Staff Party Bus required you first complete a "
                 "*VERY* short background check outlining your work experience.\n\n"
 
                 "1. **Use the </bg_check:1224431692790628545> command**\n"
@@ -362,6 +387,10 @@ class HelpMessage:
                 "> Once you've completed the background check, you'll need to wait "
                 "for a server administrator to review your information. This "
                 "usually takes only a few minutes.\n\n"
+                
+                "3 **You'll get a DM when you're approved!**\n"
+                "> Once you're approved, you'll receive a DM from the Staff Party Bus "
+                "bot indicating that you're now able to create your staff profile.\n\n"
                 
                 "**Remember, the goal of Staff Party Bus is to provide reliable and "
                 "professional staff to venues in need, and the BG check is a part of "
@@ -398,7 +427,17 @@ class HelpMessage:
                 
                 "__**Hey, my image isn't uploading!**__\n"
                 "> If you're having trouble uploading your image, make sure it's of "
-                "the correct format. We only accept **GIF**, **PNG** and **JPEG** files. "
+                "the correct format. We only accept **WEBP**, **GIF**, **PNG** "
+                "and **JPEG** files. "
+                
+                "__**Hey my profile isn't posting!**__\n"
+                "> If you're having trouble posting your profile, make sure you've "
+                "completed all the following required sections:\n"
+                "> * **Home Region(s)**\n"
+                "> * **Work Availability**\n"
+                "> * **Employable Positions**\n"
+                "> * **Character Name**\n"
+                "> If you're still having trouble, contact a server administrator."
             )
         )
 
@@ -415,8 +454,12 @@ class HelpMessage:
 
                 "**Ensure you complete all the required information!**\n"
                 "> The staff profile creation process requires you to provide some "
-                "basic information about yourself, including your **home region(s)**, "
-                "**work availability**, **employable positions**, and **character name.**\n\n"
+                "basic information about yourself:\n"
+                "> * **Home Region(s)**\n"
+                "> * **Work Availability**\n"
+                "> * **Employable Positions**\n"
+                "> * **Character Name**\n"
+                "> If you're still having trouble, contact a server administrator."
             )
         )
 
@@ -438,7 +481,8 @@ class HelpMessage:
                 "(If you're not receiving DMs, you can check your profile to ensure "
                 "you've set your availability and employable positions correctly.)\n\n"
                 
-                "You can also view job offers in the job listings channel. If you "
+                "You can also view job offers in the job listings channel. "
+                "https://discord.com/channels/1104515062187708525/1224185349924978808 If you "
                 "see a job offer you like, you can apply for it by clicking the "
                 "button on the job offer message.\n\n"
                 
@@ -524,9 +568,9 @@ class HelpMessage:
     def trainer_page1() -> Page:
 
         embed = Embed(
-            title="__How to obtain the <@&1104515062187708527> role?__",
+            title="__How to obtain the `Trainer` role?__",
             description=(
-                "Becoming a trainer in Staff Party Bus requires you first complete a"
+                "Becoming a trainer in Staff Party Bus requires you first complete a "
                 "*VERY* short background check outlining your work experience.\n\n"
 
                 "1. **Use the </bg_check:1224431692790628545> command**\n"
@@ -542,6 +586,10 @@ class HelpMessage:
                 "> Once you've completed the background check, you'll need to wait "
                 "for a server administrator to review your information. This "
                 "usually takes only a few minutes.\n\n"
+                
+                "3 **You'll get a DM when you're approved!**\n"
+                "> Once you're approved, you'll receive a DM from the Staff Party Bus "
+                "bot indicating that you're now able to create your trainer profile.\n\n"
 
                 "**Remember, the goal of Staff Party Bus is to provide reliable and "
                 "professional staff to venues in need, and the BG check is a part of "
@@ -556,19 +604,22 @@ class HelpMessage:
     def trainer_page2() -> Page:
 
         embed = Embed(
-            title="__How do I create my staff profile?__",
+            title="__How do I create my trainer profile?__",
             description=(
-                "Creating your staff profile is a simple process.\n\n"
+                "Creating your trainer profile is a simple process.\n\n"
 
                 "1. **Use the </trainer profile:1215157989372338191> command**\n"
                 "> This command will display a message with some buttons allowing "
-                "you to complete the staff profile creation process. This is a simple "
+                "you to complete the trainer profile setup process. This is a simple "
                 "process that requires only a few clicks and answers.\n\n"
 
                 "2. **Ensure you complete all the required information!**\n"
-                "> The staff profile creation process requires you to provide some "
-                "basic information about yourself, including your **home region(s)**, "
-                "**work availability**, **employable positions**, and **character name.**"
+                "> The trainer profile creation process requires you to provide some "
+                "basic information about yourself:\n"
+                "> * **Home Region(s)**\n"
+                "> * **Work Availability**\n"
+                "> * **Employable Positions**\n"
+                "> * **Character Name**\n"
             )
         )
 
@@ -585,8 +636,12 @@ class HelpMessage:
 
                 "**Ensure you complete all the required information!**\n"
                 "> The trainer profile creation process requires you to provide some "
-                "basic information about yourself, including your **home region(s)**, "
-                "**work availability**, **employable positions**, and **character name.**\n\n"
+                "basic information about yourself:\n"
+                "> * **Home Region(s)**\n"
+                "> * **Work Availability**\n"
+                "> * **Employable Positions**\n"
+                "> * **Character Name**\n"
+                "> If you're still having trouble, contact a server administrator."
             )
         )
 
@@ -637,6 +692,11 @@ class HelpMessage:
                 "</trainer dashboard:1215157989372338191> command. This will display "
                 "a message with buttons allowing you to view and complete your "
                 "current trainings. "
+                
+                "Each requirement will need to be marked as `complete` before the "
+                "training is considered finished. Once all requirements are marked "
+                "as complete, the trainee will receive a DM indicating that their "
+                "training is finished and it will be moved off your roster."
             )
         )
 
@@ -693,7 +753,7 @@ class HelpMessage:
     def trainee_start() -> Page:
 
         embed = Embed(
-            title="__I'm new to one or more RP jobs and want training!__",
+            title="__I'm new to one or more venue positions and want training!__",
             description=(
                 "The following pages contain information on these topics:\n\n"
 
@@ -724,13 +784,17 @@ class HelpMessage:
 
                 "2. **Ensure you complete all the required information!**\n"
                 "> The staff profile creation process requires you to provide some "
-                "basic information about yourself, including your **home region(s)**, "
-                "**work availability**, **employable positions**, and **character name.**\n\n"
+                "basic information about yourself:\n"
+                "> * **Home Region(s)**\n"
+                "> * **Work Availability**\n"
+                "> * **Employable Positions**\n"
+                "> * **Character Name**\n"
                 
                 "3. **Prepare for training!**\n"
                 "> Once you've completed your profile, you can prepare for training. "
                 "This includes reading the venue </etiquette:1231774050150514759> guide "
-                "and preparing your character for the training as well.\n\n"
+                "and reading on the general position description by using the `/trainee "
+                "position_info` command.\n\n"
                 
                 "4. **Wait for a trainer to pick you up!**\n"
                 "> Once you've completed your profile and are ready for training, you "
@@ -749,7 +813,8 @@ class HelpMessage:
             title="__How do I know if a trainer has picked me?__",
             description=(
                 "You'll receive a DM from the Staff Party Bus bot when a trainer "
-                "has selected you for training. You can also view trainings you've "
+                "has selected you for training. The trainer will contact you "
+                "via DMs shortly thereafter! You can also view trainings you've "
                 "been picked up for by using the </trainee profile:1215157989372338191> "
                 "command."
             )
@@ -810,7 +875,9 @@ class HelpMessage:
                 "2. **Check what venues match your tastes**\n"
                 "> Selecting a venue to intern at is a stressful process, the options "
                 "are seemingly limitless! Don't worry, the </trainee match:1220096104008388689> "
-                "command will help you narrow down your choices.\n\n"
+                "command will help you narrow down your choices.\n"
+                "*The purpose of the Trainee matching is to show you what venues "
+                "offers on-site experience for a few shifts. __(This is not mandatory)__*"
             )
         )
 
