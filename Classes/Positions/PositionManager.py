@@ -368,3 +368,18 @@ class PositionManager:
         await frogginator.respond(interaction)
         
 ################################################################################
+    async def trainee_pos_report(self, interaction: Interaction) -> None:
+        
+        page_groups = [
+            PageGroup(label=pos.name, pages=[Page(embeds=[pos.limited_status()])])
+            for pos in self.positions
+        ]
+        
+        frogginator = Frogginator(
+            pages=page_groups,
+            show_menu=True,
+            menu_placeholder="Select a position to view details...",
+        )
+        await frogginator.respond(interaction)
+        
+################################################################################

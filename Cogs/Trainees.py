@@ -47,6 +47,16 @@ class Training(Cog):
         await guild.training_manager.match(ctx.interaction)
         
 ################################################################################  
+    @trainees.command(
+        name="position_info",
+        description="View information about a specific venue position."
+    )
+    async def trainee_position_info(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.position_manager.trainee_pos_report(ctx.interaction)
+
+################################################################################
 def setup(bot: "TrainingBot") -> None:
 
     bot.add_cog(Training(bot))

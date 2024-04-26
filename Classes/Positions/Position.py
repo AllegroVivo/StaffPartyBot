@@ -220,7 +220,7 @@ class Position:
                 trainer_pay += "\n*(Includes Follow-up/On-Site Assistance)*"
 
         return U.make_embed(
-            title=f"Position Status for: {self.name}",
+            title=f"Position Status for: __{self.name}__",
             description=(
                 "__**Description**__\n"
                 f"{self.description if self.description else '`Not Set`'}\n"
@@ -245,6 +245,14 @@ class Position:
                     inline=False
                 )
             ]
+        )
+    
+################################################################################
+    def limited_status(self) -> Embed:
+        
+        return U.make_embed(
+            title=f"Position Description for: __{self.name}__",
+            description=self.description if self.description else '`Not Set`'
         )
     
 ################################################################################
