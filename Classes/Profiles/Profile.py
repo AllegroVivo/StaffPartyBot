@@ -45,6 +45,7 @@ from Utilities import (
     AboutMeNotSetError,
     NoVenuesFoundError,
     GlobalDataCenter,
+    ProfileIncompleteError,
 )
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
@@ -199,6 +200,17 @@ class Profile:
         return self._aag.data_centers
     
 ################################################################################
+    @property
+    def is_complete(self) -> bool:
+        
+        return all([
+            self._aag.data_centers,
+            self._details.positions,
+            self._details.availability,
+            self._details.name != str(NS),
+        ])
+        
+################################################################################
     async def set_details(self, interaction: Interaction) -> None:
         
         await self._details.menu(interaction)
@@ -292,14 +304,9 @@ class Profile:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        # Check for unset character name
-        if self.char_name == str(NS):
-            error = CharNameNotSetError()
-            await interaction.respond(embed=error, ephemeral=True)
-            return
-        
-        if not self.availability:
-            error = AvailabilityNotCompleteError()
+        # Check profile completion
+        if not self.is_complete:
+            error = ProfileIncompleteError()
             await interaction.respond(embed=error, ephemeral=True)
             return
     
