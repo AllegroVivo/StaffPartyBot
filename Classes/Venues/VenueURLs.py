@@ -162,7 +162,7 @@ class VenueURLs:
                     (
                         len(m.attachments) > 0 
                         and m.attachments[0].content_type in (
-                            "image/png", "image/jpeg", "image/gif"
+                            "image/png", "image/jpeg", "image/gif", "image/webp"
                         )
                     )
                     or m.content.lower() == "cancel"
