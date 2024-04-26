@@ -26,6 +26,7 @@ class PositionStatusView(FroggeView):
         
         button_list = [
             PositionNameButton(),  
+            PositionDescriptionButton(self.position.description),
             PositionRoleButton(self.position.linked_role),
             PositionTrainerPayButton(self.position.trainer_pay),
             ToggleFollowupButton(self.position.followup_included),
@@ -175,4 +176,23 @@ class ToggleFollowupButton(FroggeButton):
         
         await interaction.edit(embed=self.view.position.status(), view=self.view)
         
+################################################################################
+class PositionDescriptionButton(FroggeButton):
+
+    def __init__(self, description: Optional[str]):
+
+        super().__init__(
+            label="Edit Description",
+            disabled=False,
+            row=0
+        )
+
+        self.set_style(description)
+
+    async def callback(self, interaction):
+        await self.view.position.set_description(interaction)
+        self.set_style(self.view.position.description)
+
+        await interaction.edit(embed=self.view.position.status(), view=self.view)
+
 ################################################################################

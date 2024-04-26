@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING, TypeVar, List, Type, Optional, Tuple, Any
 
 from discord import Embed, Interaction, EmbedField, SelectOption, Role
 
-from UI.Common import ConfirmCancelView, CloseMessageView
+from UI.Common import ConfirmCancelView
 from UI.Positions import (
     PositionStatusView,
     PositionRequirementModal,
     RemoveRequirementView,
     PositionNameModal,
     PositionTrainerPayModal,
+    PositionDescriptionModal,
 )
 from Utilities import Utilities as U, FroggeColor, InvalidSalaryError
 from .Requirement import Requirement
@@ -34,6 +35,7 @@ class Position:
         "_role",
         "_trainer_pay",
         "_followup",
+        "_description",
     )
     
 ################################################################################
@@ -48,6 +50,7 @@ class Position:
         self._role: Optional[Role] = kwargs.get("role")
         self._trainer_pay: Optional[int] = kwargs.get("trainer_pay")
         self._followup: bool = kwargs.get("followup", False)
+        self._description: Optional[str] = kwargs.get("description", None)
         
 ################################################################################
     @classmethod
@@ -79,7 +82,8 @@ class Position:
             reqs=reqs,
             role=role,
             trainer_pay=data[4],
-            followup=data[5]
+            followup=data[5],
+            description=data[6]
         ) 
     
 ################################################################################
@@ -115,6 +119,18 @@ class Position:
     def name(self, value: str) -> None:
             
         self._name = value
+        self.update()
+        
+################################################################################
+    @property
+    def description(self) -> Optional[str]:
+        
+        return self._description
+    
+    @description.setter
+    def description(self, value: str) -> None:
+        
+        self._description = value
         self.update()
         
 ################################################################################
@@ -205,6 +221,11 @@ class Position:
 
         return U.make_embed(
             title=f"Position Status for: {self.name}",
+            description=(
+                "__**Description**__\n"
+                f"{self.description if self.description else '`Not Set`'}\n"
+                f"{U.draw_line(extra=25)}"
+            ),
             fields=[
                 EmbedField(
                     name="__Linked Role__",
@@ -380,3 +401,17 @@ class Position:
         self.followup_included = not self.followup_included
         
 ################################################################################
+    async def set_description(self, interaction: Interaction) -> None:
+        
+        modal = PositionDescriptionModal(self.description)
+        
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        
+        if not modal.complete:
+            return
+        
+        self.description = modal.value
+        
+################################################################################
+        
