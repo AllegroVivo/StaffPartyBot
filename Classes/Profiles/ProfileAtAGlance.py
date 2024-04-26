@@ -293,7 +293,7 @@ class ProfileAtAGlance(ProfileSection):
             color=self.parent.color,
             title=f"At A Glance Section Details for {self.parent.char_name}",
             description=(
-                "*All sections, aside from **Data Center(s)** are optional.*\n"
+                "*All sections, aside from **Home Region(s)** are optional.*\n"
                 "*(Click the corresponding button below to edit each data point.)*\n"
                 f"{U.draw_line(extra=38)}"
             ),

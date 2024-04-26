@@ -149,7 +149,7 @@ class VenueURLs:
                 "should be a square image.\n\n"
                 
                 "**(The bot is currently listening and will cache the next\n"
-                "`.GIF`, `.PNG`, or `.JPG` image you upload to this channel.)**\n"
+                "`.WEBP`, `.GIF`, `.PNG`, or `.JPG` image you upload to this channel.)**\n"
                 f"{U.draw_line(extra=35)}\n"
                 "*(Type 'Cancel' to cancel this operation.)*"
             )
