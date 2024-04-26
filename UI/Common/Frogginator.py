@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from discord import NotFound
 from discord.ext.pages import Paginator
 ################################################################################
 
@@ -27,10 +28,13 @@ class Frogginator(Paginator):
 ################################################################################
     async def on_timeout(self) -> None:
         
-        if self.clear_on_timeout:
-            await self.cancel(True, self.pages[self.current_page])
-        else:
-            await super().on_timeout()
+        try:
+            if self.clear_on_timeout:
+                await self.cancel(True, self.pages[self.current_page])
+            else:
+                await super().on_timeout()
+        except NotFound:
+            pass
             
 ################################################################################
             
