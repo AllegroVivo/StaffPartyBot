@@ -793,8 +793,8 @@ class HelpMessage:
                 "3. **Prepare for training!**\n"
                 "> Once you've completed your profile, you can prepare for training. "
                 "This includes reading the venue </etiquette:1231774050150514759> guide "
-                "and reading on the general position description by using the `/trainee "
-                "position_info` command.\n\n"
+                "and reading on the general position description by using the "
+                "</trainee position_info:1220098774312026124> command.\n\n"
                 
                 "4. **Wait for a trainer to pick you up!**\n"
                 "> Once you've completed your profile and are ready for training, you "
