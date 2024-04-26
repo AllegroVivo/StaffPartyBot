@@ -43,11 +43,11 @@ class PositionStatusView(FroggeView):
     def set_button_style(self) -> None:
         
         if len(self.position.requirements) > 0:
-            self.children[5].style = ButtonStyle.danger  # type: ignore
-            self.children[5].disabled = False  # type: ignore
+            self.children[6].style = ButtonStyle.danger  # type: ignore
+            self.children[6].disabled = False  # type: ignore
         else:
-            self.children[5].style = ButtonStyle.secondary  # type: ignore
-            self.children[5].disabled = True  # type: ignore
+            self.children[6].style = ButtonStyle.secondary  # type: ignore
+            self.children[6].disabled = True  # type: ignore
             
 ################################################################################
 class PositionNameButton(Button):
