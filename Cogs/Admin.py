@@ -324,7 +324,7 @@ class Admin(Cog):
         ),
     ) -> None:
 
-        await self.bot.report_manager.rules_report(
+        await self.bot.report_manager.roles_report(
             ctx.interaction, ctx.guild.members,
             [r for r in [r1, r2, r3, r4, r5, r6, r7, r8, r9] if r]
         )

@@ -27,7 +27,7 @@ class ReportManager:
         
 ################################################################################
     @staticmethod
-    async def rules_report(interaction: Interaction, members: List[Member], roles: List[Role]) -> None:
+    async def roles_report(interaction: Interaction, members: List[Member], roles: List[Role]) -> None:
         
         # Prepare the data structure
         data = {
