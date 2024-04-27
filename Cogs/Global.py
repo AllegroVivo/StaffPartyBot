@@ -10,13 +10,13 @@ from discord import (
 from Classes.HelpMessage import HelpMessage
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 class GlobalCommands(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
     @slash_command(
@@ -51,7 +51,7 @@ class GlobalCommands(Cog):
         await guild.venue_manager.venue_etiquette(ctx.interaction)
         
 ################################################################################
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(GlobalCommands(bot))
 

@@ -25,7 +25,7 @@ from Utilities import (
 from .BGCheckVenue import BGCheckVenue
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, TUser
+    from Classes import StaffPartyBot, TUser
 ################################################################################
 
 __all__ = ("BackgroundCheck",)
@@ -105,7 +105,7 @@ class BackgroundCheck:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
     

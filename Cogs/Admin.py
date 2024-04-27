@@ -9,13 +9,13 @@ from discord import (
 )
 
 if TYPE_CHECKING:
-    from Classes.Bot import TrainingBot
+    from Classes.Bot import StaffPartyBot
 ################################################################################
 class Admin(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
 
@@ -261,7 +261,7 @@ class Admin(Cog):
         await guild.training_manager.trainer_management(ctx.interaction, user)
         
 ################################################################################      
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Admin(bot))
 

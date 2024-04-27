@@ -23,7 +23,7 @@ from .Venue import Venue
 from .VenueTag import VenueTag
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot, XIVVenue
+    from Classes import GuildData, StaffPartyBot, XIVVenue
 ################################################################################
 
 __all__ = ("VenueManager",)
@@ -70,7 +70,7 @@ class VenueManager:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
 

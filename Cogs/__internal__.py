@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from discord.ext import tasks
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 class Internal(Cog):
 
-    def __init__(self, bot: TrainingBot):
+    def __init__(self, bot: StaffPartyBot):
 
-        self.bot: TrainingBot = bot
+        self.bot: StaffPartyBot = bot
 
 ################################################################################
     @Cog.listener("on_ready")
@@ -51,7 +51,7 @@ class Internal(Cog):
             await f.jobs_manager.cull_job_postings()
         
 ################################################################################
-def setup(bot: TrainingBot) -> None:
+def setup(bot: StaffPartyBot) -> None:
 
     bot.add_cog(Internal(bot))
 

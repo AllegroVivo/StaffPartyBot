@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .XIVVenues import *
     
     # Modules
-    from .Bot import TrainingBot
+    from .Bot import StaffPartyBot
     from .ChannelManager import ChannelManager
     from .GuildData import GuildData
     from .GuildManager import GuildManager

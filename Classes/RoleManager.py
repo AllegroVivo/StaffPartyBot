@@ -9,7 +9,7 @@ from UI.Guild import RolesStatusView
 from Utilities import Utilities as U, RoleType, FroggeColor
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot
+    from Classes import GuildData, StaffPartyBot
 ################################################################################
 
 __all__ = ("RoleManager",)
@@ -50,7 +50,7 @@ class RoleManager:
         
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
     

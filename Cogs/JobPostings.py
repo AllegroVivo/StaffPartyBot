@@ -10,13 +10,13 @@ from discord import (
 )
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 class JobPostings(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
 
@@ -67,7 +67,7 @@ class JobPostings(Cog):
         await guild.jobs_manager.check_status(ctx.interaction, post_id)
         
 ################################################################################
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(JobPostings(bot))
 

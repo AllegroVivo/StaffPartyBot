@@ -33,7 +33,7 @@ from Utilities import (
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
-    from Classes import JobsManager, Position, Venue, TrainingBot, TUser
+    from Classes import JobsManager, Position, Venue, StaffPartyBot, TUser
 ################################################################################
 
 __all__ = ("JobPosting",)
@@ -129,7 +129,7 @@ class JobPosting:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._mgr.bot
     

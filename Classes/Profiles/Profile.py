@@ -53,7 +53,7 @@ from .ProfileImages import ProfileImages
 from .ProfilePersonality import ProfilePersonality
 
 if TYPE_CHECKING:
-    from Classes import ProfileManager, TrainingBot, PAvailability
+    from Classes import ProfileManager, StaffPartyBot, PAvailability
 ################################################################################
 
 __all__ = ("Profile",)
@@ -120,7 +120,7 @@ class Profile:
         
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._mgr.bot
     

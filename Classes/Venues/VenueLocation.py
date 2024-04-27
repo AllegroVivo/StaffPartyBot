@@ -21,7 +21,7 @@ from Utilities import (
 )
 
 if TYPE_CHECKING:
-    from Classes import Venue, TrainingBot, XIVLocation
+    from Classes import Venue, StaffPartyBot, XIVLocation
 ################################################################################
 
 __all__ = ("VenueLocation",)
@@ -81,7 +81,7 @@ class VenueLocation:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
 

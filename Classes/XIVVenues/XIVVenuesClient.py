@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from .XIVVenue import XIVVenue
 from Utilities.Errors.WTFException import WTFException
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("XIVVenuesClient",)
@@ -28,9 +28,9 @@ class XIVVenuesClient:
         URL_BASE = "https://api.ffxivvenues.com/venue?"
     
 ################################################################################
-    def __init__(self, state: TrainingBot):
+    def __init__(self, state: StaffPartyBot):
         
-        self._state: TrainingBot = state
+        self._state: StaffPartyBot = state
         
 ################################################################################
     async def get_venues_by_manager(self, manager_id: int) -> List[XIVVenue]:

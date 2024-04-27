@@ -10,7 +10,7 @@ from .XIVScheduleComponent import XIVScheduleComponent
 from .XIVScheduleOverride import XIVScheduleOverride
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("XIVVenue",)
@@ -65,7 +65,7 @@ class XIVVenue:
         
 ################################################################################
     @classmethod
-    async def from_data(cls: Type[V], bot: TrainingBot, data: Dict[str, Any]):
+    async def from_data(cls: Type[V], bot: StaffPartyBot, data: Dict[str, Any]):
 
         return cls(
             id=data["id"],

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Any, Tuple, Dict
 from .Profile import Profile
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot
+    from Classes import GuildData, StaffPartyBot
 ################################################################################
 
 __all__ = ("ProfileManager",)
@@ -47,7 +47,7 @@ class ProfileManager:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._state.bot
     

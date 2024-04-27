@@ -13,7 +13,7 @@ from Utilities import (
 )
 
 if TYPE_CHECKING:
-    from Classes import Venue, TrainingBot, XIVVenue
+    from Classes import Venue, StaffPartyBot, XIVVenue
 ################################################################################
 
 __all__ = ("VenueAtAGlance",)
@@ -70,7 +70,7 @@ class VenueAtAGlance:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
 

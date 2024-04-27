@@ -17,7 +17,7 @@ from UI.Common import ConfirmCancelView
 from UI.Training import TrainerMessageButtonView, TrainerSignUpSelectView
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, TrainingManager, PositionManager
+    from Classes import StaffPartyBot, TrainingManager, PositionManager
 ################################################################################
 
 __all__ = ("SignUpMessage",)
@@ -71,7 +71,7 @@ class SignUpMessage:
 
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._manager.bot 
     

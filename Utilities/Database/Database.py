@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .Inserter import DatabaseInserter
     from .Updater import DatabaseUpdater
     from .Deleter import DatabaseDeleter
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("Database", )
@@ -32,9 +32,9 @@ class Database:
     )
 
 ################################################################################
-    def __init__(self, bot: TrainingBot):
+    def __init__(self, bot: StaffPartyBot):
 
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
 
         self._connection: connection = None  # type: ignore
         self._cursor: cursor = None  # type: ignore

@@ -9,7 +9,7 @@ from .SAvailability import SAvailability
 from Utilities import Utilities as U
 
 if TYPE_CHECKING:
-    from Classes import ServicesManager, TrainingBot, HireableService
+    from Classes import ServicesManager, StaffPartyBot, HireableService
 ################################################################################
 
 __all__ = ("ServiceProfile",)
@@ -59,7 +59,7 @@ class ServiceProfile:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._mgr.bot
     

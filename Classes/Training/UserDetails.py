@@ -8,7 +8,7 @@ from UI.Training import TUserNameModal, TUserNotesModal, DataCenterSelectView
 from Utilities import Utilities as U, GlobalDataCenter
 
 if TYPE_CHECKING:
-    from Classes import TUser, TrainingBot
+    from Classes import TUser, StaffPartyBot
 ################################################################################
 
 __all__ = ("UserDetails", )
@@ -56,7 +56,7 @@ class UserDetails:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
     

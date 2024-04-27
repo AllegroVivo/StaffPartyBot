@@ -7,7 +7,7 @@ from Assets import BotEmojis
 from Utilities import RequirementLevel
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, PositionManager
+    from Classes import StaffPartyBot, PositionManager
 ################################################################################
 
 __all__ = ("Requirement", )
@@ -38,9 +38,9 @@ class Requirement:
     )
     
 ################################################################################
-    def __init__(self, bot: TrainingBot, _id: str, pos_id: str, description: str) -> None:
+    def __init__(self, bot: StaffPartyBot, _id: str, pos_id: str, description: str) -> None:
         
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
         
         self._id: str = _id
         self._parent_id: str = pos_id
@@ -55,7 +55,7 @@ class Requirement:
     
 ################################################################################
     @classmethod
-    def load(cls: Type[R], bot: TrainingBot, data: Tuple[str, int, str, str]) -> R:
+    def load(cls: Type[R], bot: StaffPartyBot, data: Tuple[str, int, str, str]) -> R:
 
         # (data[1] is the guild_id, which we don't use here.)
         return cls(bot, data[0], data[2], data[3])

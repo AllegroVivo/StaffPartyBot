@@ -10,7 +10,7 @@ from UI.Common import ConfirmCancelView
 from Utilities import Utilities as U, ServiceNotFoundError
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot
+    from Classes import GuildData, StaffPartyBot
 ################################################################################
 
 __all__ = ("ServicesManager",)
@@ -41,7 +41,7 @@ class ServicesManager:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
     

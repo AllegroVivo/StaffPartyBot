@@ -16,10 +16,10 @@ if TYPE_CHECKING:
     from Classes import GuildData
 ################################################################################
 
-__all__ = ("TrainingBot",)
+__all__ = ("StaffPartyBot",)
 
 ################################################################################
-class TrainingBot(Bot):
+class StaffPartyBot(Bot):
 
     __slots__ = (
         "_img_dump",

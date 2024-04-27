@@ -14,7 +14,7 @@ from UI.Guild import ChannelStatusView
 from Utilities import Utilities as U, MentionableType, ChannelPurpose
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot
+    from Classes import GuildData, StaffPartyBot
 ################################################################################
 
 __all__ = ("ChannelManager",)
@@ -56,7 +56,7 @@ class ChannelManager:
         
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
     

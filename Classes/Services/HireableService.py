@@ -14,7 +14,7 @@ from Utilities import Utilities as U, FroggeColor, MentionableType
 from .ServiceConfiguration import ServiceConfiguration
 
 if TYPE_CHECKING:
-    from Classes import ServicesManager, TrainingBot
+    from Classes import ServicesManager, StaffPartyBot
 ################################################################################
 
 __all__ = ("HireableService",)
@@ -75,7 +75,7 @@ class HireableService:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._mgr.bot
     

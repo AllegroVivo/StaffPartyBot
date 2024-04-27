@@ -8,13 +8,13 @@ from discord import (
 )
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 class Training(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
 
@@ -57,7 +57,7 @@ class Training(Cog):
         await guild.position_manager.trainee_pos_report(ctx.interaction)
 
 ################################################################################
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Training(bot))
 

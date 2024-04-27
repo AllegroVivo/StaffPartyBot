@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List
 from .GuildData import GuildData
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("GuildManager",)
@@ -21,9 +21,9 @@ class GuildManager:
     )
     
 ################################################################################
-    def __init__(self, bot: TrainingBot):
+    def __init__(self, bot: StaffPartyBot):
         
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
         self._fguilds: List[GuildData] = []
     
 ################################################################################

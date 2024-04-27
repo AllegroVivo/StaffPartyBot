@@ -11,13 +11,13 @@ from discord import (
 )
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 class Venues(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
 
@@ -94,7 +94,7 @@ class Venues(Cog):
         await guild.venue_manager.toggle_user_mute(ctx.interaction, name, user)
         
 ################################################################################  
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Venues(bot))
 

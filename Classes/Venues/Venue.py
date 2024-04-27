@@ -45,7 +45,7 @@ from .VenueTag import VenueTag
 from .VenueURLs import VenueURLs
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, VenueManager, Position, GuildData, XIVVenue
+    from Classes import StaffPartyBot, VenueManager, Position, GuildData, XIVVenue
 ################################################################################
 
 __all__ = ("Venue",)
@@ -186,7 +186,7 @@ class Venue:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._mgr.bot
     

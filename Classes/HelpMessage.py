@@ -7,7 +7,7 @@ from discord.ext.pages import Page, PageGroup
 from UI.Common import Frogginator
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("HelpMessage",)
@@ -20,9 +20,9 @@ class HelpMessage:
     )
     
 ################################################################################
-    def __init__(self, bot: TrainingBot):
+    def __init__(self, bot: StaffPartyBot):
         
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
     
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:

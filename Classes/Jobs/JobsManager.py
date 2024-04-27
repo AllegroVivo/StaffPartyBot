@@ -23,7 +23,7 @@ from Utilities import (
 from .JobPosting import JobPosting
 
 if TYPE_CHECKING:
-    from Classes import GuildData, TrainingBot, VenueManager, Venue
+    from Classes import GuildData, StaffPartyBot, VenueManager, Venue
 ################################################################################
 
 __all__ = ("JobsManager",)
@@ -58,7 +58,7 @@ class JobsManager:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
     

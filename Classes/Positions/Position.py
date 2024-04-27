@@ -17,7 +17,7 @@ from Utilities import Utilities as U, FroggeColor, InvalidSalaryError
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
-    from Classes import PositionManager, TrainingBot
+    from Classes import PositionManager, StaffPartyBot
 ################################################################################
 
 __all__ = ("Position", )
@@ -93,7 +93,7 @@ class Position:
         
 ################################################################################    
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._manager.bot
 

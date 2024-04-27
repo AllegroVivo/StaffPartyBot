@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Tuple
 from uuid import uuid4
 
 if TYPE_CHECKING:
-    from Classes.Bot import TrainingBot
+    from Classes.Bot import StaffPartyBot
     from Utilities import Database
 ################################################################################
 
@@ -20,13 +20,13 @@ class DBWorkerBranch:
     )
 
 ################################################################################
-    def __init__(self, _state: TrainingBot):
+    def __init__(self, _state: StaffPartyBot):
 
-        self._state: TrainingBot = _state
+        self._state: StaffPartyBot = _state
 
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._state
 

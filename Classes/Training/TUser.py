@@ -36,10 +36,10 @@ from .UserDetails import UserDetails
 
 if TYPE_CHECKING:
     from Classes import (
-        TrainingBot, 
-        TrainingManager, 
-        PositionManager, 
-        GuildData, 
+        StaffPartyBot,
+        TrainingManager,
+        PositionManager,
+        GuildData,
         Position,
         JobPosting,
         Profile,
@@ -147,7 +147,7 @@ class TUser:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._manager.bot
 

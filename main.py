@@ -5,7 +5,7 @@ import os
 from discord import Intents
 from dotenv import load_dotenv
 
-from Classes.Bot import TrainingBot
+from Classes.Bot import StaffPartyBot
 ################################################################################
 
 load_dotenv()
@@ -17,7 +17,7 @@ if os.getenv("DEBUG") == "True":
 else:
     debug_guilds = None
     
-bot = TrainingBot(
+bot = StaffPartyBot(
     description="Toot toot, bitches!",
     intents=Intents.all(),
     debug_guilds=debug_guilds

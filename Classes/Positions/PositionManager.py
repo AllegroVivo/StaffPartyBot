@@ -13,7 +13,7 @@ from .Position import Position
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, GuildData
+    from Classes import StaffPartyBot, GuildData
 ################################################################################
 
 __all__ = ("PositionManager", )
@@ -66,7 +66,7 @@ class PositionManager:
             
 ################################################################################    
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._guild.bot
     

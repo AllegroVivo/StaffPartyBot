@@ -8,7 +8,7 @@ from UI.Venues import VenueDiscordURLModal, VenueWebsiteURLModal, VenueApplicati
 from Utilities import Utilities as U, FroggeColor
 
 if TYPE_CHECKING:
-    from Classes import Venue, TrainingBot, XIVVenue
+    from Classes import Venue, StaffPartyBot, XIVVenue
 ################################################################################
 
 __all__ = ("VenueURLs",)
@@ -64,7 +64,7 @@ class VenueURLs:
         
 ################################################################################    
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
     

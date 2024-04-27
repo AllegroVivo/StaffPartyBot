@@ -5,7 +5,7 @@ from flask import Flask, request, abort, url_for
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot
+    from Classes import StaffPartyBot
 ################################################################################
 
 __all__ = ("FroggeHookManager", )
@@ -19,9 +19,9 @@ class FroggeHookManager:
     )
     
 ################################################################################
-    def __init__(self, bot: TrainingBot):
+    def __init__(self, bot: StaffPartyBot):
 
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
         
         self.__app__: Flask = Flask(__name__)
         self.add_routes()

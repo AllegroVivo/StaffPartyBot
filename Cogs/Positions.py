@@ -11,13 +11,13 @@ from discord import (
 )
 
 if TYPE_CHECKING:
-    from Classes.Bot import TrainingBot
+    from Classes.Bot import StaffPartyBot
 ################################################################################
 class Positions(Cog):
 
-    def __init__(self, bot: "TrainingBot"):
+    def __init__(self, bot: "StaffPartyBot"):
 
-        self.bot: "TrainingBot" = bot
+        self.bot: "StaffPartyBot" = bot
 
 ################################################################################
 
@@ -79,7 +79,7 @@ class Positions(Cog):
         await guild.position_manager.global_requirements_menu(ctx.interaction)
 
 ################################################################################
-def setup(bot: "TrainingBot") -> None:
+def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Positions(bot))
 

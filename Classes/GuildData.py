@@ -18,7 +18,7 @@ from UI.Guild import ReportMenuView
 from Utilities import Utilities as U
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, Profile
+    from Classes import StaffPartyBot, Profile
 ################################################################################
 
 __all__ = ("GuildData",)
@@ -42,9 +42,9 @@ class GuildData:
     )
 
 ################################################################################
-    def __init__(self, bot: TrainingBot, parent: Guild):
+    def __init__(self, bot: StaffPartyBot, parent: Guild):
 
-        self._state: TrainingBot = bot
+        self._state: StaffPartyBot = bot
         self._parent: Guild = parent
         
         self._logger: Logger = Logger(self)
@@ -75,7 +75,7 @@ class GuildData:
         
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._state
     

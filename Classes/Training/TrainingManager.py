@@ -25,7 +25,7 @@ from .TUser import TUser
 from .Training import Training
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, GuildData, Venue, VenueTag
+    from Classes import StaffPartyBot, GuildData, Venue, VenueTag
 ################################################################################
 
 __all__ = ("TrainingManager",)
@@ -141,7 +141,7 @@ class TrainingManager:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._guild.bot
     

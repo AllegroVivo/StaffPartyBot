@@ -9,7 +9,7 @@ from .InternshipManager import InternshipManager
 from Utilities import Utilities as U, Weekday
 
 if TYPE_CHECKING:
-    from Classes import TrainingBot, VenueManager, VenueURLs
+    from Classes import StaffPartyBot, VenueManager, VenueURLs
 ################################################################################
 
 __all__ = ("VenueAvailability",)
@@ -56,7 +56,7 @@ class VenueAvailability:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
         
         return self._parent.bot
     

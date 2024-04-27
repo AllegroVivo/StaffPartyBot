@@ -10,7 +10,7 @@ from UI.Training import TrainerDashboardButtonView, TrainingUpdateView
 from Utilities import Utilities as U, RequirementLevel, RoleType
 
 if TYPE_CHECKING:
-    from Classes import Position, TUser, TrainingBot, Requirement, TrainingManager
+    from Classes import Position, TUser, StaffPartyBot, Requirement, TrainingManager
 ################################################################################
 
 __all__ = ("Training", )
@@ -84,7 +84,7 @@ class Training:
     
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._trainee.bot
 

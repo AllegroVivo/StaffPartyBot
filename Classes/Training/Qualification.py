@@ -7,7 +7,7 @@ from discord import User
 from Utilities import TrainingLevel
 
 if TYPE_CHECKING:
-    from Classes import Position, TrainingBot, TrainingManager
+    from Classes import Position, StaffPartyBot, TrainingManager
 ################################################################################
 
 __all__ = ("Qualification", )
@@ -76,7 +76,7 @@ class Qualification:
 
 ################################################################################
     @property
-    def bot(self) -> TrainingBot:
+    def bot(self) -> StaffPartyBot:
 
         return self._manager.bot
 
