@@ -259,7 +259,76 @@ class Admin(Cog):
 
         guild = self.bot[ctx.guild_id]
         await guild.training_manager.trainer_management(ctx.interaction, user)
-        
+
+################################################################################
+    @admin.command(
+        name="roles_report",
+        description="Generate a report of selected roles applied to all members in the server."
+    )
+    async def test(
+        self, 
+        ctx: ApplicationContext,
+        r1: Option(
+            SlashCommandOptionType.role,
+            name="role1",
+            description="Report role #1",
+            required=True
+        ),
+        r2: Option(
+            SlashCommandOptionType.role,
+            name="role2",
+            description="Report role #2",
+            required=False
+        ),
+        r3: Option(
+            SlashCommandOptionType.role,
+            name="role3",
+            description="Report role #3",
+            required=False
+        ),
+        r4: Option(
+            SlashCommandOptionType.role,
+            name="role4",
+            description="Report role #4",
+            required=False
+        ),
+        r5: Option(
+            SlashCommandOptionType.role,
+            name="role5",
+            description="Report role #5",
+            required=False
+        ),
+        r6: Option(
+            SlashCommandOptionType.role,
+            name="role6",
+            description="Report role #6",
+            required=False
+        ),
+        r7: Option(
+            SlashCommandOptionType.role,
+            name="role7",
+            description="Report role #7",
+            required=False
+        ),
+        r8: Option(
+            SlashCommandOptionType.role,
+            name="role8",
+            description="Report role #8",
+            required=False
+        ),
+        r9: Option(
+            SlashCommandOptionType.role,
+            name="role9",
+            description="Report role #9",
+            required=False
+        ),
+    ) -> None:
+
+        await self.bot.report_manager.rules_report(
+            ctx.interaction, ctx.guild.members,
+            [r for r in [r1, r2, r3, r4, r5, r6, r7, r8, r9] if r]
+        )
+                          
 ################################################################################      
 def setup(bot: "StaffPartyBot") -> None:
 

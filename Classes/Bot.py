@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from Utilities.Database import Database
 from .GuildManager import GuildManager
+from .ReportManager import ReportManager
 from .XIVVenues import XIVVenuesClient
 from .Webhooks import FroggeHookManager
 
@@ -27,6 +28,7 @@ class StaffPartyBot(Bot):
         "_guild_mgr",
         "_xiv_client",
         "_webhooks",
+        "_report_mgr",
     )
 
 ################################################################################
@@ -40,6 +42,7 @@ class StaffPartyBot(Bot):
         self._guild_mgr: GuildManager = GuildManager(self)
         self._xiv_client: XIVVenuesClient = XIVVenuesClient(self)
         self._webhooks: FroggeHookManager = FroggeHookManager(self)
+        self._report_mgr: ReportManager = ReportManager(self)
 
 ################################################################################
     def __getitem__(self, guild_id: int) -> GuildData:
@@ -63,6 +66,12 @@ class StaffPartyBot(Bot):
     def veni_client(self) -> XIVVenuesClient:
         
         return self._xiv_client
+    
+################################################################################
+    @property
+    def report_manager(self) -> ReportManager:
+        
+        return self._report_mgr
     
 ################################################################################
     async def load_all(self) -> None:
