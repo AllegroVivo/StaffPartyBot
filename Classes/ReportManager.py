@@ -64,16 +64,16 @@ class ReportManager:
         df = pd.DataFrame(data)
     
         # Write the DataFrame to an Excel file
-        df.to_excel("rules_report.xlsx", index=False, engine='openpyxl')
+        df.to_excel("roles_report.xlsx", index=False, engine='openpyxl')
     
         # Send the Excel file
-        with open("rules_report.xlsx", "rb") as f:
+        with open("roles_report.xlsx", "rb") as f:
             await interaction.respond(
-                f"Excel file rules_report.xlsx has been created with member data.", 
+                f"Excel file roles_report.xlsx has been created with member data.", 
                 file=File(f)  # type: ignore
             )
             
         # Delete the Excel file
-        os.remove("rules_report.xlsx")
+        os.remove("roles_report.xlsx")
         
 ################################################################################
