@@ -537,10 +537,16 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     def _compile_availability(self) -> Embed:
         
+        position_str = ", ".join([f"`{p.name}`" for p in self.positions])
         return U.make_embed(
             color=self.color,
             title="__Availability__",
-            description=PAvailability.long_availability_status(self.availability),
+            description=(
+                f"{PAvailability.long_availability_status(self.availability)}\n"
+                
+                "**__Employable Positions__**\n"
+                f"{position_str}"
+            ),
             footer_text=self._url
         )
     
