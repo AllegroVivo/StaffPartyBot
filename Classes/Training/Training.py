@@ -158,6 +158,7 @@ class Training:
     def delete(self) -> None:
 
         self.bot.database.delete.training(self)
+        self.manager._trainings.remove(self)
 
 ################################################################################
     def update(self) -> None:

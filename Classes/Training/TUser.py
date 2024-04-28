@@ -952,12 +952,12 @@ class TUser:
             await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
 
-        self._details.toggle_hiatus()
-        
-        if self.on_hiatus:
-            for t in self.trainings_as_trainee:
+        if not self.on_hiatus:
+            for t in self.trainings_as_trainer:
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
+                
+        self._details.toggle_hiatus()
         
         await self.training_manager.signup_message.update_components()
         await self.guild.log.tuser_hiatus(self)
@@ -976,12 +976,11 @@ class TUser:
                 f"{U.draw_line(extra=43)}"
             )
         )
-
-        if not self.on_hiatus:
-            try:
-                await self.user.send(embed=notification)
-            except:
-                pass
+        
+        try:
+            await self.user.send(embed=notification)
+        except:
+            pass
 
 ################################################################################
     async def is_eligible(

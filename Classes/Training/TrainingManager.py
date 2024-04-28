@@ -247,7 +247,6 @@ class TrainingManager:
 
         for t in self._trainings:
             if t.id == training_id:
-                self._trainings.remove(t)
                 await self._guild.log.training_removed(t)
                 t.delete()
                 break
