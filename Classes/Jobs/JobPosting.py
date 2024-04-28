@@ -57,6 +57,7 @@ class JobPosting:
         "_post_msg",
         "_candidate",
         "_rejections",
+        "_schedule_updated",
     )
     
 ################################################################################
@@ -78,6 +79,8 @@ class JobPosting:
         self._salary: PayRate = kwargs.pop("salary", None) or PayRate(self)
         self._start: Optional[datetime] = kwargs.pop("start", None)
         self._end: Optional[datetime] = kwargs.pop("end", None)
+        
+        self._schedule_updated: bool = False
         
 ################################################################################
     @classmethod
@@ -119,6 +122,8 @@ class JobPosting:
         self._salary = PayRate(self, data[7], RateType(data[8]) if data[8] else None, data[9])
         self._start = data[11]
         self._end = data[12]
+        
+        self._schedule_updated = False
         
         try:
             await self._update_posting()
@@ -639,6 +644,7 @@ class JobPosting:
             
         self._start = start_time
         self._end = end_time
+        self._schedule_updated = True
         
         self.update()
         
@@ -656,6 +662,10 @@ class JobPosting:
                 description="The job posting has been updated."
             )
             await interaction.respond(embed=confirm, ephemeral=True)
+            
+            if self._schedule_updated:
+                await self.notify_eligible_applicants()
+                self._schedule_updated = False
             return
     
         confirm = U.make_embed(
