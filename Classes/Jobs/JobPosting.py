@@ -632,8 +632,8 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        if (end_time - start_time).total_seconds() < 7200:
-            error = TimeRangeError("2 Hours")
+        if (end_time - start_time).total_seconds() < 7200 or (end_time - start_time).total_seconds() > 259200:
+            error = TimeRangeError("2 Hours", "3 Days")
             await interaction.respond(embed=error, ephemeral=True)
             return
             
