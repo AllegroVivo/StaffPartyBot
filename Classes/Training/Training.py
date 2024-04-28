@@ -169,6 +169,8 @@ class Training:
     async def set_trainer(self, trainer: Optional[TUser]) -> None:
 
         prev_trainer = self.trainer
+        
+        self.reset()
         self._trainer = trainer
         self.update()
         
@@ -212,6 +214,8 @@ class Training:
                 )
             )
             await prev_trainer.send(embed=trainer_confirm)
+            
+        await self.manager.signup_message.update_components()
         
 ################################################################################
     def status_page(self, owner: User) -> Page:
