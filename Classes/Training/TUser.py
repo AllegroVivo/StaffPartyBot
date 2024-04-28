@@ -306,6 +306,15 @@ class TUser:
                 self._availability_field(False),
                 self._dc_field(),
                 self._notes_field(),
+                EmbedField(
+                    name="__Unsettled Wages__",
+                    value=(
+                        f"`{self.unsettled_wages():,} gil`"
+                        if self.unsettled_wages() > 0
+                        else "`None`"
+                    ),
+                    inline=True
+                )
             ]
         )
 
