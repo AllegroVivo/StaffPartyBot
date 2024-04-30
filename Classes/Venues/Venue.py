@@ -179,6 +179,9 @@ class Venue:
 ################################################################################
     def __eq__(self, other: Venue) -> bool:
         
+        if other is None:
+            return False
+        
         if not isinstance(other, Venue):
             raise TypeError(f"Cannot compare Venue with {type(other)}")
         
