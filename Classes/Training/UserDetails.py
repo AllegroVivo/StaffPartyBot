@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, List
 
 from discord import Embed, Interaction, User
 
+from UI.Common import YesNoView
 from UI.Training import TUserNameModal, TUserNotesModal, DataCenterSelectView
 from Utilities import Utilities as U, GlobalDataCenter
 
@@ -22,25 +23,20 @@ class UserDetails:
         "_notes",
         "_hiatus",
         "_data_centers",
+        "_guidelines",
     )
     
 ################################################################################
-    def __init__(
-        self,
-        parent: TUser,
-        name: Optional[str] = None,
-        notes: Optional[str] = None,
-        hiatus: Optional[bool] = None,
-        data_centers: Optional[List[GlobalDataCenter]] = None
-    ):
+    def __init__(self, parent: TUser, **kwargs):
         
         self._parent: TUser = parent
         
-        self._name: Optional[str] = name
-        self._notes: Optional[str] = notes
-        self._hiatus: Optional[bool] = hiatus
+        self._name: Optional[str] = kwargs.get("name", None)
+        self._notes: Optional[str] = kwargs.get("notes", None)
+        self._hiatus: Optional[bool] = kwargs.get("hiatus", None)
+        self._guidelines: bool = kwargs.get("guidelines", False)
         
-        self._data_centers: List[GlobalDataCenter] = data_centers or []
+        self._data_centers: List[GlobalDataCenter] = kwargs.get("data_centers", None) or []
         
 ################################################################################
     @classmethod
@@ -51,7 +47,8 @@ class UserDetails:
             name=data[0],
             notes=data[1],
             hiatus=data[2],
-            data_centers=[GlobalDataCenter(int(dc)) for dc in data[3]] if data[3] else None
+            data_centers=[GlobalDataCenter(int(dc)) for dc in data[3]] if data[3] else None,
+            guidelines=data[4],
         )
     
 ################################################################################
@@ -115,6 +112,18 @@ class UserDetails:
         self.update()
         
 ################################################################################
+    @property
+    def guidelines_accepted(self) -> bool:
+        
+        return self._guidelines
+    
+    @guidelines_accepted.setter
+    def guidelines_accepted(self, value: bool) -> None:
+        
+        self._guidelines = value
+        self.update()
+        
+################################################################################
     def update(self) -> None:
         
         self.bot.database.update.tuser_details(self)
@@ -170,4 +179,28 @@ class UserDetails:
         
         self.data_centers = view.value
     
+################################################################################
+    async def accept_guidelines(self, interaction: Interaction) -> bool:
+        
+        prompt = U.make_embed(
+            title="Please Accept the Trainer Guidelines",
+            description=(
+                "I confirm I have read and understood the guidelines and will "
+                "do trainings within these parameters.\n\n"
+                
+                "https://discord.com/channels/1104515062187708525/1220565996314820670"
+            )
+        )
+        view = YesNoView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return False
+        
+        self.guidelines_accepted = True
+        
+        return True
+        
 ################################################################################

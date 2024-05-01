@@ -124,8 +124,8 @@ class TUser:
         self._manager = mgr
         self._user = user
 
-        self._details = UserDetails.load(self, tuser[3:7])
-        self._config = UserConfiguration.load(self, tuser[7:9])
+        self._details = UserDetails.load(self, tuser[3:8])
+        self._config = UserConfiguration.load(self, tuser[8:10])
         self._availability = [TAvailability.load(self, a) for a in data["availability"]]
         self._qualifications = [Qualification.load(self, q) for q in data["qualifications"]]
         
@@ -542,6 +542,10 @@ class TUser:
 
 ################################################################################
     async def add_qualification(self, interaction: Interaction) -> None:
+        
+        if not self._details.guidelines_accepted:
+            if not await self._details.accept_guidelines(interaction):
+                return
 
         embed = U.make_embed(
             title="Add Qualification",

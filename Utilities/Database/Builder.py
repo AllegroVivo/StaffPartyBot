@@ -85,6 +85,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "d.notes,"
             "d.hiatus,"
             "d.data_centers,"
+            "d.guidelines,"
             "c.image_url,"
             "c.job_pings "
             "FROM tusers t "
