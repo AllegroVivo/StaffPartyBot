@@ -47,6 +47,27 @@ class Utilities:
     }
     
 ################################################################################
+    
+    JOB_WEIGHTS = {
+        'gamba': 1,
+        'shout runner': 2,
+        'bartender': 3,
+        'greeter': 4,
+        'photo': 5,
+        'dj': 6,
+        'courtesan': 7,
+        'exotic dancer': 8,
+        'host/dancer': 9,
+        'pillow': 10,
+        'security': 11,
+        'tarot': 12,
+        'manager': 13,
+        'rp flex': 14,
+        'pf attendant': 15,
+        'bard': 16
+    }
+    
+################################################################################
     @staticmethod
     def make_embed(
         *,

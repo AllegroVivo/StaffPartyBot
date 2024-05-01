@@ -53,7 +53,7 @@ from .ProfileImages import ProfileImages
 from .ProfilePersonality import ProfilePersonality
 
 if TYPE_CHECKING:
-    from Classes import ProfileManager, StaffPartyBot, PAvailability
+    from Classes import ProfileManager, StaffPartyBot, PAvailability, Position
 ################################################################################
 
 __all__ = ("Profile",)
@@ -343,8 +343,16 @@ class Profile:
         # Handling threads
         channel = self.manager.guild.channel_manager.profiles_channel
         matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
+        
+        # Tags - Start with DM status
         tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
         tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
+        # Add position tags according to weights
+        tags += [
+            t for t in channel.available_tags 
+            if t.name.lower() in 
+            [p.name.lower() for p in self._get_top_positions()]
+        ]
     
         # Attempt to edit an existing post
         if self.post_message:
@@ -634,4 +642,20 @@ class Profile:
             await venue.toggle_user_mute(interaction, self.user)
         
 ################################################################################
-        
+    def _get_top_positions(self) -> List[Position]:
+
+        # Map each position to its weight, defaulting to a high number if not found
+        weighted_positions = [
+            (job, U.JOB_WEIGHTS.get(job.name.lower(), 100)) 
+            for job in self._details.positions
+        ]
+    
+        # Sort positions by weight (ascending order so lower numbers are first)
+        weighted_positions.sort(key=lambda x: x[1])
+    
+        # Extract the top four jobs (or fewer if less than four are provided)
+        top_positions = [pos[0] for pos in weighted_positions[:4]]
+    
+        return top_positions
+
+################################################################################
