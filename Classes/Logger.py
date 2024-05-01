@@ -323,6 +323,11 @@ class Logger:
         
         embed = U.make_embed(
             title="Background Check Submitted!",
+            description=(
+                f"__**User:**__\n"
+                f"{bg_check.parent.user.mention}\n"
+                f"({bg_check.parent.user.display_name})\n"
+            ),
             fields=[
                 EmbedField(
                     name="__Names__",
