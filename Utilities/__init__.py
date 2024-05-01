@@ -4,6 +4,7 @@ from .Errors import *
 
 # Modules
 from .Colors import FroggeColor
+from .FroggeLog import log
 from .Helpers import *
 from .LogColors import LOG_COLORS
 from .NotSet import NS
