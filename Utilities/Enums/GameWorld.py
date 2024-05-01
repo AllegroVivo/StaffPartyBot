@@ -126,17 +126,6 @@ class GameWorld(FroggeEnum):
             ]
         elif dc.value == 5:
             world_list = [
-                GameWorld.Cerberus,
-                GameWorld.Louisoix,
-                GameWorld.Moogle,
-                GameWorld.Omega,
-                GameWorld.Phantom,
-                GameWorld.Ragnarok,
-                GameWorld.Sagittarius,
-                GameWorld.Spriggan,
-            ]
-        elif dc.value == 6:
-            world_list = [
                 GameWorld.Alpha,
                 GameWorld.Lich,
                 GameWorld.Odin,
@@ -145,6 +134,17 @@ class GameWorld(FroggeEnum):
                 GameWorld.Shiva,
                 GameWorld.Twintania,
                 GameWorld.Zodiark,
+            ]
+        elif dc.value == 6:
+            world_list = [
+                GameWorld.Cerberus,
+                GameWorld.Louisoix,
+                GameWorld.Moogle,
+                GameWorld.Omega,
+                GameWorld.Phantom,
+                GameWorld.Ragnarok,
+                GameWorld.Sagittarius,
+                GameWorld.Spriggan,
             ]
         else:
             world_list = [
