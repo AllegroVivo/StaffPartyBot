@@ -29,8 +29,8 @@ from Utilities import (
     DateTimeBeforeNowError,
     IneligibleForJobError,
     CannotEditPostingError,
+    log
 )
-from Utilities import log
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
