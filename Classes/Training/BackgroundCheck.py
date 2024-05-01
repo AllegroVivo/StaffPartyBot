@@ -425,18 +425,13 @@ class BackgroundCheck:
         await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.StaffMain)
         await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.StaffNotValidated)
         
+        if self.is_trainer:
+            await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.TrainerMain)
+            await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.TrainerPending)
+            
         self._approved_at = datetime.utcnow()
         self._approved_by = user
         self.approved = True  # This will call the update() method
-        
-        # 
-        # confirm = U.make_embed(
-        #     title="User Approved",
-        #     description=(
-        #         "This user has been approved and can now access the server."
-        #     )
-        # )
-        # await interaction.respond(embed=confirm, ephemeral=True)
         
         user_confirm = U.make_embed(
             title="Approved",
