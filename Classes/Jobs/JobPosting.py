@@ -882,6 +882,9 @@ class JobPosting:
 ################################################################################
     async def _update_post_components(self, addl_attempt: bool = False) -> bool:
         
+        if self.post_message is None:
+            return False
+        
         try:
             view = JobPostingPickupView(self)
             self.bot.add_view(view, message_id=self._post_msg.id)
