@@ -10,6 +10,7 @@ class GlobalDataCenter(FroggeEnum):
     Americas = 1
     Europe = 2
     Oceania = 3
+    Japanese = 4
 
 ################################################################################
     @staticmethod
@@ -27,6 +28,8 @@ class GlobalDataCenter(FroggeEnum):
             return "EU"
         elif self.value == 3:
             return "OC"
+        elif self.value == 4:
+            return "JP"
     
 ################################################################################
     def contains(self, dc: DataCenter) -> bool:
@@ -40,5 +43,7 @@ class GlobalDataCenter(FroggeEnum):
             return dc.value in [5, 6]
         elif self.value == 3:
             return dc.value in [7]
+        elif self.value == 4:
+            return dc.value in [8, 9, 10, 11]
         
 ################################################################################

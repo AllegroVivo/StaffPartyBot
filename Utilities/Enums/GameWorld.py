@@ -58,6 +58,38 @@ class GameWorld(FroggeEnum):
     Zalera = 47
     Zodiark = 48
     Zurvan = 49
+    Aegis = 50
+    Atomos = 51
+    Carbuncle = 52
+    Garuda = 53
+    Gungnir = 54
+    Kujata = 55
+    Tonberry = 56
+    Typhon = 57
+    Alexander = 58
+    Bahamut = 59
+    Durandal = 60
+    Fenrir = 61
+    Ifrit = 62
+    Ridill = 63
+    Tiamat = 64
+    Ultima = 65
+    Anima = 66
+    Asura = 67
+    Chocobo = 68
+    Hades = 69
+    Ixion = 70
+    Masamune = 71
+    Pandaemonium = 72
+    Titan = 73
+    Belias = 74
+    Mandragora = 75
+    Ramuh = 76
+    Shinryu = 77
+    Unicorn = 78
+    Valefor = 79
+    Yojimbo = 80
+    Zeromus = 81
 
 ################################################################################
     @classmethod
@@ -84,7 +116,7 @@ class GameWorld(FroggeEnum):
     @staticmethod
     def select_options_by_dc(dc: FroggeEnum) -> List[SelectOption]:
         
-        if dc.value == 1:
+        if dc.value == 1:  # Aether
             world_list = [
                 GameWorld.Adamantoise,
                 GameWorld.Cactuar,
@@ -95,7 +127,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Sargatanas,
                 GameWorld.Siren,
             ]
-        elif dc.value == 2:
+        elif dc.value == 2:  # Crystal
             world_list = [
                 GameWorld.Balmung,
                 GameWorld.Brynhildr,
@@ -106,14 +138,14 @@ class GameWorld(FroggeEnum):
                 GameWorld.Mateus,
                 GameWorld.Zalera,
             ]
-        elif dc.value == 3:
+        elif dc.value == 3:  # Dynamis
             world_list = [
                 GameWorld.Halicarnassus,
                 GameWorld.Maduin,
                 GameWorld.Marilith,
                 GameWorld.Seraph,
             ]
-        elif dc.value == 4:
+        elif dc.value == 4:  # Primal
             world_list = [
                 GameWorld.Behemoth,
                 GameWorld.Excalibur,
@@ -124,7 +156,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Leviathan,
                 GameWorld.Ultros,
             ]
-        elif dc.value == 5:
+        elif dc.value == 5:  # Light
             world_list = [
                 GameWorld.Alpha,
                 GameWorld.Lich,
@@ -135,7 +167,7 @@ class GameWorld(FroggeEnum):
                 GameWorld.Twintania,
                 GameWorld.Zodiark,
             ]
-        elif dc.value == 6:
+        elif dc.value == 6:  # Chaos
             world_list = [
                 GameWorld.Cerberus,
                 GameWorld.Louisoix,
@@ -146,13 +178,57 @@ class GameWorld(FroggeEnum):
                 GameWorld.Sagittarius,
                 GameWorld.Spriggan,
             ]
-        else:
+        elif dc.value == 7:  # Materia
             world_list = [
                 GameWorld.Bismarck,
                 GameWorld.Ravana,
                 GameWorld.Sephirot,
                 GameWorld.Sophia,
                 GameWorld.Zurvan,
+            ]
+        elif dc.value == 8:  # Elemental
+            world_list = [
+                GameWorld.Aegis,
+                GameWorld.Atomos,
+                GameWorld.Carbuncle,
+                GameWorld.Garuda,
+                GameWorld.Gungnir,
+                GameWorld.Kujata,
+                GameWorld.Tonberry,
+                GameWorld.Typhon,
+            ]
+        elif dc.value == 9:  # Gaia
+            world_list = [
+                GameWorld.Alexander,
+                GameWorld.Bahamut,
+                GameWorld.Durandal,
+                GameWorld.Fenrir,
+                GameWorld.Ifrit,
+                GameWorld.Ridill,
+                GameWorld.Tiamat,
+                GameWorld.Ultima,
+            ]
+        elif dc.value == 10:  # Mana
+            world_list = [
+                GameWorld.Anima,
+                GameWorld.Asura,
+                GameWorld.Chocobo,
+                GameWorld.Hades,
+                GameWorld.Ixion,
+                GameWorld.Masamune,
+                GameWorld.Pandaemonium,
+                GameWorld.Titan,
+            ]
+        else:  # Meteor
+            world_list = [
+                GameWorld.Belias,
+                GameWorld.Mandragora,
+                GameWorld.Ramuh,
+                GameWorld.Shinryu,
+                GameWorld.Unicorn,
+                GameWorld.Valefor,
+                GameWorld.Yojimbo,
+                GameWorld.Zeromus,
             ]
             
         return [world.select_option for world in world_list]

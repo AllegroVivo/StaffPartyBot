@@ -14,6 +14,10 @@ class DataCenter(FroggeEnum):
     Light = 5
     Chaos = 6
     Materia = 7
+    Elemental = 8
+    Gaia = 9
+    Mana = 10
+    Meteor = 11
 
 ################################################################################
     @classmethod
