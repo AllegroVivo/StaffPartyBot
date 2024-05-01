@@ -175,7 +175,10 @@ class GuildData:
         if channel := self._parent.get_channel(channel_id):
             return channel
         
-        return await self._parent.fetch_channel(channel_id)
+        try:
+            return await self._parent.fetch_channel(channel_id)
+        except NotFound:
+            return
 
 ################################################################################
     async def get_or_fetch_message(self, message_url: Optional[str]) -> Optional[Message]:
@@ -206,7 +209,10 @@ class GuildData:
         if member := await self._parent.fetch_member(user_id):
             return member
         
-        return await self.bot.get_or_fetch_user(user_id)
+        try:
+            return await self.bot.get_or_fetch_user(user_id)
+        except NotFound:
+            pass
             
 ################################################################################
     async def get_or_fetch_role(self, role_id: Optional[int]) -> Optional[Role]:
