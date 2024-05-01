@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict, List
 
-from discord import User, Interaction, Embed, EmbedField, Message, NotFound
+from discord import User, Interaction, Embed, EmbedField, Message, NotFound, HTTPException
 
 from Assets import BotEmojis
 from UI.Common import ConfirmCancelView
@@ -30,6 +30,7 @@ from Utilities import (
     IneligibleForJobError,
     CannotEditPostingError,
 )
+from Utilities import log
 from .PayRate import PayRate
 
 if TYPE_CHECKING:
@@ -101,34 +102,23 @@ class JobPosting:
         
         self._id = data[0]
         self._venue = mgr.guild.venue_manager[data[2]]
-        self._user = await mgr.bot.get_or_fetch_user(data[3])
+        self._user = await mgr.guild.get_or_fetch_user(data[3])
         self._candidate = mgr.guild.training_manager[data[13]] if data[13] else None
         self._rejections = [mgr.guild.training_manager[r] for r in data[14]] if data[14] else []
         
         self._description = data[6]
         self._type = JobPostingType.Temporary
         self._position = mgr.guild.position_manager.get_position(data[5]) if data[5] else None
-
-        self._post_msg = None
-        if data[10] is not None:
-            url_parts = data[10].split("/")
-            channel = await mgr.bot.get_or_fetch_channel(int(url_parts[-2]))
-            if channel is not None:
-                try:
-                    self._post_msg = await channel.fetch_message(int(url_parts[-1]))  # type: ignore
-                except:
-                    pass
+        
+        self._post_msg = await mgr.guild.get_or_fetch_message(data[10])
 
         self._salary = PayRate(self, data[7], RateType(data[8]) if data[8] else None, data[9])
         self._start = data[11]
         self._end = data[12]
         
         self._schedule_updated = False
-        
-        try:
-            await self._update_posting()
-        except:
-            pass
+
+        await self._update_post_components()
         
         return self
     
@@ -197,6 +187,12 @@ class JobPosting:
         
         self._position = value
         self.update()
+    
+################################################################################
+    @property
+    def position_name(self) -> str:
+        
+        return self._position.name if self._position is not None else "None"
     
 ################################################################################    
     @property
@@ -286,11 +282,20 @@ class JobPosting:
 ################################################################################
     async def delete(self) -> None:
         
+        log.info(
+            "Jobs", 
+            (
+                f"Deleting job posting {self.id} (Venue: {self.venue.name}, "
+                f"Position: {self.position_name})"
+            )
+        )
+        
         if self.post_message is not None:
             try:
                 await self.post_message.delete()
-            except:
-                pass
+                log.debug("Jobs", f"Deleted job posting message successfully")
+            except Exception as ex:
+                log.warning("Jobs", f"Failed to delete job posting message:\n{ex}")
             
         if self.candidate is not None:
             embed = U.make_embed(
@@ -306,17 +311,34 @@ class JobPosting:
                 )
             )
             await self.candidate.send(embed=embed)
+            log.debug("Jobs", f"Sent job posting cancellation message to candidate")
         
         self._mgr._postings.remove(self)
         self.bot.database.delete.job_posting(self)
+        
+        log.info("Jobs", f"Job posting {self._id} deleted successfully")
         
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
         if self.has_passed:
+            log.debug(
+                "Jobs",
+                (
+                    f"User {interaction.user.name} attempted to edit job posting {self._id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name}) "
+                    f"after it has passed"
+                )
+            )
             error = CannotEditPostingError()
             await interaction.respond(embed=error, ephemeral=True)
             return
+        
+        log.debug(
+            "Jobs", 
+            f"Opening job posting menu for {self._id} (Venue: {self.venue.name}, "
+            f"Position: {self.position_name})"
+        )
         
         embed = self.status()
         view = JobPostingStatusView(interaction.user, self)
@@ -463,18 +485,38 @@ class JobPosting:
 ################################################################################
     async def set_description(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Jobs",
+            f"Setting job description for job posting {self.id} "
+            f"(Venue: {self.venue.name}, Position: {self.position_name})"
+        )
+        
         modal = JobDescriptionModal(self.description)
         
         await interaction.response.send_modal(modal)
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Jobs", "Job description edit canceled")
             return
         
         self.description = modal.value
+        log.info(
+            "Jobs",
+            (
+                f"Job description for {self.id} (Venue: {self.venue.name}, "
+                f"Position: {self.position_name}) set to {self.description}"
+            )
+        )
     
 ################################################################################
     async def set_position(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Jobs",
+            f"Setting job position for job posting {self.id} (Venue: "
+            f"{self.venue.name}, Position: {self.position_name})"
+        )
         
         prompt = U.make_embed(
             title="Set Job Posting Position",
@@ -488,12 +530,26 @@ class JobPosting:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Jobs", "Job position selection canceled")
             return
         
         self.position = self._mgr.guild.position_manager.get_position(view.value)
+        log.info(
+            "Jobs",
+            (
+                f"Job position for {self.id} (Venue: {self.venue.name}) "
+                f"set to {self.position_name}"
+            )
+        )
     
 ################################################################################
     async def set_salary(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Jobs",
+            f"Setting salary for job posting {self.id} (Venue: {self.venue.name}, "
+            f"Position: {self.position_name})"
+        )
         
         explanation = U.make_embed(
             title="Set Job Posting Salary",
@@ -515,6 +571,7 @@ class JobPosting:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Jobs", "Salary selection canceled")
             return
         
         freq_prompt = U.make_embed(
@@ -527,6 +584,7 @@ class JobPosting:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Jobs", "Salary frequency selection canceled")
             return
         
         frequency, inter = view.value
@@ -537,9 +595,19 @@ class JobPosting:
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Jobs", "Salary entry canceled")
             return
         
         rate, details, inter = modal.value
+        
+        log.info(
+            "Jobs",
+            (
+                f"Salary for {self._id} (Venue: {self.venue.name}, "
+                f"Position: {self.position_name}) set to {rate} "
+                f"{frequency.proper_name} with details: {details}"
+            )
+        )
         
         self._salary = PayRate(self, rate, frequency, details)
         self.update()
@@ -563,6 +631,12 @@ class JobPosting:
     
 ################################################################################
     async def set_schedule(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Jobs",
+            f"Setting job posting schedule for job posting {self.id} "
+            f"(Venue: {self.venue.name}, Position: {self.position_name})"
+        )
     
         prompt = U.make_embed(
             title="Set Job Posting Schedule",
@@ -580,6 +654,7 @@ class JobPosting:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Jobs", "Job posting schedule selection canceled")
             return
         
         timezone, inter = view.value
@@ -589,6 +664,7 @@ class JobPosting:
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Jobs", "Job posting schedule entry canceled")
             return
         
         raw_start, raw_end = modal.value
@@ -596,6 +672,13 @@ class JobPosting:
         try:
             start_temp = datetime.strptime(raw_start, "%m/%d/%Y %I:%M %p")
         except ValueError:
+            log.warning(
+                "Jobs",
+                (
+                    f"Failed to parse start time: '{raw_start}' for job posting {self.id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name})"
+                )
+            )
             error = DateTimeFormatError(raw_start)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -613,6 +696,13 @@ class JobPosting:
         try:
             end_temp = datetime.strptime(raw_end, "%m/%d/%Y %I:%M %p")
         except ValueError:
+            log.warning(
+                "Jobs",
+                (
+                    f"Failed to parse end time: '{raw_end}' for job posting {self.id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name})"
+                )
+            )
             error = DateTimeFormatError(raw_end)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -628,16 +718,39 @@ class JobPosting:
             )
             
         if end_time <= start_time:
+            log.warning(
+                "Jobs",
+                (
+                    f"End time '{end_time}' is before start time '{start_time}' "
+                    f"for job posting {self.id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name})"
+                )
+            )
             error = DateTimeMismatchError(start_time, end_time)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if datetime.now().timestamp() > end_time.timestamp():
+            log.warning(
+                "Jobs",
+                (
+                    f"End time '{end_time}' is before current time for job posting "
+                    f"{self.id} (Venue: {self.venue.name}, Position: {self.position_name})"
+                )
+            )
             error = DateTimeBeforeNowError(start_time)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if (end_time - start_time).total_seconds() < 7200 or (end_time - start_time).total_seconds() > 259200:
+            log.warning(
+                "Jobs",
+                (
+                    f"Time range '{start_time} - {end_time}' is outside of the acceptable "
+                    f"length for job posting {self.id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name})"
+                )
+            )
             error = TimeRangeError("2 Hours", "3 Days")
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -648,23 +761,54 @@ class JobPosting:
         
         self.update()
         
+        log.info(
+            "Jobs",
+            (
+                f"Job posting schedule for {self.id} (Venue: {self.venue.name}, "
+                f"Position: {self.position_name}) set to {start_time} - {end_time}"
+            )
+        )
+        
 ################################################################################
     async def create_post(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Jobs",
+            f"Creating job posting for {self._id} (Venue: {self.venue.name}, "
+            f"Position: {self.position_name})"
+        )
 
         if not self.complete:
+            log.warning(
+                "Jobs",
+                (
+                    f"Job posting {self._id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name}) is incomplete. "
+                    f"Aborting post."
+                )
+            )
             error = PostingNotCompleteError()
             await interaction.respond(embed=error, ephemeral=True)
             return
     
-        if self.post_message is not None and await self._update_posting():
+        if self.post_message is not None and await self._update_post_components():
             confirm = U.make_embed(
                 title="Job Posting Updated",
                 description="The job posting has been updated."
             )
             await interaction.respond(embed=confirm, ephemeral=True)
             
+            log.info(
+                "Jobs",
+                (
+                    f"Job posting {self._id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name}) post updated successfully"
+                )
+            )
+            
             if self._schedule_updated:
                 await self.notify_eligible_applicants()
+                log.info("Jobs", "Notified eligible applicants of job posting update")
                 self._schedule_updated = False
             return
     
@@ -677,6 +821,7 @@ class JobPosting:
         await view.wait()
     
         if not view.complete or view.value is False:
+            log.debug("Jobs", "Job posting creation canceled")
             return
     
         post_view = JobPostingPickupView(self)
@@ -697,6 +842,15 @@ class JobPosting:
             else:
                 pos_thread = await channel.create_thread(name=self.position.name, embed=self.compile(), view=post_view)
                 self.post_message = pos_thread.last_message
+                
+            log.debug(
+                "Jobs",
+                (
+                    f"{'Updated' if pos_thread else 'Created'} job posting {self._id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name}) "
+                    f"in thread {pos_thread.name}"
+                )
+            )
             
             confirm = U.make_embed(
                 title="Job Posting Created/Updated",
@@ -707,7 +861,14 @@ class JobPosting:
             )
             
             await interaction.respond(embed=confirm, ephemeral=True)
-        except:
+        except Exception as ex:
+            log.error(
+                "Jobs",
+                (
+                    f"Failed to create/update job posting {self._id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name}):\n{ex}"
+                )
+            )
             error = U.make_embed(
                 title="Posting Error",
                 description="There was an error posting the job listing."
@@ -716,17 +877,30 @@ class JobPosting:
         else:
             await self._mgr.guild.log.temp_job_posted(self)
             await self.notify_eligible_applicants()
+            log.info("Jobs", "Notified eligible applicants of job posting")
 
 ################################################################################
-    async def _update_posting(self) -> bool:
+    async def _update_post_components(self, addl_attempt: bool = False) -> bool:
         
         try:
             view = JobPostingPickupView(self)
             self.bot.add_view(view, message_id=self._post_msg.id)
             await self._post_msg.edit(embed=self.compile(), view=view)
-        except:
+        except NotFound as ex:
+            log.error(
+                "Jobs",
+                (
+                    f"Failed to update job posting {self._id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name}):\n{ex}"
+                )
+            )
             self.post_message = None
             return False
+        except HTTPException as ex:
+            if ex.code != 50083 and not addl_attempt:
+                pass
+            await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
+            await self._update_post_components(addl_attempt=True)
         else:
             return True
         
@@ -743,8 +917,8 @@ class JobPosting:
         embed = U.make_embed(
             title="Job Posting Alert",
             description=(
-                f"An opportunity has been posted for a `{self.position.name}` position at "
-                f"`{self._venue.name}`. If you're interested, you can [view the posting "
+                f"An opportunity has been posted for a `{self.position_name}` position at "
+                f"`{self.venue.name}`. If you're interested, you can [view the posting "
                 f"here]({self.post_message.jump_url})."
             )
         )
@@ -752,11 +926,28 @@ class JobPosting:
         for tuser in eligible:
             try:
                 await tuser.user.send(embed=embed)
-            except:
+            except Exception as ex:
+                log.error(
+                    "Jobs",
+                    (
+                        f"Failed to notify user {tuser.user.name} of job posting {self._id} "
+                        f"(Venue: {self.venue.name}, Position: {self.position_name}):\n{ex}"
+                    )
+                )
                 continue
+                
+        log.info("Jobs" f"Notified {len(eligible)} eligible applicants of job posting")
             
 ################################################################################
     async def candidate_accept(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Jobs",
+            (
+                f"User {interaction.user.name} triggered job posting {self.id} "
+                f"Accept button (Venue: {self.venue.name}, Position: {self.position_name})"
+            )
+        )
         
         tuser = self._mgr.guild.training_manager[interaction.user.id]
         if not tuser or not await tuser.is_eligible(
@@ -767,13 +958,28 @@ class JobPosting:
             compare_schedule=False, 
             check_profile=True
         ):
+            log.warning(
+                "Jobs",
+                (
+                    f"User {interaction.user.name} is ineligible to accept job posting "
+                    f"{self.id} (Venue: {self.venue.name}, Position: {self.position_name})"
+                )
+            )
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         self.candidate = tuser
-        await self._update_posting()
+        await self._update_post_components()
         await interaction.edit()
+        
+        log.info(
+            "Jobs",
+            (
+                f"User {interaction.user.name} accepted job posting {self.id} "
+                f"(Venue: {self.venue.name}, Position: {self.position_name})"
+            )
+        )
         
         notify = U.make_embed(
             title="Job Accepted",
@@ -790,22 +996,38 @@ class JobPosting:
         
         try:
             await self._user.send(embed=notify)
-        except:
-            pass
+            log.debug("Jobs", "Sent job acceptance message to venue")
+        except Exception as ex:
+            log.error(
+                "Jobs",
+                (
+                    f"Failed to send job acceptance message to venue for job posting {self.id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name}):\n{ex}"
+                )
+            )
         
         await self._mgr.guild.log.temp_job_accepted(self)
     
 ################################################################################
     async def cancel(self, interaction: Optional[Interaction] = None) -> None:
         
+        log.info(
+            "Jobs",
+            (
+                f"User {interaction.user.name} triggered job posting {self.id} "
+                f"Cancel button (Venue: {self.venue.name}, Position: {self.position_name})"
+            )
+        )
+        
         if self.candidate is None:
+            log.debug("Jobs", "No candidate to cancel job posting")
             return
         
         # Log before removing the candidate
         await self._mgr.guild.log.temp_job_canceled(self)
         
         self.candidate = None
-        await self._update_posting()
+        await self._update_post_components()
         
         if interaction is not None:
             await interaction.edit()
@@ -826,16 +1048,38 @@ class JobPosting:
         
         try:
             await self._user.send(embed=notify)
-        except:
-            pass
+            log.debug("Jobs", "Sent job cancellation message to venue")
+        except Exception as ex:
+            log.error(
+                "Jobs",
+                (
+                    f"Failed to send job cancellation message to venue for job posting {self.id} "
+                    f"(Venue: {self.venue.name}, Position: {self.position_name}):\n{ex}"
+                )
+            )
         
 ################################################################################
     async def reject(self, interaction: Interaction) -> None:
+        
+        log.debug(
+            "Jobs",
+            (
+                f"User {interaction.user.name} triggered job posting {self.id} "
+                f"Reject button (Venue: {self.venue.name}, Position: {self.position_name})"
+            )
+        )
         
         tuser = self._mgr.guild.training_manager[interaction.user.id]
         if not tuser or not await tuser.is_eligible(
             self, False, False, True, False
         ):
+            log.warning(
+                "Jobs",
+                (
+                    f"User {interaction.user.name} is ineligible to reject job posting "
+                    f"{self.id} (Venue: {self.venue.name}, Position: {self.position_name})"
+                )
+            )
             error = IneligibleForJobError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -857,6 +1101,13 @@ class JobPosting:
     async def expiration_check(self) -> None:
         
         if self.end_time is not None and self.end_time.timestamp() <= datetime.now().timestamp():
+            log.info(
+                "Jobs",
+                (
+                    f"Job posting {self.id} (Venue: {self.venue.name}, "
+                    f"Position: {self.position_name}) has expired. Deleting..."
+                )
+            )
             await self.delete()
 
 ################################################################################

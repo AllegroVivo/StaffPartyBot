@@ -12,7 +12,7 @@ from discord import (
     ForumChannel,
     NotFound,
     Colour,
-    Thread,
+    HTTPException,
     ForumTag,
 )
 
@@ -167,12 +167,7 @@ class Venue:
             }
         )
         
-        self._post_msg = None
-        post_url_parts = (venue[5].split("/")) if venue[5] else None
-        if post_url_parts:
-            channel = await mgr.bot.get_or_fetch_channel(post_url_parts[-2])
-            if channel:
-                self._post_msg = await channel.fetch_message(post_url_parts[-1])  # type: ignore
+        self._post_msg = await mgr.guild.get_or_fetch_message(venue[5])
         
         return self
     
@@ -1004,7 +999,7 @@ class Venue:
         await interaction.respond(embed=confirm, ephemeral=True)
 
 ################################################################################
-    async def _update_post_components(self) -> None:
+    async def _update_post_components(self, addl_attempt: bool = False) -> None:
         
         if self.post_url is None:
             return
@@ -1017,6 +1012,11 @@ class Venue:
         except NotFound:
             self._post_msg = None
             self.update()
+        except HTTPException as ex:
+            if ex.code != 50083 and not addl_attempt:
+                pass
+            await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
+            await self._update_post_components(addl_attempt=True)
             
 ################################################################################
             

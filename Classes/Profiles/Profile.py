@@ -17,7 +17,7 @@ from discord import (
     Thread,
     File,
     SelectOption,
-    ForumTag
+    HTTPException
 )
 from dotenv import load_dotenv
 
@@ -382,7 +382,7 @@ class Profile:
             await interaction.respond(embed=error, ephemeral=True)
 
 ################################################################################
-    async def _update_post_components(self) -> None:
+    async def _update_post_components(self, addl_attempt: bool = False) -> None:
         
         if self.post_message is None:
             return
@@ -394,6 +394,11 @@ class Profile:
             await self.post_message.edit(view=view)
         except NotFound:
             self.post_message = None
+        except HTTPException as ex:
+            if ex.code != 50083 and not addl_attempt:
+                pass
+            await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
+            await self._update_post_components(addl_attempt=True)
         
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
