@@ -3,6 +3,7 @@ import re
 from typing import TYPE_CHECKING, TypeVar, List, Type, Optional, Tuple, Any
 
 from discord import Embed, Interaction, EmbedField, SelectOption, Role
+from Utilities import log
 
 from UI.Common import ConfirmCancelView
 from UI.Positions import (
@@ -13,7 +14,7 @@ from UI.Positions import (
     PositionTrainerPayModal,
     PositionDescriptionModal,
 )
-from Utilities import Utilities as U, FroggeColor, InvalidSalaryError
+from Utilities import Utilities as U, FroggeColor, InvalidSalaryError, MentionableType
 from .Requirement import Requirement
 
 if TYPE_CHECKING:
@@ -56,6 +57,8 @@ class Position:
     @classmethod
     def new(cls: Type[P], mgr: PositionManager, name: str) -> P:
 
+        log.info("Positions", f"Creating new position: {name}")
+        
         new_id = mgr.bot.database.insert.position(mgr.guild_id, name)
         return cls(mgr, new_id, name)
 
@@ -68,19 +71,12 @@ class Position:
         requirements: List[Tuple[str, int, str, str]]
     ) -> P:
 
-        role = (
-            await mgr.guild_data.parent._fetch_role(data[3])
-            if data[3] is not None
-            else None
-        )
-        reqs = [Requirement.load(mgr.bot, r) for r in requirements]
-        
         return cls(
             mgr=mgr, 
             _id=data[0],
             name=data[2], 
-            reqs=reqs,
-            role=role,
+            reqs=[Requirement.load(mgr.bot, r) for r in requirements],
+            role=await mgr.guild_data.get_or_fetch_role(data[3]),
             trainer_pay=data[4],
             followup=data[5],
             description=data[6]
@@ -191,12 +187,16 @@ class Position:
 ################################################################################
     def get_requirement(self, req_id: str) -> Requirement:
         
+        log.debug("Positions", f"Getting requirement with ID {req_id}")
+        
         for r in self._requirements:
             if r.id == req_id:
                 return r
             
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
+        
+        log.debug("Positions", f"Opening menu for position {self.name}")
 
         status = self.status()
         view = PositionStatusView(interaction.user, self)
@@ -257,6 +257,8 @@ class Position:
     
 ################################################################################
     async def add_requirement(self, interaction: Interaction) -> None:
+        
+        log.info("Positions", f"Adding requirement to position {self.name}")
 
         modal = PositionRequirementModal()
     
@@ -264,12 +266,21 @@ class Position:
         await modal.wait()
     
         if not modal.complete:
+            log.debug("Positions", "Requirement modal was not completed.")
             return
     
-        self._requirements.append(Requirement.new(self._manager, self.id, modal.value))
+        requirement = Requirement.new(self._manager, self.id, modal.value)
+        self._requirements.append(requirement)
+        
+        log.info(
+            "Positions",
+            f"Requirement {requirement.id} added to position {self.name}"
+        )
 
 ################################################################################
     async def remove_requirement(self, interaction: Interaction) -> None:
+        
+        log.info("Positions", f"Removing requirement from position {self.name}")
 
         embed = U.make_embed(
             title="Remove Requirement",
@@ -284,6 +295,7 @@ class Position:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Positions", "Requirement removal was cancelled.")
             return
         
         confirm = U.make_embed(
@@ -299,15 +311,23 @@ class Position:
         await confirm_view.wait()
 
         if not confirm_view.complete or confirm_view.value is False:
+            log.debug("Positions", "Requirement removal was cancelled.")
             return
 
         requirement = self.get_requirement(view.value)
         requirement.delete()
 
         self.requirements.remove(requirement)
+        
+        log.info(
+            "Positions",
+            f"Requirement {requirement.id} removed from position {self.name}"
+        )
 
 ################################################################################
     async def edit_name(self, interaction: Interaction) -> None:
+        
+        log.info("Positions", f"Editing name for position {self.name}")
 
         modal = PositionNameModal(self.name)
 
@@ -315,12 +335,17 @@ class Position:
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Positions", "Name modal was not completed.")
             return
 
+        log.info("Positions", f"Name for position {self.name} updated to {modal.value}")
+        
         self.name = modal.value
-
+        
 ################################################################################
     async def edit_role(self, interaction: Interaction) -> None:
+        
+        log.info("Positions", f"Editing role for position {self.name}")
 
         prompt = U.make_embed(
             title="Edit Role",
@@ -334,58 +359,15 @@ class Position:
             )
         )
         
-        response = await interaction.respond(embed=prompt)
-
-        def check(m):
-            if m.author != interaction.user:
-                return False
-            if not re.match(r"<@&(\d+)>", m.content):
-                if m.content.lower() == "cancel":
-                    return True
-                return False
-            return True
-
-        try:
-            message = await self.bot.wait_for("message", check=check, timeout=180)
-        except TimeoutError:
-            embed = U.make_embed(
-                title="Timeout",
-                description=(
-                    "You took too long to respond. Please try again."
-                ),
-                color=FroggeColor.brand_red()
-            )
-            await response.respond(embed=embed)
-            return
-
-        error = U.make_embed(
-            title="Invalid Role Mention",
-            description=(
-                "You did not provide a valid role mention. "
-                "Please try again."
-            ),
-            color=FroggeColor.brand_red()
-        )
-
-        if message.content.lower() != "cancel":
-            results = re.match(r"<@&(\d+)>", message.content)
-            if results:
-                role_id = int(results.group(1))
-                role = await self._manager.guild_data.parent._fetch_role(role_id)
-                if role:
-                    self.linked_role = role
-                else:
-                    await interaction.respond(embed=error, ephemeral=True)
-                    return
-            else:
-                await interaction.respond(embed=error, ephemeral=True)
-                return
-
-        await message.delete()
-        await response.delete_original_response()
+        role = await U.listen_for_mentionable(interaction, prompt, MentionableType.Role)
+        if role:
+            log.info("Positions", f"Role {role.name} selected for position {self.name}")
+            self.linked_role = role
     
 ################################################################################
     async def set_trainer_pay(self, interaction: Interaction) -> None:
+        
+        log.info("Positions", f"Setting trainer pay for position {self.name}")
 
         modal = PositionTrainerPayModal(self.trainer_pay)
         
@@ -393,23 +375,41 @@ class Position:
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Positions", "Trainer pay modal was not completed.")
             return
         
         trainer_pay = U.parse_salary(modal.value)
         if trainer_pay is None:
+            log.warning(
+                "Positions",
+                f"Invalid salary entered for position {self.name}: {modal.value}"
+            )
             embed = InvalidSalaryError(modal.value)
             await interaction.respond(embed=embed, ephemeral=True)
             return
         
         self.trainer_pay = trainer_pay
+        
+        log.info(
+            "Positions",
+            f"Trainer pay for position {self.name} set to {trainer_pay:,}"
+        )
     
 ################################################################################
     def toggle_followup(self) -> None:
+        
+        log.info("Positions", f"Toggling follow-up for position {self.name}")
         
         self.followup_included = not self.followup_included
         
 ################################################################################
     async def set_description(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Positions",
+            f"Setting description for position {self.name}"
+        
+        )
         
         modal = PositionDescriptionModal(self.description)
         
@@ -417,9 +417,15 @@ class Position:
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Positions", "Description modal was not completed.")
             return
         
         self.description = modal.value
+        
+        log.info(
+            "Positions",
+            f"Description for position {self.name} set to {modal.value}"
+        )
         
 ################################################################################
         

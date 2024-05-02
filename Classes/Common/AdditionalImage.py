@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional, Any, Dict, Union
 from discord import Interaction
 
 from UI.Profiles import AdditionalImageCaptionModal
+from Utilities import log
 
 if TYPE_CHECKING:
     from Classes import ProfileImages, ServiceProfileImages
@@ -99,6 +100,13 @@ class AdditionalImage(ABC):
         if not modal.complete:
             return
         
+        log.debug(
+            "Profiles",
+            (
+                f"Setting caption for {self.__class__.__name__} "
+                f"image with ID {self.id}: {modal.value}"
+            )
+        )
         self.caption = modal.value
         
 ################################################################################

@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, TypeVar, Optional
 
 from discord import Embed
 
-from Utilities import Utilities as U
-
 if TYPE_CHECKING:
     from Classes import JobPosting
 ################################################################################

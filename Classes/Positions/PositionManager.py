@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from discord import Interaction, EmbedField, Embed, SelectOption
 from discord.ext.pages import Page, PageGroup
+from Utilities import log
 
 from UI.Common import ConfirmCancelView, Frogginator
 from UI.Positions import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
@@ -37,13 +38,6 @@ class PositionManager:
 
 ################################################################################
     async def _load_all(self, data: Dict[str, Any]) -> None:
-        """Loads all the positions and requirements from the database.
-        
-        Parameters:
-        -----------
-        data : Dict[:class:`str`, :class:`Any`]
-            The data retrieved from the database.
-        """
 
         position_data = data["positions"]
         requirement_data = data["requirements"]
@@ -98,6 +92,8 @@ class PositionManager:
 ################################################################################    
     async def _add_position(self, interaction: Interaction, position_name: str) -> Optional[Position]:
         
+        log.info("Positions", f"Adding position {position_name}")
+        
         prompt = U.make_embed(
             title="Confirm Position Add",
             description=(
@@ -110,6 +106,7 @@ class PositionManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Positions", "Position add cancelled.")
             return
 
         position = Position.new(self, position_name)
