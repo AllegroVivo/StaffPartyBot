@@ -25,6 +25,7 @@ class ChannelStatusView(FroggeView):
         self.channels: ChannelManager = channels
         
         button_list = [
+            WelcomeChannelButton(self.channels.welcome_channel),
             LogChannelButton(self.channels.log_channel),
             ProfilesChannelButton(self.channels.profiles_channel),
             VenuesChannelButton(self.channels.venues_channel),
@@ -163,6 +164,28 @@ class ServicesButton(FroggeButton):
     async def callback(self, interaction):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Services)
         self.set_style(self.view.channels.services_channel)
+
+        await edit_message_helper(
+            interaction, embed=self.view.channels.status(), view=self.view
+        )
+        
+################################################################################
+class WelcomeChannelButton(FroggeButton):
+
+    def __init__(self, channel: Optional[GuildChannel]):
+
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Welcome Channel",
+            disabled=False,
+            row=0,
+        )
+
+        self.set_style(channel)
+
+    async def callback(self, interaction):
+        await self.view.channels.set_channel(interaction, ChannelPurpose.Welcome)
+        self.set_style(self.view.channels.welcome_channel)
 
         await edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view

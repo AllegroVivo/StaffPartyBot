@@ -256,6 +256,7 @@ class GuildData:
     async def on_member_join(self, member: Member) -> None:
         
         await self.log.member_join(member)
+        self.member_welcome.start(member)
         
 ################################################################################
     @tasks.loop(count=1)
