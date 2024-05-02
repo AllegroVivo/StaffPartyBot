@@ -253,7 +253,7 @@ class GuildData:
     async def on_member_join(self, member: Member) -> None:
         
         await self.log.member_join(member)
-        await self._member_joined.start(member)
+        self._member_joined.start(member)
         
 ################################################################################
     @tasks.loop(count=1)
@@ -287,6 +287,7 @@ class GuildData:
             flag = True
         if "staff_pending" in roles:
             welcome_message += (
+                "I see you've picked the Staff Pending role!\n"
                 "You can follow the instructions here <#1104515062636478643> to do "
                 "your staff validation and you'll be able to create your staff "
                 "profile afterwards! <a:dancer:1168134583158575175>\n\n"
@@ -294,6 +295,7 @@ class GuildData:
             flag = True
         if "trainee" in roles:
             welcome_message += (
+                "I see you've selected the Trainee role!\n"
                 "You can follow the instructions here <#1219488746664230974> to "
                 "set up your profile and receive training! <a:greeter:1168134573926912071>"
             )
