@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from discord import Interaction, EmbedField, Embed, SelectOption
 from discord.ext.pages import Page, PageGroup
-from Utilities import log
 
 from UI.Common import ConfirmCancelView, Frogginator
 from UI.Positions import GlobalRequirementsView, GlobalRequirementModal, RemoveRequirementView
 from Utilities import Utilities as U, PositionExistsError
+from Utilities import log
 from .Position import Position
 from .Requirement import Requirement
 
@@ -122,6 +122,8 @@ class PositionManager:
         )
         await interaction.respond(embed=confirm, ephemeral=True)
         
+        log.info("Positions", f"Position {position.name} was added successfully.")
+        
         # Also update the currently posted SignUpMessage
         await self._guild.training_manager.signup_message.update_components()
         
@@ -129,20 +131,15 @@ class PositionManager:
         
 ################################################################################
     async def add_position(self, interaction: Interaction, position_name: str) -> None:
-        """Adds a new position to the database.
         
-        This method is a coroutine.
-        
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        position_name : :class:`str`
-            The name of the position to add.
-        """
+        log.info(
+            "Positions",
+            f"Adding position {position_name} requested by {interaction.user}"
+        )
     
         position = self.get_position_by_name(position_name)
         if position is not None:
+            log.warning("Positions", f"Position {position_name} already exists.")
             error = PositionExistsError(position_name)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -151,59 +148,51 @@ class PositionManager:
         if position is None:
             return
         
+        log.info("Positions", f"Position {position_name} added successfully.")
+        
         await asyncio.sleep(2)
         await self.position_status(interaction, position.name)
         
 ################################################################################
     def get_position_by_name(self, pos_name: str) -> Optional[Position]:
-        """Get a position by its name.
         
-        Parameters:
-        -----------
-        pos_name : :class:`str`
-            The name of the position to retrieve.
-            
-        Returns:
-        --------
-        Optional[:class:`Position`]
-            The position with the given name, if it exists.
-        """
+        log.debug("Positions", f"Searching for position {pos_name}")
         
         for position in self._positions:
             if position.name.lower() == pos_name.lower():
+                log.debug("Positions", f"Position {pos_name} found.")
                 return position
+            
+        log.debug("Positions", f"Position {pos_name} not found.")
             
 ################################################################################
     async def position_status(self, interaction: Interaction, pos_name: str) -> None:
-        """Displays the status of a specific position.
         
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        pos_name : Optional[:class:`str`]
-            The name of the position to display the status of.
-        """
+        log.info(
+            "Positions",
+            f"Displaying status of position {pos_name} for {interaction.user}"
+        )
 
         position = self.get_position_by_name(pos_name)
         if position is None:
+            log.info("Positions", f"Position {pos_name} not found. Offering to add.")
             position = await self._add_position(interaction, pos_name)
             if position is None:
+                log.debug("Positions", "Position add cancelled.")
                 return
             else:
+                log.info("Positions", f"Position {pos_name} added successfully.")
                 await asyncio.sleep(2)
             
         await position.menu(interaction)
 
 ################################################################################
     async def global_requirements_menu(self, interaction: Interaction) -> None:
-        """Displays the global job training requirements.
         
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
+        log.info(
+            "Positions",
+            f"Displaying global position requirements for {interaction.user}"
+        )
 
         status = self.global_requirements_status()
         view = GlobalRequirementsView(interaction.user, self)
@@ -213,13 +202,6 @@ class PositionManager:
 
 ################################################################################
     def global_requirements_status(self) -> Embed:
-        """Returns an embed displaying the status of all global requirements.
-        
-        Returns:
-        --------
-        :class:`Embed`
-            An embed displaying the status of all global requirements.
-        """
 
         return U.make_embed(
             title="Global Job Training Requirements",
@@ -241,13 +223,11 @@ class PositionManager:
 
 ################################################################################
     async def add_global_requirement(self, interaction: Interaction) -> None:
-        """Adds a new global job training requirement.
         
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
+        log.info(
+            "Positions",
+            f"Adding global job training requirement requested by {interaction.user}"
+        )
 
         modal = GlobalRequirementModal()
 
@@ -255,20 +235,21 @@ class PositionManager:
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Positions", "Global requirement add cancelled.")
             return
 
         requirement = Requirement.new(self, "0", modal.value)
         self._requirements.append(requirement)
+        
+        log.info("Positions", f"Global requirement '{modal.value}' added successfully.")
 
 ################################################################################
     async def remove_global_requirement(self, interaction: Interaction) -> None:
-        """Removes a global job training requirement.
         
-        Parameters:
-        -----------
-        interaction : :class:`Interaction`
-            The interaction that triggered the command.
-        """
+        log.info(
+            "Positions",
+            f"Removing global job training requirement requested by {interaction.user}"
+        )
 
         embed = U.make_embed(
             title="Remove Requirement",
@@ -283,31 +264,27 @@ class PositionManager:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Positions", "Global requirement removal cancelled.")
             return
 
         requirement = self.get_global_requirement(view.value)
         requirement.delete()
+        
+        log.info("Positions", f"Global requirement '{requirement.description}' removed successfully.")
 
         self._requirements.remove(requirement)
 
 ################################################################################
     def get_global_requirement(self, req_id: str) -> Requirement:
-        """Get a global requirement by its ID.
         
-        Parameters:
-        -----------
-        req_id : :class:`str`
-            The ID of the requirement to retrieve.
-            
-        Returns:
-        --------
-        :class:`Requirement`
-            The requirement with the given ID.
-        """
+        log.debug("Positions", f"Searching for global requirement {req_id}")
         
         for req in self._requirements:
             if req.id == req_id:
+                log.debug("Positions", f"Global requirement {req_id} found.")
                 return req
+            
+        log.debug("Positions", f"Global requirement {req_id} not found.")
 
 ################################################################################
     def select_options(
@@ -316,6 +293,11 @@ class PositionManager:
         exclude: List[Position] = None, 
         include: List[Position] = None
     ) -> List[SelectOption]:
+        
+        log.debug(
+            "Positions",
+            f"Building select options for positions (exclude={exclude}, include={include})"
+        )
 
         ret = [p.select_option for p in self.positions]
         
@@ -328,20 +310,20 @@ class PositionManager:
 
 ################################################################################
     def get_position(self, pos_id: str) -> Optional[Position]:
-        """Get a position by its ID.
         
-        Parameters:
-        -----------
-        pos_id : :class:`str`
-            The ID of the position to retrieve.
-        """
+        log.debug("Positions", f"Searching for position {pos_id}")
         
         for position in self._positions:
             if position.id == pos_id:
+                log.debug("Positions", f"Position {pos_id} found.")
                 return position
+            
+        log.debug("Positions", f"Position {pos_id} not found.")
             
 ################################################################################
     async def positions_report(self, interaction: Interaction) -> None:
+        
+        log.debug("Positions", "Displaying all positions report")
         
         embed = U.make_embed(
             title="All Positions",
@@ -351,6 +333,8 @@ class PositionManager:
         
 ################################################################################
     async def trainer_pos_report(self, interaction: Interaction) -> None:
+        
+        log.debug("Positions", "Displaying trainer positions report")
         
         page_groups = [
             PageGroup(label=pos.name, pages=[Page(embeds=[pos.status()])])
@@ -366,6 +350,8 @@ class PositionManager:
         
 ################################################################################
     async def trainee_pos_report(self, interaction: Interaction) -> None:
+        
+        log.debug("Positions", "Displaying trainee positions report")
         
         page_groups = [
             PageGroup(label=pos.name, pages=[Page(embeds=[pos.limited_status()])])

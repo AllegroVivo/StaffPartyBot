@@ -8,6 +8,7 @@ from discord.ext.pages import Page
 from Classes.Common import AdditionalImage
 from UI.Profiles import AdditionalImageView
 from Utilities import Utilities as U
+from Utilities import log
 
 if TYPE_CHECKING:
     from Classes import ProfileImages
@@ -20,6 +21,12 @@ class PAdditionalImage(AdditionalImage):
     
     @classmethod
     def new(cls, parent: ProfileImages, url: str, caption: Optional[str]) -> PAdditionalImage:
+        
+        log.info(
+            "Profiles", 
+            f"New additional image added to profile {parent.parent.id} with URL {url}, "
+            f"caption {caption if caption else 'None'}"
+        )
         
         new_id = parent.parent.bot.database.insert.addl_image(parent.parent.id, url, caption)
         return cls(parent=parent, _id=new_id, url=url, caption=caption)

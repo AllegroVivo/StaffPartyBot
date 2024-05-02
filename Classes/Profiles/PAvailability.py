@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, TypeVar
 
 from Classes.Common import Availability
 from Utilities import Weekday
+from Utilities import log
 
 if TYPE_CHECKING:
     from Classes import Profile
@@ -19,6 +20,12 @@ class PAvailability(Availability):
 
     @classmethod
     def new(cls, parent: Profile, day: Weekday, start: time, end: time) -> PA:
+        
+        log.info(
+            "Profiles",
+            f"New availability set for {parent.id} on {day.proper_name} "
+            f"from {start} to {end}."
+        )
 
         parent.bot.database.insert.profile_availability(parent.id, day, start, end)
         return cls(parent, day, start, end)
@@ -26,6 +33,8 @@ class PAvailability(Availability):
 ################################################################################
     @staticmethod
     def long_availability_status(availability: List[PAvailability]) -> str:
+        
+        log.debug("Profiles", "Generating long availability status string.")
 
         if not availability:
             return "`No Availability Set`"
@@ -47,6 +56,8 @@ class PAvailability(Availability):
 ################################################################################
     @staticmethod
     def short_availability_status(availability: List[PAvailability]) -> str:
+        
+        log.debug("Profiles", "Generating short availability status string.")
 
         if not availability:
             return "`No Availability Set`"

@@ -47,6 +47,8 @@ from Utilities import (
     GlobalDataCenter,
     ProfileIncompleteError,
 )
+from Utilities import log
+
 from .ProfileAtAGlance import ProfileAtAGlance
 from .ProfileDetails import ProfileDetails
 from .ProfileImages import ProfileImages
@@ -89,6 +91,7 @@ class Profile:
     @classmethod
     def new(cls: Type[P], mgr: ProfileManager, user: User) -> P:
         
+        log.info("Profiles", f"New profile created for {user.name} ({user.id})")
         new_id = mgr.bot.database.insert.profile(mgr.guild_id, user.id)
         return cls(mgr, user, _id=new_id)
     
@@ -233,30 +236,45 @@ class Profile:
 ################################################################################
     async def assign_image(self, interaction: Interaction, img_type: ImageType, file: Attachment) -> None:
         
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is assigning an image"
+        )
+        
         if img_type is ImageType.AdditionalImage and len(self._images.additional) >= 10:
+            log.warning(
+                "Profiles",
+                f"User {interaction.user.name} ({interaction.user.id}) attempted to assign too many images"
+            )
             error = TooManyImagesError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if img_type is ImageType.AdditionalImage:
+            log.info("Profiles", "User is assigning an additional image")
             modal = AdditionalImageCaptionModal()
 
             await interaction.response.send_modal(modal)
             await modal.wait()
     
             if not modal.complete:
+                log.debug("Profiles", "User cancelled additional image assignment")
                 return
 
             image_url = await self.bot.dump_image(file)
             await self._images.add_additional(interaction, image_url, modal.value)
+            
+            log.info("Profiles", "Additional image assigned")
             return
         
         await interaction.response.defer()
         image_url = await self.bot.dump_image(file)
         
         if img_type is ImageType.Thumbnail:
+            log.info("Profiles", "User is assigning a thumbnail image")
             self._images.set_thumbnail(image_url)
         else:
+            log.info("Profiles", "User is assigning a main image")
             self._images.set_main_image(image_url)
         
         confirm = U.make_embed(
@@ -269,9 +287,16 @@ class Profile:
         )
         
         await interaction.respond(embed=confirm, ephemeral=True)
+        
+        log.info("Profiles", "Image assigned")
     
 ################################################################################
     async def progress(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is checking profile progress"
+        )
 
         em_final = self._details.progress_emoji(self._details._post_msg)
         value = (
@@ -296,16 +321,29 @@ class Profile:
 
 ################################################################################
     async def post(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is attempting to post profile"
+        )
 
         await interaction.response.defer(invisible=False)
         
         if self.manager.guild.channel_manager.profiles_channel is None:
+            log.warning(
+                "Profiles",
+                "User attempted to post profile without setting profiles channel"
+            )
             error = ProfileChannelNotSetError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         # Check profile completion
         if not self.is_complete:
+            log.warning(
+                "Profiles",
+                "User attempted to post incomplete profile"
+            )
             error = ProfileIncompleteError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -313,25 +351,48 @@ class Profile:
         main_profile, availability, aboutme = self.compile()
         # Check for content length
         if len(main_profile) > 5999:
+            log.info(
+                "Profiles",
+                "User attempted to post a profile that exceeds the maximum length"
+            )
             error = ExceedsMaxLengthError(len(main_profile))
             await interaction.response.send_message(embed=error, ephemeral=True)
             return
         
         member = self._mgr.guild.parent.get_member(self._user.id)
+        log.info(
+            "Profiles",
+            (
+                f"User {interaction.user.name} ({interaction.user.id}) is "
+                f"posting profile for {member.display_name}"
+            )
+        )
         
         load_dotenv()
         if os.getenv("DEBUG") == "False":
+            log.debug("Profiles", "Debug mode is off - swapping out roles")
             if self.post_message is None:
                 all_pos_roles = [
                     pos.linked_role for pos in self._mgr.guild.position_manager.positions
                     if pos.linked_role is not None
                 ]
+                log.debug(
+                    "Profiles",
+                    f"Removing all position roles from {member.display_name}"
+                )
                 await member.remove_roles(*all_pos_roles)
                 
                 pos_roles = [
                     pos.linked_role for pos in self._details.positions
                     if pos.linked_role is not None
-                ]    
+                ]
+                log.debug(
+                    "Profiles",
+                    (
+                        f"Adding position roles to {member.display_name}: "
+                        f"{', '.join([r.name for r in pos_roles])}"
+                    )
+                )
                 await member.add_roles(*pos_roles)
     
         # Prepare embeds
@@ -344,6 +405,14 @@ class Profile:
         channel = self.manager.guild.channel_manager.profiles_channel
         matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
         
+        log.debug(
+            "Profiles",
+            (
+                f"Attempting to post profile for {member.display_name} in {channel.name}, "
+                f"{'**creating**' if matching_thread is None else '**editing**'} thread"
+            )
+        )
+        
         # Tags - Start with DM status
         tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
         tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
@@ -353,16 +422,24 @@ class Profile:
             if t.name.lower() in 
             [p.name.lower() for p in self._get_top_positions()]
         ]
+        
+        log.debug(
+            "Profiles",
+            f"Tags for profile post: {', '.join([t.name for t in tags])}"
+        )
     
         # Attempt to edit an existing post
         if self.post_message:
+            log.info("Profiles", "Editing existing profile post")
             try:
                 self.bot.add_view(view, message_id=self.post_message.id)
                 await self.post_message.channel.edit(applied_tags=tags)
                 await self.post_message.edit(embeds=embeds, view=view)
                 await interaction.respond(embed=self.success_message())
+                log.info("Profiles", "Profile post edited successfully")
                 return
             except NotFound:
+                log.info("Profiles", "Existing profile post not found")
                 self.post_message = None  # Proceed to post anew if not found
         
         if matching_thread:
@@ -386,13 +463,25 @@ class Profile:
                 self.post_message = result
             await interaction.respond(embed=self.success_message())
         except Forbidden:
+            log.warning(
+                "Profiles",
+                "User attempted to post profile without sufficient bot permissions"
+            )
             error = InsufficientPermissionsError(channel, "Send Messages")
             await interaction.respond(embed=error, ephemeral=True)
+        else:
+            log.info("Profiles", "Profile post created successfully")
 
 ################################################################################
     async def _update_post_components(self, addl_attempt: bool = False) -> None:
         
+        log.info(
+            "Profiles",
+            f"Updating profile post components for {self._user.name} ({self._user.id})"
+        )
+        
         if self.post_message is None:
+            log.debug("Profiles", "Post message not found - skipping update")
             return
         
         view = ProfileUserMuteView(self)
@@ -401,15 +490,33 @@ class Profile:
         try:
             await self.post_message.edit(view=view)
         except NotFound:
+            log.warning(
+                "Profiles",
+                "Post message not found - clearing post message object"
+            )
             self.post_message = None
         except HTTPException as ex:
             if ex.code != 50083 and not addl_attempt:
-                pass
-            await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
+                log.critical(
+                    "Profiles",
+                    f"An uncaught error occurred while updating the post components: {ex}"
+                )
+            log.warning(
+                "Profiles",
+                "Thread was archived for exceeding 30 day limit - attempting to revive."
+            )
+            await self.post_message.channel.send("Hey Ur Cute", delete_after=0.1)
             await self._update_post_components(addl_attempt=True)
+        else:
+            log.info(
+                "Profiles",
+                "Profile post components updated successfully"
+            )
         
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
+        
+        log.debug("Profiles", f"Compiling profile embeds for {self._user.name} ({self._user.id})")
 
         char_name, url, color, jobs, rates_field, availability, dm_pref = self._details.compile()
         ataglance = self._aag.compile()
@@ -496,6 +603,11 @@ class Profile:
 ################################################################################
     async def export(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is exporting profile"
+        )
+        
         prompt = U.make_embed(
             color=self.color,
             title="Profile Export",
@@ -512,6 +624,7 @@ class Profile:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled profile export")
             return
         
         with open("profile.json", "w") as f:
@@ -528,17 +641,27 @@ class Profile:
         
         try:
             await interaction.user.send(embed=confirm, file=file)
-        except:
+        except Exception as ex:
+            log.critical(
+                "Profiles",
+                f"An error occurred while exporting profile: {ex}"
+            )
             error = ProfileExportError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         else:
+            log.info("Profiles", "Profile exported successfully")
             await interaction.respond(embed=confirm, ephemeral=True)
         finally:
             os.remove("profile.json")
         
 ################################################################################
     async def main_menu(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is accessing profile menu"
+        )
         
         prompt = U.make_embed(
             color=self.color,
@@ -555,6 +678,11 @@ class Profile:
         
 ################################################################################
     async def preview(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is previewing profile components"
+        )
 
         prompt = U.make_embed(
             color=self.color,
@@ -573,6 +701,11 @@ class Profile:
 ################################################################################
     async def preview_profile(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is previewing profile"
+        )
+        
         main_profile, _, _ = self.compile()
         view = CloseMessageView(interaction.user)
         
@@ -581,6 +714,11 @@ class Profile:
         
 ################################################################################
     async def preview_availability(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is previewing availability"
+        )
         
         _, availability, _ = self.compile()
         view = CloseMessageView(interaction.user)
@@ -591,8 +729,17 @@ class Profile:
 ################################################################################
     async def preview_aboutme(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"User {interaction.user.name} ({interaction.user.id}) is previewing about me"
+        )
+        
         _, _, aboutme = self.compile()
         if aboutme is None:
+            log.warning(
+                "Profiles",
+                "User attempted to preview about me without setting it"
+            )
             error = AboutMeNotSetError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -605,16 +752,40 @@ class Profile:
 ################################################################################
     async def venue_mute(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            (
+                f"User {interaction.user.name} ({interaction.user.id}) is attempting to "
+                f"mute/un-mute {self._user.name} for a venue"
+            )
+        )
+        
         venues = self._mgr.guild.venue_manager.get_venues_by_user(interaction.user.id)
         if not venues:
+            log.warning(
+                "Profiles",
+                (
+                    "User attempted to mute/un-mute a user for a venue without being "
+                    "assigned to any venues"
+                )
+            )
             error = NoVenuesFoundError()
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if len(venues) == 1:
             await venues[0].toggle_user_mute(interaction, self.user)
+            log.info(
+                "Profiles",
+                (
+                    f"User {interaction.user.name} ({interaction.user.id}) has "
+                    f"muted/un-muted {self._user.name} for venue: {venues[0].name}"
+                )
+            )
             await interaction.edit()
             return
+        
+        log.debug("Profiles", "Venue manager is selecting the venue(s) to mute/un-mute for")
         
         options = [
             SelectOption(
@@ -635,11 +806,19 @@ class Profile:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled venue selection")
             return
         
         for venue_id in view.value:
             venue = self._mgr.guild.venue_manager[venue_id]
             await venue.toggle_user_mute(interaction, self.user)
+            log.info(
+                "Profiles",
+                (
+                    f"User {interaction.user.name} ({interaction.user.id}) has "
+                    f"muted/un-muted {self._user.name} for venue: {venue.name}"
+                )
+            )
         
 ################################################################################
     def _get_top_positions(self) -> List[Position]:
