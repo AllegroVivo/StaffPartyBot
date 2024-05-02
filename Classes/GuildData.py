@@ -269,7 +269,8 @@ class GuildData:
         await discord.utils.sleep_until(member.joined_at + timedelta(minutes=3))
         
         # Get updated member object
-        member = await self.parent.fetch_member(member.id)
+        if get_member := self.parent.get_member(member.id):
+            member = get_member
         roles = [r.name.lower() for r in member.roles]
         
         welcome_message = (
