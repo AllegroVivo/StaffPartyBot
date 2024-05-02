@@ -12,6 +12,7 @@ class ChannelPurpose(FroggeEnum):
     Profiles = 4
     LogStream = 5
     Services = 6
+    Welcome = 7
 
 ################################################################################
     @staticmethod

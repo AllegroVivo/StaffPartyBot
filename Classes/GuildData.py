@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
+import discord.utils
 from discord import Guild, User, Interaction, Message, NotFound, Member, Role
 from discord.abc import GuildChannel
+from discord.ext import tasks
 
 from Classes.ChannelManager import ChannelManager
 from Classes.Jobs.JobsManager import JobsManager
@@ -11,9 +14,9 @@ from Classes.Logger import Logger
 from Classes.Positions.PositionManager import PositionManager
 from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.RoleManager import RoleManager
+from Classes.Services.ServicesManager import ServicesManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
-from Classes.Services.ServicesManager import ServicesManager
 from UI.Guild import ReportMenuView, BulkUpdateView
 from Utilities import Utilities as U
 
@@ -246,6 +249,64 @@ class GuildData:
             jobs_canceled=jobs_canceled
         )        
         
+################################################################################
+    async def on_member_join(self, member: Member) -> None:
+        
+        await self.log.member_join(member)
+        await self._member_joined.start(member)
+        
+################################################################################
+    @tasks.loop(count=1)
+    async def _member_joined(self, member: Member) -> None:
+        
+        if not self.channel_manager.welcome_channel:
+            return
+        
+        # Three minutes for role selection
+        await discord.utils.sleep_until(member.joined_at + timedelta(minutes=3))
+        
+        # Get updated member object
+        member = await self.parent.fetch_member(member.id)
+        roles = [r.name.lower() for r in member.roles]
+        
+        welcome_message = (
+            "# __Welcome to the <a:party_bus:1225557207836393645> "
+            "Staff Party Bus!! <a:party_bus:1225557207836393645>__\n\n"
+            
+            f"Hiya, {member.mention}! I'm the Staff Party Bot, and I'm going to be "
+            f"your best friend throughout your time here at the Staff Party Bus!\n\n"
+        )
+        
+        flag = False
+        if "venue_management" in roles:
+            welcome_message += (
+                "It looks like you've selected the Venue Management role!\n"
+                "You can follow the instructions <#1220087653815291954> to set up "
+                "your venue profile \\o/ <a:bartender:1168135253387378748> \n\n"
+            )
+            flag = True
+        if "staff_pending" in roles:
+            welcome_message += (
+                "You can follow the instructions here <#1104515062636478643> to do "
+                "your staff validation and you'll be able to create your staff "
+                "profile afterwards! <a:dancer:1168134583158575175>\n\n"
+            )
+            flag = True
+        if "trainee" in roles:
+            welcome_message += (
+                "You can follow the instructions here <#1219488746664230974> to "
+                "set up your profile and receive training! <a:greeter:1168134573926912071>"
+            )
+            flag = True
+            
+        if not flag:
+            welcome_message += (
+                "It looks like you haven't selected any roles yet! You can do so "
+                "in <#1104515062636478638> to get started! <a:host:1168134582000943124>"
+            )
+            
+        await self.channel_manager.welcome_channel.send(welcome_message)
+    
 ################################################################################
     async def bulk_update_menu(self, interaction: Interaction) -> None:
         

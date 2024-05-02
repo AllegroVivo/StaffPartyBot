@@ -334,13 +334,15 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE channels SET temp_job = %s, perm_job = %s, venues = %s, "
-            "profiles = %s, log_channel = %s, services = %s WHERE guild_id = %s;",
+            "profiles = %s, log_channel = %s, services = %s, welcome = %s "
+            "WHERE guild_id = %s;",
             channel_mgr.temp_job_channel.id if channel_mgr.temp_job_channel else None,
             channel_mgr.perm_job_channel.id if channel_mgr.perm_job_channel else None,
             channel_mgr.venues_channel.id if channel_mgr.venues_channel else None,
             channel_mgr.profiles_channel.id if channel_mgr.profiles_channel else None,
             channel_mgr.log_channel.id if channel_mgr.log_channel else None,
             channel_mgr.services_channel.id if channel_mgr.services_channel else None,
+            channel_mgr.welcome_channel.id if channel_mgr.welcome_channel else None,
             channel_mgr.guild_id
         )
         

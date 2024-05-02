@@ -30,6 +30,7 @@ class ChannelManager:
         "_profiles",
         "_log",
         "_services",
+        "_welcome",
     )
 
 ################################################################################
@@ -43,6 +44,7 @@ class ChannelManager:
         self._profiles: Optional[ForumChannel] = None
         self._log: Optional[TextChannel] = None
         self._services: Optional[ForumChannel] = None
+        self._welcome: Optional[TextChannel] = None
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -53,6 +55,7 @@ class ChannelManager:
         self._profiles = await self._guild.get_or_fetch_channel(data[4])
         self._log = await self._guild.get_or_fetch_channel(data[5])
         self._services = await self._guild.get_or_fetch_channel(data[6])
+        self._welcome = await self._guild.get_or_fetch_channel(data[7])
         
 ################################################################################
     @property
@@ -139,6 +142,18 @@ class ChannelManager:
         self.update()
         
 ################################################################################
+    @property
+    def welcome_channel(self) -> Optional[TextChannel]:
+        
+        return self._welcome
+    
+    @welcome_channel.setter
+    def welcome_channel(self, channel: Optional[TextChannel]) -> None:
+        
+        self._welcome = channel
+        self.update()
+        
+################################################################################
     def update(self) -> None:
     
         self.bot.database.update.channels(self)
@@ -147,6 +162,11 @@ class ChannelManager:
     def status(self) -> Embed:
 
         fields = [
+            EmbedField(
+                name="__Welcome Channel__",
+                value=self.welcome_channel.mention if self.welcome_channel else "`Not Set`",
+                inline=False
+            ),
             EmbedField(
                 name="__Log Stream__",
                 value=self.log_channel.mention if self.log_channel else "`Not Set`",
@@ -225,12 +245,14 @@ class ChannelManager:
                 self.perm_job_channel = channel
             case ChannelPurpose.Services:
                 self.services_channel = channel
+            case ChannelPurpose.Welcome:
+                self.welcome_channel = channel
             case _:
                 raise ValueError(f"Invalid ChannelPurpose: {_type}")
         
         embed = U.make_embed(
             title="Channel Set!",
-            description=f"The channel has been set to {channel.mention}!"  # type: ignore
+            description=f"The {_type.proper_name} channel has been set to {channel.mention}!"  # type: ignore
         )
         await interaction.respond(embed=embed, ephemeral=True)
         
