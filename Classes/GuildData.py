@@ -14,7 +14,7 @@ from Classes.RoleManager import RoleManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
 from Classes.Services.ServicesManager import ServicesManager
-from UI.Guild import ReportMenuView
+from UI.Guild import ReportMenuView, BulkUpdateView
 from Utilities import Utilities as U
 
 if TYPE_CHECKING:
@@ -247,3 +247,16 @@ class GuildData:
         )        
         
 ################################################################################
+    async def bulk_update_menu(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="TrainerBot Bulk Update Menu",
+            description="Please select a category to update."
+        )
+        view = BulkUpdateView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+################################################################################
+        

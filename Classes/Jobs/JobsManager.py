@@ -11,7 +11,7 @@ from discord import (
 )
 from discord.ext.pages import Page
 
-from UI.Common import Frogginator
+from UI.Common import Frogginator, ConfirmCancelView
 from UI.Jobs import JobReportRangeModal
 from Utilities import (
     Utilities as U,
@@ -20,6 +20,7 @@ from Utilities import (
     DateTimeFormatError,
     DateTimeMismatchError,
 )
+from Utilities import log
 from .JobPosting import JobPosting
 
 if TYPE_CHECKING:
@@ -51,6 +52,8 @@ class JobsManager:
             
 ################################################################################
     def get_posting(self, post_id: str) -> Optional[JobPosting]:
+        
+        log.debug("Jobs", f"Searching for job posting with ID {post_id}")
         
         for posting in self._postings:
             if posting.id == post_id:
@@ -100,26 +103,41 @@ class JobsManager:
         
 ################################################################################
     async def create_new(self, interaction: Interaction, venue_name: str) -> None:
+        
+        log.info(
+            "Jobs",
+            f"Creating new job posting for {venue_name} by {interaction.user.display_name}"
+        )
 
         venue = self.venue_manager.get_venue(venue_name)
         if venue is None:
+            log.warning("Jobs", f"Venue {venue_name} does not exist")
             error = VenueDoesntExistError(venue_name)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if not await self.venue_manager.authenticate(venue, interaction.user, interaction):
+            log.warning(
+                "Jobs",
+                f"{interaction.user.display_name} does not have permission to post for {venue_name}"
+            )
             return
         
         posting = JobPosting.new(self, venue, interaction.user)
         self._postings.append(posting)
+        
+        log.info("Jobs", f"Job posting created with ID {posting.id}")
         
         await posting.menu(interaction)
     
 ################################################################################
     async def check_status(self, interaction: Interaction, post_id: str) -> None:
         
+        log.info("Jobs", f"Checking status of job posting with ID {post_id}")
+        
         posting = self.get_posting(post_id)
         if posting is None:
+            log.warning("Jobs", f"Job posting with ID {post_id} not found")
             error = JobPostingNotFoundError(post_id)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -129,7 +147,10 @@ class JobsManager:
 ################################################################################
     async def cull_job_postings(self) -> None:
         
+        log.info("Jobs", "Culling job postings")
+        
         if self.temporary_jobs_channel is None:
+            log.warning("Jobs", "Temporary jobs channel not found")
             return
         
         for posting in self._postings:
@@ -140,10 +161,13 @@ class JobsManager:
             async for _ in thread.history():
                 count += 1
             if count == 0:
+                log.debug("Jobs", f"Deleting empty thread {thread.name}")
                 await thread.delete()
         
 ################################################################################
     async def temp_job_report(self, interaction: Interaction) -> None:
+        
+        log.info("Jobs", "Creating temporary job report")
         
         modal = JobReportRangeModal()
         
@@ -151,11 +175,13 @@ class JobsManager:
         await modal.wait()
         
         if not modal.complete:
+            log.warning("Jobs", "Job report modal not completed")
             return
         
         try:
             start_dt = datetime.strptime(modal.value[0], "%m/%d/%Y")
         except ValueError:
+            log.warning("Jobs", f"Invalid start date format: {modal.value[0]}")
             error = DateTimeFormatError(modal.value[0])
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -163,11 +189,13 @@ class JobsManager:
         try:
             end_dt = datetime.strptime(modal.value[1], "%m/%d/%Y")
         except ValueError:
+            log.warning("Jobs", f"Invalid end date format: {modal.value[1]}")
             error = DateTimeFormatError(modal.value[1])
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if start_dt > end_dt:
+            log.warning("Jobs", f"Start date '{start_dt}' is after end date '{end_dt}'")
             error = DateTimeMismatchError(start_dt, end_dt)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -255,6 +283,8 @@ class JobsManager:
         # Check if there's content left for a final page
         if current_length > 0:
             add_page()
+            
+        log.info("Jobs", f"Sending temporary job report with {len(pages)} pages")
     
         # Send report paginator
         frogginator = Frogginator(pages=pages)
@@ -262,6 +292,8 @@ class JobsManager:
 
 ################################################################################
     async def delete_all_by_venue(self, venue: Venue) -> int:
+        
+        log.info("Jobs", f"Deleting all job postings for {venue.name}")
         
         count = 0
         
@@ -275,6 +307,8 @@ class JobsManager:
 ################################################################################
     async def on_member_leave(self, member: Member) -> Tuple[int, int]:
         
+        log.info("Jobs", f"Member Left. Deleting all job postings for {member.display_name}")
+        
         delete_count = 0
         cancel_count = 0
         
@@ -285,6 +319,48 @@ class JobsManager:
             if posting.candidate is not None and posting.candidate.user_id == member.id:
                 await posting.cancel()
                 
+        log.info("Jobs", f"Deleted {delete_count} job postings and cancelled {cancel_count}.")
         return delete_count, cancel_count
 
 ################################################################################
+    async def bulk_update(self, interaction: Interaction) -> None:
+        
+        log.info("Jobs", "Bulk updating all job postings")
+        
+        prompt = U.make_embed(
+            title="Bulk Update",
+            description=(
+                "This tool will perform an update on all job postings.\n\n"
+
+                "This will take **SOME TIME.** Please confirm that you wish "
+                "to proceed with this action."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Jobs", "Bulk update cancelled")
+            return
+        
+        msg = await interaction.followup.send("Please wait...")
+        
+        count = 0
+        for posting in self._postings:
+            await posting._update_post_components()
+            count += 1
+        
+        await msg.delete()
+        
+        confirm = U.make_embed(
+            title="Bulk Update Complete",
+            description=f"Successfully updated {count} job postings."
+        )
+        await interaction.respond(embed=confirm)
+        
+        log.info("Jobs", f"Bulk update complete. Updated {count} job postings.")
+        
+################################################################################
+        

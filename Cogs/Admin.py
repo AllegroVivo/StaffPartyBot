@@ -329,6 +329,15 @@ class Admin(Cog):
             [r for r in [r1, r2, r3, r4, r5, r6, r7, r8, r9] if r]
         )
                           
+################################################################################
+    @admin.command(
+        name="bulk_update",
+        description="Bulk update various bot postings."
+    )
+    async def bulk_update(self, ctx: ApplicationContext) -> None:
+
+        await self.bot[ctx.guild_id].bulk_update_menu(ctx.interaction)
+        
 ################################################################################      
 def setup(bot: "StaffPartyBot") -> None:
 

@@ -603,3 +603,57 @@ class VenueManager:
         await interaction.respond(file=self.__etiquette_file, delete_after=60)
 
 ################################################################################
+    async def bulk_update(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Bulk Update",
+            description=(
+                "This tool will perform a hard update on all venues, resetting "
+                "all data governed by the FFXIV Venues API to the values received "
+                "in the transaction and updating all profile components accordingly.\n\n"
+                
+                "__These values are as follows:__\n"
+                "* Manager List\n"
+                "* Banner Image\n"
+                "* Description\n"
+                "* Location\n"
+                "* Website\n"
+                "* Discord\n"
+                "* Hiring Status\n"
+                "* SFW Status\n"
+                "* Tags\n"
+                "* Mare ID\n"
+                "* Mare Password\n"
+                "* Normal Operating Schedule\n"
+                "*(Schedule overrides are not imported.)*\n\n"
+                
+                "This will take **SOME TIME.** Please confirm that you wish "
+                "to proceed with this action."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            return
+        
+        msg = await interaction.followup.send("Please wait...")
+        
+        count = 0
+        for venue in self.venues:
+            await venue.update_from_xiv_venue(interaction)
+            await venue._update_post_components()
+            count += 1
+        
+        await msg.delete()
+        
+        confirm = U.make_embed(
+            title="Bulk Update Complete",
+            description=f"Successfully updated {count} venues."
+        )
+        await interaction.respond(embed=confirm)
+        
+################################################################################
+        

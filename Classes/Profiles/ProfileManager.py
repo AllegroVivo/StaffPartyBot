@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from discord import User, Member
+from discord import User, Member, Interaction
 from typing import TYPE_CHECKING, List, Optional, Any, Tuple, Dict
 
+from UI.Common import ConfirmCancelView
 from .Profile import Profile
+from Utilities import Utilities as U
 
 if TYPE_CHECKING:
     from Classes import GuildData, StaffPartyBot
@@ -85,4 +87,39 @@ class ProfileManager:
                 return True
 
 ################################################################################
-    
+    async def bulk_update(self, interaction: Interaction) -> None:
+
+        prompt = U.make_embed(
+            title="Bulk Update",
+            description=(
+                "This tool will perform an update on all profile message "
+                "components.\n\n"
+
+                "This will take **SOME TIME.** Please confirm that you wish "
+                "to proceed with this action."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            return
+
+        msg = await interaction.followup.send("Please wait...")
+
+        count = 0
+        for profile in self._profiles:
+            await profile._update_post_components()
+            count += 1
+
+        await msg.delete()
+
+        confirm = U.make_embed(
+            title="Bulk Update Complete",
+            description=f"Successfully updated {count} profiles."
+        )
+        await interaction.respond(embed=confirm)
+
+################################################################################
