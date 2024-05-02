@@ -36,6 +36,7 @@ class Internal(Cog):
     async def on_member_join(self, member) -> None:
         
         await self.bot[member.guild.id].on_member_join(member)
+        self.bot[member.guild.id].member_welcome.start(member)
         
 ################################################################################
     @Cog.listener("on_member_remove")

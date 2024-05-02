@@ -30,19 +30,22 @@ __all__ = ("GuildData",)
 class GuildData:
     """A container for bot-specific guild data and settings."""
 
-    __slots__ = (
-        "_state",
-        "_parent",
-        "_pos_mgr",
-        "_training_mgr",
-        "_logger",
-        "_profile_mgr",
-        "_venue_mgr",
-        "_job_mgr",
-        "_role_mgr",
-        "_channel_mgr",
-        "_service_mgr",
-    )
+    # Can't have slots if we're going to do the member_welcome task as 
+    # the presence of __slots__ will prevent writing to this class.
+    
+    # __slots__ = (
+    #     "_state",
+    #     "_parent",
+    #     "_pos_mgr",
+    #     "_training_mgr",
+    #     "_logger",
+    #     "_profile_mgr",
+    #     "_venue_mgr",
+    #     "_job_mgr",
+    #     "_role_mgr",
+    #     "_channel_mgr",
+    #     "_service_mgr",
+    # )
 
 ################################################################################
     def __init__(self, bot: StaffPartyBot, parent: Guild):
@@ -253,11 +256,10 @@ class GuildData:
     async def on_member_join(self, member: Member) -> None:
         
         await self.log.member_join(member)
-        self._member_joined.start(member)
         
 ################################################################################
     @tasks.loop(count=1)
-    async def _member_joined(self, member: Member) -> None:
+    async def member_welcome(self, member: Member) -> None:
         
         if not self.channel_manager.welcome_channel:
             return
