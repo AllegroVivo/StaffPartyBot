@@ -147,11 +147,10 @@ class JobsManager:
 ################################################################################
     async def cull_job_postings(self) -> None:
         
-        log.info("Jobs", "Culling job postings")
-        
         if self.temporary_jobs_channel is None:
-            log.warning("Jobs", "Temporary jobs channel not found")
             return
+        
+        log.info("Jobs", "Culling job postings")
         
         for posting in self._postings:
             await posting.expiration_check()
