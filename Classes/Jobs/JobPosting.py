@@ -334,7 +334,7 @@ class JobPosting:
             await interaction.respond(embed=error, ephemeral=True)
             return
         
-        log.debug(
+        log.info(
             "Jobs", 
             f"Opening job posting menu for {self._id} (Venue: {self.venue.name}, "
             f"Position: {self.position_name})"
@@ -881,8 +881,17 @@ class JobPosting:
 
 ################################################################################
     async def _update_post_components(self, addl_attempt: bool = False) -> bool:
+
+        log.info(
+            "Jobs",
+            (
+                f"Updating job posting components for {self._id} (Venue: {self.venue.name}, "
+                f"Position: {self.position_name})"
+            )
+        )
         
         if self.post_message is None:
+            log.debug("Jobs", "Post message not found - skipping update")
             return False
         
         try:
@@ -901,10 +910,21 @@ class JobPosting:
             return False
         except HTTPException as ex:
             if ex.code != 50083 and not addl_attempt:
-                pass
+                log.critical(
+                    "Jobs",
+                    f"An uncaught error occurred while updating the post components: {ex}"
+                )
+            log.warning(
+                "Jobs",
+                "Thread was archived for exceeding 30 day limit - attempting to revive."
+            )
             await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
             await self._update_post_components(addl_attempt=True)
         else:
+            log.info(
+                "Jobs",
+                "Job post components updated successfully"
+            )
             return True
         
 ################################################################################
