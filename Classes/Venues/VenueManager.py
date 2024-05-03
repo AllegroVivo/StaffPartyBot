@@ -554,10 +554,6 @@ class VenueManager:
         
         await self.guild.log.venue_created(venue)
         
-        for auth_user in venue.authorized_users:
-            await self.guild.role_manager.add_role(auth_user, RoleType.VenueManagement)
-            await self.guild.role_manager.remove_role(auth_user, RoleType.VenuePending)
-        
         await venue.menu(interaction)
     
 ################################################################################

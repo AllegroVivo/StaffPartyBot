@@ -12,7 +12,7 @@ class RoleType(FroggeEnum):
     StaffMain = 4
     StaffNotValidated = 5
     NewStaff = 6
-    VenuePending = 7
+    # VenuePending = 7  # Don't need this, but keeping here, so I know why it's skipped
     VenueManagement = 8
 
 ################################################################################
@@ -27,8 +27,8 @@ class RoleType(FroggeEnum):
             return "Staff Not Validated"
         elif self.value == 6:
             return "New Staff"
-        elif self.value == 7:
-            return "Venue Pending"
+        # elif self.value == 7:
+        #     return "Venue Pending"
         elif self.value == 8:
             return "Venue Management"
 

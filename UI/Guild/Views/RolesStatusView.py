@@ -28,7 +28,6 @@ class RolesStatusView(FroggeView):
             TrainerHiatusRoleButton(roles.trainer_hiatus),
             StaffMainRoleButton(roles.staff_main),
             StaffUnvalidatedRoleButton(roles.staff_unvalidated),
-            VenuePendingButton(roles.venue_pending),
             VenueManagementButton(roles.venue_management),
             CloseMessageButton(),
         ]
@@ -135,27 +134,6 @@ class StaffUnvalidatedRoleButton(FroggeButton):
     async def callback(self, interaction):
         await self.view.roles.set_role(interaction, RoleType.StaffNotValidated)
         self.set_style(self.view.roles.staff_unvalidated)
-
-        await edit_message_helper(
-            interaction, embed=self.view.roles.status(), view=self.view
-        )
-        
-################################################################################
-class VenuePendingButton(FroggeButton):
-    
-    def __init__(self, cur_role: Optional[Role]):
-        
-        super().__init__(
-            label="Venue Pending",
-            disabled=False,
-            row=1
-        )
-        
-        self.set_style(cur_role)
-        
-    async def callback(self, interaction):
-        await self.view.roles.set_role(interaction, RoleType.VenuePending)
-        self.set_style(self.view.roles.venue_pending)
 
         await edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view

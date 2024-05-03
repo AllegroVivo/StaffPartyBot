@@ -24,7 +24,6 @@ class RoleManager:
         "_trainer_hiatus",
         "_staff_main",
         "_staff_unvalidated",
-        "_venue_pending",
         "_venue_management",
     )
 
@@ -38,7 +37,6 @@ class RoleManager:
         self._trainer_hiatus: Optional[Role] = None
         self._staff_main: Optional[Role] = None
         self._staff_unvalidated: Optional[Role] = None
-        self._venue_pending: Optional[Role] = None
         self._venue_management: Optional[Role] = None
     
 ################################################################################
@@ -51,8 +49,7 @@ class RoleManager:
         self._trainer_hiatus = guild.get_role(data[3]) if data[3] else None
         self._staff_main = guild.get_role(data[4]) if data[4] else None
         self._staff_unvalidated = guild.get_role(data[5]) if data[5] else None
-        self._venue_pending = guild.get_role(data[6]) if data[6] else None
-        self._venue_management = guild.get_role(data[7]) if data[7] else None
+        self._venue_management = guild.get_role(data[6]) if data[6] else None
         
 ################################################################################
     @property
@@ -128,18 +125,6 @@ class RoleManager:
         
 ################################################################################
     @property
-    def venue_pending(self) -> Optional[Role]:
-            
-        return self._venue_pending
-    
-    @venue_pending.setter
-    def venue_pending(self, role: Optional[Role]) -> None:
-        
-        self._venue_pending = role
-        self.update()
-        
-################################################################################
-    @property
     def venue_management(self) -> Optional[Role]:
         
         return self._venue_management
@@ -182,11 +167,6 @@ class RoleManager:
             EmbedField(
                 name="__Staff Pending__",
                 value=self.staff_unvalidated.mention if self.staff_unvalidated else "`Not Set`",
-                inline=False
-            ),
-            EmbedField(
-                name="__Venue Management Pending__",
-                value=self.venue_pending.mention if self.venue_pending else "`Not Set`",
                 inline=False
             ),
             EmbedField(
@@ -275,8 +255,6 @@ class RoleManager:
                     self.staff_main = role
                 case RoleType.StaffNotValidated:
                     self.staff_unvalidated = role
-                case RoleType.VenuePending:
-                    self.venue_pending = role
                 case RoleType.VenueManagement:
                     self.venue_management = role
 
@@ -300,8 +278,6 @@ class RoleManager:
                 role = self.staff_main
             case RoleType.StaffNotValidated:
                 role = self.staff_unvalidated
-            case RoleType.VenuePending:
-                role = self.venue_pending
             case RoleType.VenueManagement:
                 role = self.venue_management
             case _:
@@ -330,8 +306,6 @@ class RoleManager:
                 role = self.staff_main
             case RoleType.StaffNotValidated:
                 role = self.staff_unvalidated
-            case RoleType.VenuePending:
-                role = self.venue_pending
             case RoleType.VenueManagement:
                 role = self.venue_management
             case _:
