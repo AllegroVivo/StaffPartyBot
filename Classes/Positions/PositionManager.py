@@ -156,14 +156,9 @@ class PositionManager:
 ################################################################################
     def get_position_by_name(self, pos_name: str) -> Optional[Position]:
         
-        log.debug("Positions", f"Searching for position {pos_name}")
-        
         for position in self._positions:
             if position.name.lower() == pos_name.lower():
-                log.debug("Positions", f"Position {pos_name} found.")
                 return position
-            
-        log.debug("Positions", f"Position {pos_name} not found.")
             
 ################################################################################
     async def position_status(self, interaction: Interaction, pos_name: str) -> None:
@@ -311,14 +306,9 @@ class PositionManager:
 ################################################################################
     def get_position(self, pos_id: str) -> Optional[Position]:
         
-        log.debug("Positions", f"Searching for position {pos_id}")
-        
         for position in self._positions:
             if position.id == pos_id:
-                log.debug("Positions", f"Position {pos_id} found.")
                 return position
-            
-        log.debug("Positions", f"Position {pos_id} not found.")
             
 ################################################################################
     async def positions_report(self, interaction: Interaction) -> None:
