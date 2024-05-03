@@ -186,6 +186,7 @@ class Training:
                 )
             )
         else:
+            closing = "They will be in touch shortly about your next steps!"
             confirm = U.make_embed(
                 title="Training Updated",
                 description=(
@@ -195,8 +196,8 @@ class Training:
                     f"Your trainer is now `{self._trainer.name}` "
                     f"({self._trainer.user.mention})!\n\n"
                     
-                    "They will be in touch shortly about your next steps!\n"
-                    f"{U.draw_line(extra=25)}\n"
+                    f"{closing}\n"
+                    f"{U.draw_line(text=closing)}\n"
                 ),
             )
         
