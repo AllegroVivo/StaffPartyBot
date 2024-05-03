@@ -38,8 +38,8 @@ class _FroggeLog:
         
         self._FH.setLevel(logging.DEBUG)
         self._FH.setFormatter(self._FDF)
-        self._SH.setLevel(logging.WARNING)
-        self._SH.setFormatter(self._SDF)
+        self._SH.setLevel(logging.DEBUG)
+        self._SH.setFormatter(self._FDF)
     
 ################################################################################    
     def _log(self, name: str, level: int, message: str) -> None:
