@@ -5,18 +5,16 @@ from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dic
 
 import pytz
 from discord import (
-    Colour, 
-    Embed, 
-    Interaction, 
-    EmbedField, 
+    Colour,
+    Embed,
+    Interaction,
+    EmbedField,
     Message,
-    SelectOption, 
-    Thread,
+    SelectOption,
     NotFound,
 )
 
 from Assets import BotEmojis
-from UI.Training import TimeSelectView, WeekdayTZSelectView
 from UI.Profiles import (
     ProfileDetailsStatusView,
     ProfileNameModal,
@@ -25,8 +23,10 @@ from UI.Profiles import (
     ProfileJobsModal,
     ProfileRatesModal
 )
+from UI.Training import TimeSelectView, WeekdayTZSelectView
 from UI.Venues import PositionSelectView
 from Utilities import Utilities as U, NS, MalformedURLError
+from Utilities import log
 from .PAvailability import PAvailability
 from .ProfileSection import ProfileSection
 
@@ -213,6 +213,11 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"{self.parent.user} opened the profile details menu."
+        )
+        
         embed = self.status()
         view = ProfileDetailsStatusView(interaction.user, self)
         
@@ -281,18 +286,34 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     async def set_name(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"Setting name for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
+        
         modal = ProfileNameModal(self._name)
         
         await interaction.response.send_modal(modal)
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Name modal was not completed.")
             return
         
         self.name = modal.value
+        
+        log.info(
+            "Profiles",
+            f"Name set to '{self.name}' for {self.parent.user.name} ({self.parent.user_id})."
+        )
     
 ################################################################################
     async def set_url(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting URL for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
         
         modal = ProfileURLModal(self.url)
         
@@ -300,17 +321,38 @@ class ProfileDetails(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "URL modal was not completed.")
             return
         
         if not modal.value.startswith("https://"):
+            log.warning(
+                "Profiles",
+                (
+                    f"Malformed URL: {modal.value} for {self.name} "
+                    f"({self.parent.user.name}: {self.parent.user_id})."
+                )
+            )
             error = MalformedURLError(modal.value)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         self.url = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"URL set to '{self.url}' for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id})."
+            )
+        )
     
 ################################################################################
     async def set_color(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting color for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
         
         modal = ProfileColorModal(self.color)
         
@@ -318,12 +360,26 @@ class ProfileDetails(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Color modal was not completed.")
             return
         
         self.color = Colour(modal.value)
+        
+        log.info(
+            "Profiles",
+            (
+                f"Color set to '{self.color}' for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id})."
+            )
+        )
     
 ################################################################################
     async def set_jobs(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting jobs for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
 
         modal = ProfileJobsModal(self.jobs)
 
@@ -331,12 +387,26 @@ class ProfileDetails(ProfileSection):
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Profiles", "Jobs modal was not completed.")
             return
 
         self.jobs = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Jobs set to '{self.jobs}' for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id})."
+            )
+        )
     
 ################################################################################
     async def set_rates(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting rates for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
 
         modal = ProfileRatesModal(self.rates)
 
@@ -344,9 +414,18 @@ class ProfileDetails(ProfileSection):
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Profiles", "Rates modal was not completed.")
             return
 
         self.rates = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Rates set to '{self.rates}' for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id})."
+            )
+        )
 
 ################################################################################
     def progress(self) -> str:
@@ -421,6 +500,11 @@ class ProfileDetails(ProfileSection):
 ################################################################################
     async def set_positions(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"Setting positions for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
+        
         base_options = self._parent.manager.guild.position_manager.select_options()
         options = [
             SelectOption(
@@ -440,12 +524,21 @@ class ProfileDetails(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Position select view was not completed.")
             return
         
         self.positions = [
             self._parent.manager.guild.position_manager.get_position(p)
             for p in view.value
         ]
+        
+        log.info(
+            "Profiles",
+            (
+                f"Positions set to '{self.positions}' for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id})."
+            )
+        )
     
 ################################################################################
     def _to_dict(self) -> Dict[str, Any]:
@@ -460,6 +553,11 @@ class ProfileDetails(ProfileSection):
     
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting availability for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+        )
 
         footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
         status = U.make_embed(
@@ -479,10 +577,13 @@ class ProfileDetails(ProfileSection):
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "WeekdayTZSelectView was not completed.")
             return
 
         # weekday, tz = view.value
         weekday = view.value
+        
+        log.info("Profiles", f"Selected weekday: {weekday.proper_name}.")
 
         prompt = U.make_embed(
             title="Set Availability Start",
@@ -500,10 +601,13 @@ class ProfileDetails(ProfileSection):
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Starting TimeSelectView was not completed.")
             return
 
         start_time = view.value if view.value != -1 else None
         end_time = None
+        
+        log.debug("Profiles", f"Selected start time: {start_time}.")
 
         if start_time is not None:
             prompt = U.make_embed(
@@ -522,6 +626,7 @@ class ProfileDetails(ProfileSection):
             await view.wait()
 
             if not view.complete or view.value is False:
+                log.debug("Profiles", "Ending TimeSelectView was not completed.")
                 return
 
             end_time = view.value
@@ -533,6 +638,16 @@ class ProfileDetails(ProfileSection):
         if start_time is not None:
             availability = PAvailability.new(self.parent, weekday, start_time, end_time)
             self._availability.append(availability)
+            
+            log.info(
+                "Profiles",
+                (
+                    f"Availability set to '{availability.start_time} - "
+                    f"{availability.end_time}' on {availability.day.proper_name} "
+                    f"for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
+                )
+            
+            )
         
 ################################################################################
     def _compile_availability(self) -> Embed:
@@ -554,5 +669,14 @@ class ProfileDetails(ProfileSection):
     def toggle_dm_preference(self) -> None:
         
         self.dm_preference = not self.dm_preference
+        
+        log.info(
+            "Profiles",
+            (
+                f"Toggled DM preference for {self.name} "
+                f"({self.parent.user.name}: {self.parent.user_id}). "
+                f"Current: {self.dm_preference}."
+            )
+        )
         
 ################################################################################

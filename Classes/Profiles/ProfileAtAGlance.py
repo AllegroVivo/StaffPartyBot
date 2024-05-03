@@ -16,7 +16,7 @@ from UI.Profiles import (
     ProfileMareModal,
     AtAGlanceStatusView
 )
-from UI.Venues import DataCenterSelectView, HomeWorldSelectView
+from UI.Venues import DataCenterSelectView
 from Utilities import (
     Utilities as U,
     Gender,
@@ -27,10 +27,9 @@ from Utilities import (
     HeightInputError,
     NS,
     FroggeEnum,
-    DataCenter,
-    GameWorld,
     GlobalDataCenter
 )
+from Utilities import log
 from .ProfileSection import ProfileSection
 
 if TYPE_CHECKING:
@@ -215,6 +214,14 @@ class ProfileAtAGlance(ProfileSection):
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            (
+                f"Opening At A Glance menu for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
+        
         embed = self.status()
         view = AtAGlanceStatusView(interaction.user, self)
         
@@ -303,6 +310,14 @@ class ProfileAtAGlance(ProfileSection):
     
 ################################################################################
     async def set_gender(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Gender/Pronouns for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
 
         prompt = U.make_embed(
             title="Gender/Pronoun Selection",
@@ -320,13 +335,30 @@ class ProfileAtAGlance(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.gender = view.value[0]
         self.pronouns = view.value[1]
+        
+        log.info(
+            "Profiles",
+            (
+                f"Gender/Pronouns set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Values: {view.value[0]} / {view.value[1]}"
+            )
+        )
     
 ################################################################################
     async def set_raceclan(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting RaceClan for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
 
         prompt = U.make_embed(
             title="Select Your Race & Clan",
@@ -344,13 +376,30 @@ class ProfileAtAGlance(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.race = view.value[0]
         self.clan = view.value[1]
         
+        log.info(
+            "Profiles",
+            (
+                f"Race/Clan set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Values: {view.value[0]} / {view.value[1]}"
+            )
+        )
+        
 ################################################################################
     async def set_orientation(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Orientation for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
 
         prompt = U.make_embed(
             title="Select Your Orientation",
@@ -367,12 +416,29 @@ class ProfileAtAGlance(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.orientation = view.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Orientation set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Value: {view.value}"
+            )
+        )
 
 ################################################################################
     async def set_height(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Height for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
         
         modal = ProfileHeightModal(self.height)
         
@@ -380,13 +446,27 @@ class ProfileAtAGlance(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         raw = modal.value
         if raw is None:
             self.height = None
+            log.info(
+                "Profiles",
+                (
+                    f"Height cleared for {self.parent.char_name} "
+                    f"({self.parent.user_id})"
+                )
+            )
             return
 
+        # RegEx Explanation: This RegEx pattern is designed to match a variety of
+        # height input formats, including:
+        # - A single number followed by "cm" or "cm."
+        # - A single number followed by "ft", "feet", or "'"
+        # - A single number followed by "in", "inches", or "'"
+        # - A combination of the above three formats, separated by spaces
         result = re.match(
             r"^(\d+)\s*cm\.?|(\d+)\s*(?:ft\.?|feet|')$|(\d+)\s*(?:in\.?|inches|\"|'')|"
             r"(\d+)\s*(?:ft\.?|feet|')\s*(\d+)\s*(?:in\.?|inches|\"|'')",
@@ -394,6 +474,13 @@ class ProfileAtAGlance(ProfileSection):
         )
 
         if not result:
+            log.warning(
+                "Profiles",
+                (
+                    f"Invalid height input detected for {self.parent.char_name} "
+                    f"({self.parent.user_id}) Value: {raw}"
+                )
+            )
             error = HeightInputError(raw)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -409,9 +496,25 @@ class ProfileAtAGlance(ProfileSection):
         elif result.group(4) and result.group(5):
             inches = int(result.group(4)) * 12 + int(result.group(5))
             self.height = math.ceil(inches * 2.54)
+            
+        log.info(
+            "Profiles",
+            (
+                f"Height set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Value: {self.height}"
+            )
+        )
 
 ################################################################################
     async def set_age(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Age for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
         
         modal = ProfileAgeModal(self.age)
         
@@ -419,12 +522,29 @@ class ProfileAtAGlance(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.age = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Age set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Value: {self.age}"
+            )
+        )
     
 ################################################################################
     async def set_mare(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Mare ID for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
         
         modal = ProfileMareModal(self.mare)
         
@@ -432,12 +552,29 @@ class ProfileAtAGlance(ProfileSection):
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.mare = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Mare ID set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Value: {self.mare}"
+            )
+        )
 
 ################################################################################
     async def set_data_centers(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Setting Home Region(s) for {self.parent.char_name} "
+                f"({self.parent.user_id})"
+            )
+        )
         
         prompt = U.make_embed(
             title="Select Your Home Region(s)",
@@ -451,9 +588,18 @@ class ProfileAtAGlance(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Operation cancelled.")
             return
         
         self.data_centers = view.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"Home Region(s) set for {self.parent.char_name} "
+                f"({self.parent.user_id}) Values: {view.value}"
+            )
+        )
         
 ################################################################################
     def progress(self) -> str:

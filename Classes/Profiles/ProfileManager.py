@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, List, Optional, Any, Dict
+
 from discord import User, Member, Interaction
-from typing import TYPE_CHECKING, List, Optional, Any, Tuple, Dict
 
 from UI.Common import ConfirmCancelView
+from Utilities import Utilities as U, log
 from .Profile import Profile
-from Utilities import Utilities as U
 
 if TYPE_CHECKING:
     from Classes import GuildData, StaffPartyBot
@@ -68,13 +69,21 @@ class ProfileManager:
 ################################################################################
     def create_profile(self, user: User) -> Profile:
         
-        # Just double checking we don't add an extra record.
+        log.info(
+            "Profiles",
+            f"Creating profile for user {user.id} ({user.name})",
+        )
+        
+        # Just double-checking we don't add an extra record.
         profile = self[user.id]
         if profile is not None:
+            log.info("Profiles", f"Profile already exists. Returning that.")
             return profile
         
         profile = Profile.new(self, user)
         self._profiles.append(profile)
+        
+        log.info("Profiles", f"Profile created successfully for {user.id} ({user.name})")
         
         return profile
 
@@ -88,6 +97,11 @@ class ProfileManager:
 
 ################################################################################
     async def bulk_update(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Bulk updating all profiles for guild {self.guild_id}"
+        )
 
         prompt = U.make_embed(
             title="Bulk Update",
@@ -105,6 +119,7 @@ class ProfileManager:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "Bulk update cancelled.")
             return
 
         msg = await interaction.followup.send("Please wait...")
@@ -121,5 +136,10 @@ class ProfileManager:
             description=f"Successfully updated {count} profiles."
         )
         await interaction.respond(embed=confirm)
+        
+        log.info(
+            "Profiles",
+            f"Bulk update completed for {count} profiles in guild {self.guild_id}"
+        )
 
 ################################################################################

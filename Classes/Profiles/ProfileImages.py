@@ -3,20 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Tuple, Dict
 
 from discord import Interaction, Embed, EmbedField, SelectOption
-from discord.ext.pages import Page
 
 from Assets import BotEmojis, BotImages
 from UI.Common import ConfirmCancelView
-from Utilities import Utilities as U, NS
-from .PAdditionalImage import PAdditionalImage
-from .ProfileSection import ProfileSection
 from UI.Profiles import (
-    ImageFrogginator,
-    AdditionalImageView, 
-    AdditionalImageCaptionModal,
     ProfileImageStatusView,
     AdditionalImageSelectView
 )
+from Utilities import Utilities as U, NS
+from Utilities import log
+from .PAdditionalImage import PAdditionalImage
+from .ProfileSection import ProfileSection
 
 if TYPE_CHECKING:
     from Classes import Profile
@@ -106,6 +103,14 @@ class ProfileImages(ProfileSection):
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            (
+                f"Opening Image Menu for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
+        
         embed = self.status()
         view = ProfileImageStatusView(interaction.user, self)
         
@@ -181,6 +186,14 @@ class ProfileImages(ProfileSection):
 
 ################################################################################
     async def remove_thumbnail(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Removing Thumbnail for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
 
         confirm = U.make_embed(
             color=self.parent.color,
@@ -201,12 +214,23 @@ class ProfileImages(ProfileSection):
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled thumbnail removal")
             return
         
         self.thumbnail = None
+        
+        log.info("Profiles", "Thumbnail removed successfully")
     
 ################################################################################
     async def remove_main_image(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Removing Main Image for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
 
         confirm = U.make_embed(
             color=self.parent.color,
@@ -227,9 +251,12 @@ class ProfileImages(ProfileSection):
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled main image removal")
             return
 
         self.main_image = None
+        
+        log.info("Profiles", "Main Image removed successfully")
 
 ################################################################################
     def _manage_additional_embed(self, image: Optional[PAdditionalImage]) -> Embed:
@@ -254,6 +281,14 @@ class ProfileImages(ProfileSection):
         image: PAdditionalImage = None
     ) -> None:
         
+        log.info(
+            "Profiles",
+            (
+                f"Managing Additional Image for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
+        
         prompt = self._manage_additional_embed(image)
         view = AdditionalImageSelectView(interaction.user, self, image)
         
@@ -261,6 +296,7 @@ class ProfileImages(ProfileSection):
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled additional image management")
             return
         
         addl_image = self.get_additional(view.value)
@@ -295,6 +331,14 @@ class ProfileImages(ProfileSection):
             
 ################################################################################
     async def remove_additional(self, interaction: Interaction, additional: PAdditionalImage) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Removing Additional Image for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
 
         confirm = U.make_embed(
             color=self.parent.color,
@@ -315,10 +359,13 @@ class ProfileImages(ProfileSection):
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Profiles", "User cancelled additional image removal")
             return
 
         self.additional.remove(additional)
         additional.delete()
+        
+        log.info("Profiles", "Additional Image removed successfully")
 
 ################################################################################
     def set_thumbnail(self, url: str) -> None:
@@ -332,6 +379,14 @@ class ProfileImages(ProfileSection):
         
 ################################################################################
     async def add_additional(self, interaction: Interaction, url: str, caption: Optional[str]) -> None:
+        
+        log.info(
+            "Profiles",
+            (
+                f"Adding Additional Image for {self.parent.char_name} "
+                f"({self.parent.user.name}: {self.parent.user_id})"
+            )
+        )
         
         self.additional.append(
             PAdditionalImage.new(parent=self, url=url, caption=caption)

@@ -11,7 +11,7 @@ from UI.Profiles import (
     ProfilePersonalityModal,
     ProfileAboutMeModal
 )
-from Utilities import Utilities as U, NS
+from Utilities import Utilities as U, NS, log
 from .ProfileSection import ProfileSection
 
 if TYPE_CHECKING:
@@ -114,6 +114,11 @@ class ProfilePersonality(ProfileSection):
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"Opening Personality Menu for {self.parent.char_name} ({self.parent.user_id})",
+        )
+        
         embed = self.status()
         view = PersonalityStatusView(interaction.user, self)
         
@@ -183,18 +188,37 @@ class ProfilePersonality(ProfileSection):
 ################################################################################
     async def set_likes(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Profiles",
+            f"Setting Likes for {self.parent.char_name} ({self.parent.user_id})",
+        )
+        
         modal = ProfileLikesModal(self.likes, True)
         
         await interaction.response.send_modal(modal)
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Profiles", "Modal was not completed")
             return
         
         self.likes = modal.value
         
+        log.info(
+            "Profiles",
+            (
+                f"Likes set for {self.parent.char_name} ({self.parent.user_id}): "
+                f"{', '.join(self.likes)}"
+            )
+        )
+        
 ################################################################################
     async def set_dislikes(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting Dislikes for {self.parent.char_name} ({self.parent.user_id})",
+        )
 
         modal = ProfileLikesModal(self.dislikes, False)
 
@@ -202,12 +226,26 @@ class ProfilePersonality(ProfileSection):
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Profiles", "Modal was not completed")
             return
 
         self.dislikes = modal.value
         
+        log.info(
+            "Profiles",
+            (
+                f"Dislikes set for {self.parent.char_name} ({self.parent.user_id}): "
+                f"{', '.join(self.dislikes)}"
+            )
+        )
+        
 ################################################################################
     async def set_personality(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting Personality for {self.parent.char_name} ({self.parent.user_id})",
+        )
 
         modal = ProfilePersonalityModal(self.personality)
 
@@ -215,12 +253,26 @@ class ProfilePersonality(ProfileSection):
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Profiles", "Modal was not completed")
             return
 
         self.personality = modal.value
         
+        log.info(
+            "Profiles",
+            (
+                f"Personality set for {self.parent.char_name} "
+                f"({self.parent.user_id}): {self.personality}"
+            )
+        )
+        
 ################################################################################
     async def set_aboutme(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Profiles",
+            f"Setting About Me for {self.parent.char_name} ({self.parent.user_id})",
+        )
 
         modal = ProfileAboutMeModal(self.aboutme)
 
@@ -228,9 +280,18 @@ class ProfilePersonality(ProfileSection):
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Profiles", "Modal was not completed")
             return
 
         self.aboutme = modal.value
+        
+        log.info(
+            "Profiles",
+            (
+                f"About Me set for {self.parent.char_name} ({self.parent.user_id}): "
+                f"{self.aboutme}"
+            )
+        )
         
 ################################################################################
     def progress(self) -> str:
