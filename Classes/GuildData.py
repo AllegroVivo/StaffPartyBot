@@ -281,7 +281,7 @@ class GuildData:
         )
         
         flag = False
-        if self.role_manager.venue_pending in member.roles:
+        if self.role_manager.venue_management in member.roles:
             welcome_message += (
                 "It looks like you've selected the Venue Management role!\n"
                 "You can follow the instructions <#1220087653815291954> to set up "
