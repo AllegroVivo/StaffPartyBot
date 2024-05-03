@@ -265,8 +265,8 @@ class GuildData:
         if not self.channel_manager.welcome_channel:
             return
         
-        # Three minutes for role selection
-        await discord.utils.sleep_until(member.joined_at + timedelta(minutes=3))
+        # One minute for role selection
+        await discord.utils.sleep_until(member.joined_at + timedelta(minutes=1))
         
         # Get updated member object
         if get_member := self.parent.get_member(member.id):
