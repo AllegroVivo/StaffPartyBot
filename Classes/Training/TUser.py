@@ -951,9 +951,9 @@ class TUser:
         
         if self.on_hiatus:
             await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerMain)
-            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerHiatus)
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainingHiatus)
         else:
-            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
+            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainingHiatus)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
 
         if not self.on_hiatus:

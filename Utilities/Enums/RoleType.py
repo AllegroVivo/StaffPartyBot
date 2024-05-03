@@ -8,10 +8,12 @@ class RoleType(FroggeEnum):
 
     TrainerMain = 1
     TrainerPending = 2
-    TrainerHiatus = 3
+    TrainingHiatus = 3
     StaffMain = 4
     StaffNotValidated = 5
     NewStaff = 6
+    VenuePending = 7
+    VenueManagement = 8
 
 ################################################################################
     @property
@@ -19,10 +21,16 @@ class RoleType(FroggeEnum):
 
         if self.value == 2:
             return "Trainer Pending"
+        elif self.value == 3:
+            return "Training Hiatus"
         elif self.value == 5:
             return "Staff Not Validated"
         elif self.value == 6:
             return "New Staff"
+        elif self.value == 7:
+            return "Venue Pending"
+        elif self.value == 8:
+            return "Venue Management"
 
         return self.name.rstrip("Main")
     

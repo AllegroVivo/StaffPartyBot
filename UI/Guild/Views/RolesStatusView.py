@@ -89,7 +89,7 @@ class TrainerHiatusRoleButton(FroggeButton):
         self.set_style(cur_role)
         
     async def callback(self, interaction):
-        await self.view.roles.set_role(interaction, RoleType.TrainerHiatus)
+        await self.view.roles.set_role(interaction, RoleType.TrainingHiatus)
         self.set_style(self.view.roles.trainer_hiatus)
 
         await edit_message_helper(

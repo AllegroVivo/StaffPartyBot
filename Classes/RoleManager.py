@@ -23,7 +23,9 @@ class RoleManager:
         "_trainer_pending",
         "_trainer_hiatus",
         "_staff_main",
-        "_staff_unvalidated"
+        "_staff_unvalidated",
+        "_venue_pending",
+        "_venue_management",
     )
 
 ################################################################################
@@ -36,6 +38,8 @@ class RoleManager:
         self._trainer_hiatus: Optional[Role] = None
         self._staff_main: Optional[Role] = None
         self._staff_unvalidated: Optional[Role] = None
+        self._venue_pending: Optional[Role] = None
+        self._venue_management: Optional[Role] = None
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -47,6 +51,8 @@ class RoleManager:
         self._trainer_hiatus = guild.get_role(data[3]) if data[3] else None
         self._staff_main = guild.get_role(data[4]) if data[4] else None
         self._staff_unvalidated = guild.get_role(data[5]) if data[5] else None
+        self._venue_pending = guild.get_role(data[6]) if data[6] else None
+        self._venue_management = guild.get_role(data[7]) if data[7] else None
         
 ################################################################################
     @property
@@ -121,6 +127,30 @@ class RoleManager:
         self.update()
         
 ################################################################################
+    @property
+    def venue_pending(self) -> Optional[Role]:
+            
+        return self._venue_pending
+    
+    @venue_pending.setter
+    def venue_pending(self, role: Optional[Role]) -> None:
+        
+        self._venue_pending = role
+        self.update()
+        
+################################################################################
+    @property
+    def venue_management(self) -> Optional[Role]:
+        
+        return self._venue_management
+    
+    @venue_management.setter
+    def venue_management(self, role: Optional[Role]) -> None:
+            
+        self._venue_management = role
+        self.update()
+        
+################################################################################
     def update(self) -> None:
     
         self.bot.database.update.roles(self)
@@ -131,27 +161,37 @@ class RoleManager:
         fields = [
             EmbedField(
                 name="__Trainer__",
-                value=self._trainer_main.mention if self._trainer_main else "`Not Set`",
+                value=self.trainer_main.mention if self.trainer_main else "`Not Set`",
                 inline=False
             ),
             EmbedField(
                 name="__Trainer Pending__",
-                value=self._trainer_pending.mention if self._trainer_pending else "`Not Set`",
+                value=self.trainer_pending.mention if self.trainer_pending else "`Not Set`",
                 inline=False
             ),
             EmbedField(
                 name="__Trainer Hiatus__",
-                value=self._trainer_hiatus.mention if self._trainer_hiatus else "`Not Set`",
+                value=self.trainer_hiatus.mention if self.trainer_hiatus else "`Not Set`",
                 inline=False
             ),
             EmbedField(
                 name="__Staff__",
-                value=self._staff_main.mention if self._staff_main else "`Not Set`",
+                value=self.staff_main.mention if self.staff_main else "`Not Set`",
                 inline=False
             ),
             EmbedField(
-                name="__Staff Unvalidated__",
-                value=self._staff_unvalidated.mention if self._staff_unvalidated else "`Not Set`",
+                name="__Staff Pending__",
+                value=self.staff_unvalidated.mention if self.staff_unvalidated else "`Not Set`",
+                inline=False
+            ),
+            EmbedField(
+                name="__Venue Management Pending__",
+                value=self.venue_pending.mention if self.venue_pending else "`Not Set`",
+                inline=False
+            ),
+            EmbedField(
+                name="__Venue Management__",
+                value=self.venue_management.mention if self.venue_management else "`Not Set`",
                 inline=False
             )
         ]
@@ -229,12 +269,16 @@ class RoleManager:
                     self.trainer_main = role
                 case RoleType.TrainerPending:
                     self.trainer_pending = role
-                case RoleType.TrainerHiatus:
+                case RoleType.TrainingHiatus:
                     self.trainer_hiatus = role
                 case RoleType.StaffMain:
                     self.staff_main = role
                 case RoleType.StaffNotValidated:
                     self.staff_unvalidated = role
+                case RoleType.VenuePending:
+                    self.venue_pending = role
+                case RoleType.VenueManagement:
+                    self.venue_management = role
 
         await message.delete()
         await response.delete_original_response()
@@ -250,12 +294,16 @@ class RoleManager:
                 role = self.trainer_main
             case RoleType.TrainerPending:
                 role = self.trainer_pending
-            case RoleType.TrainerHiatus:
+            case RoleType.TrainingHiatus:
                 role = self.trainer_hiatus
             case RoleType.StaffMain:
                 role = self.staff_main
             case RoleType.StaffNotValidated:
                 role = self.staff_unvalidated
+            case RoleType.VenuePending:
+                role = self.venue_pending
+            case RoleType.VenueManagement:
+                role = self.venue_management
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
@@ -276,12 +324,16 @@ class RoleManager:
                 role = self.trainer_main
             case RoleType.TrainerPending:
                 role = self.trainer_pending
-            case RoleType.TrainerHiatus:
+            case RoleType.TrainingHiatus:
                 role = self.trainer_hiatus
             case RoleType.StaffMain:
                 role = self.staff_main
             case RoleType.StaffNotValidated:
                 role = self.staff_unvalidated
+            case RoleType.VenuePending:
+                role = self.venue_pending
+            case RoleType.VenueManagement:
+                role = self.venue_management
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
