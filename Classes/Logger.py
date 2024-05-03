@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-
+import random
 from dotenv import load_dotenv
 from typing import TYPE_CHECKING, Optional
 
@@ -352,7 +352,44 @@ class Logger:
         )
         view = BGCheckApprovalView(bg_check)
 
-        return await self._log(embed, LogType.BGCheckSubmitted, view=view)
+        msg = await self._log(embed, LogType.BGCheckSubmitted, view=view)
+        
+        greetings = [
+            "Hey Cutie!", "Hey Sexy!", "Hey Handsome!", "Hey Beautiful!",
+            "Hey Gorgeous!", "Hey Stud!", "Hey Babe!", "Hey Love!",
+            "Hey Sweetheart!", "Hey Darling!", "Hey Sugar!", "Hey Honey!",
+            "Hey Sweetie!", "Hey Sunshine!", "Hey Angel!", "Hey Lovebug!",
+            "Hey Snugglebug!", "Hey Cuddlebug!", "Hey Cutie Pie!",
+            "Hey Cupcake!", "Hey Pumpkin!", "Hey Sweet Cheeks!",
+            "Hey Sugar Lips!", "Hey Baby Cakes!", "Hey Doll Face!",
+            "Hey Hot Stuff!", "Hey Hottie!", "Hey Sexy Pants!",
+            "Hey Stud Muffin!", "Hey Love Muffin!", "Hey Sweet Thang!",
+            "Hey Dreamboat!", "Hey Heartthrob!", "Hey Prince Charming!",
+            "Hey Princess!", "Hey Queen!", "Hey King!", "Hey Prince!",
+        ]
+        closers = [
+            "You should probably get on that.", "Time to hop into action.", 
+            "You should probably approve it.", "You should probably check it out.",
+            "It's waiting for YOU!", "Get 'er done.", "You know what to do.",
+            "You know the drill.", "You know the routine.", "You know the deal.",
+            "Your mission, should you choose to accept it...", "It's your move.",
+            "It's your turn.", "It's your time to shine.", "It's your time to act.",
+        ]
+        
+        alert = U.make_embed(
+            title="Background Check Submitted!",
+            description=(
+                f"{random.choice(greetings)} What up? There's a new BG check "
+                f"waiting for you to approve it. {random.choice(closers)}\n\n"
+                
+                f"[Click here to see it!]({msg.jump_url})"
+            ),
+            timestamp=True
+        )
+        if os.getenv("DEBUG") == "False":
+            await self._alyah.send(embed=alert)
+        
+        return msg
 
 ################################################################################
     async def bg_check_approved(self, bg_check: BackgroundCheck) -> None:
