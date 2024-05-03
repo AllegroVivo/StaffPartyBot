@@ -15,10 +15,10 @@ class ProfileIncompleteError(ErrorMessage):
             solution=(
                 "Please ensure that all of the following required fields are "
                 "filled out and try again:\n"
-                "- Name\n"
-                "- Availability\n"
-                "- Home Region(s)\n"
-                "- Employable Positions\n"
+                "- Name *(Main Info)*\n"
+                "- Availability *(Main Info)*\n"
+                "- Employable Positions *(Main Info)*\n"
+                "- Home Region(s) *(At a Glance)*\n"
             )
         )
 
