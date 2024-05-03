@@ -271,7 +271,6 @@ class GuildData:
         # Get updated member object
         if get_member := self.parent.get_member(member.id):
             member = get_member
-        roles = [r.name.lower() for r in member.roles]
         
         welcome_message = (
             "# __Welcome to the <a:party_bus:1225557207836393645> "
@@ -282,14 +281,14 @@ class GuildData:
         )
         
         flag = False
-        if "venue_management" in roles:
+        if self.role_manager.venue_pending in member.roles:
             welcome_message += (
                 "It looks like you've selected the Venue Management role!\n"
                 "You can follow the instructions <#1220087653815291954> to set up "
                 "your venue profile \\o/ <a:bartender:1168135253387378748> \n\n"
             )
             flag = True
-        if "staff_pending" in roles:
+        if self.role_manager.staff_unvalidated in member.roles:
             welcome_message += (
                 "I see you've picked the Staff Pending role!\n"
                 "You can follow the instructions here <#1104515062636478643> to do "
@@ -297,7 +296,7 @@ class GuildData:
                 "profile afterwards! <a:dancer:1168134583158575175>\n\n"
             )
             flag = True
-        if "trainee" in roles:
+        if "trainee" in [r.name for r in member.roles]:
             welcome_message += (
                 "I see you've selected the Trainee role!\n"
                 "You can follow the instructions here <#1219488746664230974> to "
