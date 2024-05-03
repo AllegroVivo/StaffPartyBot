@@ -75,11 +75,15 @@ class Logger:
 
         qualifications = trainings = "`None`"
         if tuser is not None:
-            qualifications = "* " + "\n* ".join(
-                [f"{q.position.name}" for q in tuser.qualifications]
+            qualifications = (
+                "* " + "\n* ".join(
+                    [f"{q.position.name}" for q in tuser.qualifications]
+                ) if tuser.qualifications else "`None`"
             )
-            trainings = "* " + "\n* ".join(
-                [f"{t.position.name}" for t in tuser.trainings_as_trainee]
+            trainings = (
+                "* " + "\n* ".join(
+                    [f"{t.position.name}" for t in tuser.trainings_as_trainee]
+                ) if tuser.trainings_as_trainee else "`None`"
             )
 
         embed = U.make_embed(
