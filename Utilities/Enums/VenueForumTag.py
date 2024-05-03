@@ -6,13 +6,13 @@ from ._Enum import FroggeEnum
 ################################################################################
 class VenueForumTag(FroggeEnum):
 
-    RPHeavy = 1
+    TwitchDJ = 1
     Nightclub = 2
     Bards = 3
     Lounge = 4
     Cafe = 5
     Tavern = 6
-    ICRPOnly = 7
+    Gambling = 7
     BathHouse = 8
     Restaurant = 9
     Casino = 10
@@ -20,9 +20,9 @@ class VenueForumTag(FroggeEnum):
     Inn = 12
     Shop = 13
     Fightclub = 14
-    Stylists = 15
+    Courtesans = 15
     AuctionHouse = 16
-    Library = 17
+    Artists = 17
     LGBTQIA = 18
     VIP = 19
     
@@ -31,9 +31,7 @@ class VenueForumTag(FroggeEnum):
     def proper_name(self) -> str:
         
         if self.value == 1:
-            return "RP Heavy"
-        elif self.value == 7:
-            return "IC RP Only"
+            return "Twitch DJ"
         elif self.value == 8:
             return "Bath House"
         elif self.value == 16:
