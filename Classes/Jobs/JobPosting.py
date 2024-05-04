@@ -882,6 +882,9 @@ class JobPosting:
 ################################################################################
     async def _update_post_components(self, addl_attempt: bool = False) -> bool:
 
+        if self.post_message is None:
+            return False
+        
         log.info(
             "Jobs",
             (
@@ -889,10 +892,6 @@ class JobPosting:
                 f"Position: {self.position_name})"
             )
         )
-        
-        if self.post_message is None:
-            log.debug("Jobs", "Post message not found - skipping update")
-            return False
         
         try:
             view = JobPostingPickupView(self)
