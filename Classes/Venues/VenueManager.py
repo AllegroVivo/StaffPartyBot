@@ -6,25 +6,23 @@ from discord import Interaction, User, ForumChannel, Member, File
 from discord.ext.pages import Page, PageGroup
 
 from UI.Common import ConfirmCancelView, Frogginator
-from UI.Venues import VenueStatusView, VenueOwnerView
+from UI.Venues import VenueOwnerView
 from Utilities import (
-    Utilities as U, VenueExistsError, 
+    Utilities as U, VenueExistsError,
     VenueDoesntExistError,
     UnauthorizedError,
-    ChannelTypeError,
+    log,
     TooManyUsersError,
     VenuePendingApprovalError,
     CannotRemoveUserError,
     VenueImportNotFoundError,
     VenueImportError,
-    VenueChannelNotSetError,
-    RoleType,
 )
 from .Venue import Venue
 from .VenueTag import VenueTag
 
 if TYPE_CHECKING:
-    from Classes import GuildData, StaffPartyBot, XIVVenue
+    from Classes import GuildData, StaffPartyBot
 ################################################################################
 
 __all__ = ("VenueManager",)
@@ -198,17 +196,26 @@ class VenueManager:
 
 ################################################################################
     async def venue_menu(self, interaction: Interaction, name: str, admin: bool = False) -> None:
+        
+        log.info(
+            "Venues",
+            f"Opening menu for venue {name} for user {interaction.user.id}..."
+        )
 
         venue = self.get_venue(name)
         if venue is None:
+            log.warning("Venues", f"Venue {name} does not exist.")
             error = VenueDoesntExistError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
         
         if venue.pending:
+            log.info("Venues", f"Venue {name} is pending approval.")
             if admin:
                 await venue.approve(interaction)
+                log.info("Venues", f"Venue {name} approved by admin.")
             else:
+                log.warning("Venues", f"Venue {name} is pending approval.")
                 error = VenuePendingApprovalError(name)
                 await interaction.respond(embed=error, ephemeral=True)
                 return
@@ -223,23 +230,38 @@ class VenueManager:
     @staticmethod
     async def authenticate(venue: Venue, user: User, interaction: Interaction) -> bool:
         
+        log.info(
+            "Venues",
+            f"Authenticating user {user.id} for venue {venue.name}..."
+        )
+        
         if user not in venue.authorized_users:
+            log.warning("Venues", f"User {user.id} is not authorized for venue {venue.name}.")
             error = UnauthorizedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
+        
+        log.info("Venues", f"User {user.id} is authorized for venue {venue.name}.")
         
         return True
 
 ################################################################################
     async def post_venue(self, interaction: Interaction, name: str) -> None:
+        
+        log.info(
+            "Venues",
+            f"Posting venue {name} for user {interaction.user.id}..."
+        )
 
         venue = self.get_venue(name)
         if venue is None:
+            log.warning("Venues", f"Venue {name} does not exist.")
             error = VenueDoesntExistError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
 
         if venue.pending:
+            log.warning("Venues", f"Venue {name} is pending approval.")
             error = VenuePendingApprovalError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -248,6 +270,8 @@ class VenueManager:
             return
         
         await venue.post(interaction, self.post_channel)
+        
+        log.info("Venues", f"Venue {name} posted successfully.")
 
 ################################################################################
     async def venue_report(self, interaction: Interaction) -> None:
@@ -453,11 +477,19 @@ class VenueManager:
 ################################################################################
     async def remove_venue(self, interaction: Interaction, name: str) -> None:
         
+        log.info(
+            "Venues",
+            f"Removing venue {name} for user {interaction.user.id}..."
+        )
+        
         venue = self.get_venue(name)
         if venue is None:
+            log.warning("Venues", f"Venue {name} does not exist.")
             error = VenueDoesntExistError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
+        
+        log.info("Venues", f"Venue {name} exists. ID: {venue.id}.")
         
         prompt = U.make_embed(
             title="Remove Venue",
@@ -474,6 +506,7 @@ class VenueManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled venue removal.")
             return
         
         await venue.delete()
@@ -484,12 +517,20 @@ class VenueManager:
         )
         await interaction.followup.send(embed=confirm, ephemeral=True)
         await self.guild.log.venue_removed(venue)
+        
+        log.info("Venues", f"Venue {name} removed successfully.")
     
 ################################################################################
     async def import_venue(self, interaction: Interaction, name: str) -> None:
         
+        log.info(
+            "Venues",
+            f"Importing venue {name} for user {interaction.user.id}..."
+        )
+        
         exists = self.get_venue(name)
         if exists:
+            log.warning("Venues", f"Venue {name} already exists.")
             error = VenueExistsError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -525,6 +566,7 @@ class VenueManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled venue import.")
             return
         
         msg = await interaction.followup.send("Please wait...")
@@ -554,13 +596,24 @@ class VenueManager:
         
         await self.guild.log.venue_created(venue)
         
+        log.info(
+            "Venues",
+            f"Venue {name} imported successfully."
+        )
+        
         await venue.menu(interaction)
     
 ################################################################################
     async def toggle_user_mute(self, interaction: Interaction, name: str, user: User) -> None:
+        
+        log.info(
+            "Venues",
+            f"Toggling user mute for venue {name} for user {user.display_name} ({user.id})..."
+        )
 
         venue = self.get_venue(name)
         if venue is None:
+            log.warning("Venues", f"Venue {name} does not exist.")
             error = VenueDoesntExistError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -606,6 +659,11 @@ class VenueManager:
 ################################################################################
     async def bulk_update(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Venues",
+            f"Initiating bulk venue update for user {interaction.user.id}..."
+        )
+        
         prompt = U.make_embed(
             title="Bulk Update",
             description=(
@@ -638,6 +696,7 @@ class VenueManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled bulk update.")
             return
         
         msg = await interaction.followup.send("Please wait...")
@@ -655,6 +714,11 @@ class VenueManager:
             description=f"Successfully updated {count} venues."
         )
         await interaction.respond(embed=confirm)
+        
+        log.info(
+            "Venues",
+            f"Bulk update completed. {count} venues updated."
+        )
         
 ################################################################################
         

@@ -32,7 +32,7 @@ from UI.Venues import (
 from Utilities import (
     Utilities as U,
     RPLevel,
-    VenueSize,
+    log,
     Weekday,
     VenueChannelNotSetError,
     VenueImportNotFoundError,
@@ -570,12 +570,22 @@ class Venue:
     
 ################################################################################
     def add_user(self, user: User) -> None:
+        
+        log.info(
+            "Venues",
+            f"Adding user {user.id} to venue {self.name} ({self.id})"
+        )
 
         self._users.append(user)
         self.update()
 
 ################################################################################
     def remove_user(self, user: User) -> None:
+        
+        log.info(
+            "Venues",
+            f"Removing user {user.id} from venue {self.name} ({self.id})"
+        )
         
         self._users = [u for u in self._users if u.id != user.id]
         self.update()
@@ -587,20 +597,37 @@ class Venue:
         
 ################################################################################
     async def delete(self) -> None:
+        
+        log.info("Venues", f"Deleting venue {self.name} ({self.id})")
     
         if self._post_msg is not None:
             try:
                 await self._post_msg.channel.delete()
             except NotFound:
                 pass
+            except Exception as ex:
+                log.critical(
+                    "Venues",
+                    (
+                        f"Failed to delete post message for venue {self.name} ({self.id}).\n"
+                        f"Error: {ex}"
+                    )
+                )
         
         await self.guild.jobs_manager.delete_all_by_venue(self)
         
         self._mgr._venues.remove(self)
         self.bot.database.delete.venue(self)
         
+        log.info("Venues", f"Venue {self.name} ({self.id}) has been deleted.")
+        
 ################################################################################
     async def update_from_xiv_venue(self, interaction: Interaction, venue: Optional[XIVVenue] = None) -> None:
+        
+        log.info(
+            "Venues",
+            f"Updating venue {self.name} ({self.id}) from FFXIV Venues data..."
+        )
         
         if venue is None:
             results = [
@@ -639,6 +666,8 @@ class Venue:
         ]
         
         self.update()
+        
+        log.info("Venues", f"Venue {self.name} ({self.id}) has been updated.")
     
 ################################################################################
     async def approve(self, interaction: Interaction) -> None:
@@ -688,8 +717,18 @@ class Venue:
         self.hiring = not self.hiring
         await interaction.respond("** **", delete_after=0.1)
         
+        log.info(
+            "Venues",
+            f"Venue {self.name} ({self.id}) hiring status toggled to {self.hiring}"
+        )
+        
 ################################################################################
     async def set_positions(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Venues",
+            f"Setting positions for venue {self.name} ({self.id})"
+        )
         
         prompt = U.make_embed(
             title="Set Venue Positions",
@@ -710,12 +749,21 @@ class Venue:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled position selection.")
             return
         
         self.positions = [
             self._mgr.guild.position_manager.get_position(p) 
             for p in view.value
         ]
+        
+        log.info(
+            "Venues",
+            (
+                f"Positions for venue {self.name} ({self.id}) have been updated. "
+                f"New positions: {', '.join([p.name for p in self.positions])}"
+            )
+        )
     
 ################################################################################
     async def remove_authorized_user(self, interaction: Interaction) -> None:
@@ -791,6 +839,8 @@ class Venue:
         
 ################################################################################
     def _full_schedule(self) -> str:
+        
+        log.debug("Venues", f"Generating full schedule for venue {self.name} ({self.id})")
         
         ret = ""
         for day in [w for w in Weekday if w.value != 0]:
@@ -874,14 +924,27 @@ class Venue:
 ################################################################################
     async def post(self, interaction: Interaction, channel: Optional[ForumChannel]) -> None:
         
+        log.info(
+            "Venues",
+            f"Posting venue {self.name} ({self.id}) to channel {channel.name}"
+        )
+        
         if channel is None:
             if self._mgr.post_channel is None:
+                log.error(
+                    "Venues",
+                    "Attempted to post venue without a post channel set."
+                )
                 error = VenueChannelNotSetError()
                 await interaction.respond(embed=error, ephemeral=True)
                 return
             channel = self._mgr.post_channel
         
         if not self.complete:
+            log.warning(
+                "Venues",
+                f"Attempted to post incomplete venue {self.name} ({self.id})."
+            )
             error = VenueProfileNotCompleteError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -909,6 +972,14 @@ class Venue:
                 await self._post_msg.edit(embed=self.status(post=True), view=view)
             except NotFound:
                 self._post_msg = None  # Reset if the message was not found
+            except Exception as ex:
+                log.critical(
+                    "Venues",
+                    (
+                        f"Failed to edit post message for venue {self.name} ({self.id}).\n"
+                        f"Error: {ex}"
+                    )
+                )
     
         # If no existing message or thread, create or post as necessary
         if not self._post_msg:
@@ -924,13 +995,31 @@ class Venue:
             except NotFound:
                 self._post_msg = None
                 self.update()
+            except Exception as ex:
+                log.critical(
+                    "Venues",
+                    (
+                        f"Failed to fetch post message for venue {self.name} ({self.id}).\n"
+                        f"Error: {ex}"
+                    )
+                )
     
         self.update()
         
         await interaction.respond(embed=self.success_message(), ephemeral=True)
+        
+        log.info(
+            "Venues",
+            f"Venue {self.name} ({self.id}) has been posted successfully."
+        )
     
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Venues",
+            f"Opening menu for venue {self.name} ({self.id})"
+        )
 
         embed = self.status()
         view = VenueStatusView(interaction.user, self)
@@ -958,7 +1047,12 @@ class Venue:
         )
     
 ################################################################################
-    async def mute_list_report(self, interaction: Interaction) -> Embed:
+    async def mute_list_report(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Venues",
+            f"Generating muted users report for venue {self.name} ({self.id})"
+        )
         
         embed = U.make_embed(
             title=f"Muted Users Report",
@@ -978,6 +1072,14 @@ class Venue:
 
 ################################################################################
     async def toggle_user_mute(self, interaction: Interaction, user: User) -> None:
+        
+        log.info(
+            "Venues",
+            (
+                f"Toggling mute status for user {user.id} in venue "
+                f"{self.name} ({self.id})"
+            )
+        )
         
         flag = user in self.muted_users
         if flag:
@@ -1003,6 +1105,11 @@ class Venue:
         
         if self.post_url is None:
             return
+        
+        log.info(
+            "Venues",
+            f"Updating post components for venue {self.name} ({self.id})"
+        )
 
         view = VenuePostingMuteView(self)
         self.bot.add_view(view, message_id=self._post_msg.id)
@@ -1014,9 +1121,22 @@ class Venue:
             self.update()
         except HTTPException as ex:
             if ex.code != 50083 and not addl_attempt:
-                pass
+                log.critical(
+                    "Venues",
+                    (
+                        f"Failed to update post components for venue {self.name} "
+                        f"({self.id}).\nError: {ex}"
+                    
+                    )
+                )
+            log.warning(
+                "Venues",
+                "Thread was archived for exceeding 30 day limit - attempting to revive."
+            )
             await self._post_msg.channel.send("Hey Ur Cute", delete_after=0.1)
             await self._update_post_components(addl_attempt=True)
+            
+        log.info("Venues", "Post components updated successfully.")
             
 ################################################################################
             

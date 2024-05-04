@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Tuple, List
 
 from discord import Interaction
 
-from .VenueTag import VenueTag
-from UI.Venues import RPLevelSelectView, VenueTagSelectView, RPSizeSelectView
+from UI.Venues import RPLevelSelectView, VenueTagSelectView
 from Utilities import (
     Utilities as U,
     RPLevel,
     VenueForumTag,
+    log,
 )
+from .VenueTag import VenueTag
 
 if TYPE_CHECKING:
     from Classes import Venue, StaffPartyBot, XIVVenue
@@ -136,6 +137,11 @@ class VenueAtAGlance:
 ################################################################################
     async def set_level(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Venues",
+            f"Setting RP level for {self._parent.name} ({self._parent.id})..."
+        )
+        
         prompt = U.make_embed(
             title="Set RP Level",
             description=(
@@ -149,15 +155,32 @@ class VenueAtAGlance:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled RP level selection.")
             return
         
         self.level = view.value
+        
+        log.info(
+            "Venues",
+            (
+                f"RP level for {self._parent.name} ({self._parent.id}) has been "
+                f"set to {self.level.proper_name}."
+            )
+        )
         
 ################################################################################
     async def toggle_nsfw(self, interaction: Interaction) -> None:
         
         self.nsfw = not self.nsfw
         await interaction.respond("** **", delete_after=0.1)
+        
+        log.info(
+            "Venues",
+            (
+                f"NSFW status for {self._parent.name} ({self._parent.id}) has been "
+                f"set to {self.nsfw}."
+            )
+        )
         
 ################################################################################
     def update_from_xiv_venue(self, venue: XIVVenue) -> None:

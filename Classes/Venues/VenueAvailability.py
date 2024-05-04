@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from datetime import time
-from typing import TYPE_CHECKING, List, Optional, Any, Dict, Type, TypeVar, Tuple
+from typing import TYPE_CHECKING, Any, Type, TypeVar, Tuple
 
-from discord import User
-
-from .InternshipManager import InternshipManager
 from Utilities import Utilities as U, Weekday
 
 if TYPE_CHECKING:
-    from Classes import StaffPartyBot, VenueManager, VenueURLs
+    from Classes import StaffPartyBot, VenueURLs
 ################################################################################
 
 __all__ = ("VenueAvailability",)

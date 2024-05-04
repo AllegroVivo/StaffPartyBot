@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Type, TypeVar, Optional, Any, Tuple
 from discord import Interaction
 from .Internship import Internship
-from Utilities import Utilities as U
+from Utilities import Utilities as U, log
 from UI.Venues.Views import PositionSelectView
 
 if TYPE_CHECKING:
@@ -61,6 +61,11 @@ class InternshipManager:
 ################################################################################
     async def set_sponsored_positions(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Venues",
+            f"Setting sponsored positions for {self._parent.name}..."
+        )
+        
         options = self._parent.guild.position_manager.select_options()
         for option in options:
             if option.value in [p.id for p in self._positions]:
@@ -76,6 +81,7 @@ class InternshipManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled position selection.")
             return
         
         self._positions = [
@@ -83,6 +89,14 @@ class InternshipManager:
             for pos_id in view.value
         ]
         self._parent.update()
+        
+        log.info(
+            "Venues",
+            (
+                f"Sponsored positions for {self._parent.name} have been updated. "
+                f"New positions: {', '.join([p.name for p in self._positions])}"
+            )
+        )
 
 ################################################################################
     

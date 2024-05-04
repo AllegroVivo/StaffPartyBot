@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, List
 
-from discord import Embed, Interaction, User
+from discord import Interaction
 
 from UI.Common import YesNoView
 from UI.Training import TUserNameModal, TUserNotesModal, DataCenterSelectView

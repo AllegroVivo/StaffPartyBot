@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 from discord import Interaction, NotFound
 
 from UI.Venues import VenueDiscordURLModal, VenueWebsiteURLModal, VenueApplicationURLModal
-from Utilities import Utilities as U, FroggeColor
+from Utilities import Utilities as U, FroggeColor, log
 
 if TYPE_CHECKING:
     from Classes import Venue, StaffPartyBot, XIVVenue
@@ -125,19 +125,38 @@ class VenueURLs:
 ################################################################################
     async def set_application_url(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Venues",
+            f"Setting application URL for {self._parent.name} ({self._parent.id})..."
+        )
+        
         modal = VenueApplicationURLModal(self._app_url)
         
         await interaction.response.send_modal(modal)
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Venues", "User cancelled application URL selection.")
             return
         
         self._app_url = modal.value
         self.update()
         
+        log.info(
+            "Venues",
+            (
+                f"Application URL for {self._parent.name} ({self._parent.id}) has been "
+                f"set to {self._app_url}."
+            )
+        )
+        
 ################################################################################
     async def set_logo(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Venues",
+            f"Setting logo for {self._parent.name} ({self._parent.id})..."
+        )
         
         prompt = U.make_embed(
             title="Set Venue Logo",
@@ -172,6 +191,7 @@ class VenueURLs:
         try:
             message = await self.bot.wait_for("message", check=check, timeout=300)
         except TimeoutError:
+            log.info("Venues", "User took too long to upload a logo.")
             embed = U.make_embed(
                 title="Timeout",
                 description=(
@@ -185,6 +205,8 @@ class VenueURLs:
         if message.content.lower() != "cancel":
             self._logo_url = await self.bot.dump_image(message.attachments[0])
             self.update()
+        else:
+            log.debug("Venues", "User cancelled logo selection.")
 
         try:
             await message.delete()
@@ -195,5 +217,13 @@ class VenueURLs:
             await response.delete_original_response()
         except NotFound:
             pass
+        
+        log.info(
+            "Venues",
+            (
+                f"Logo for {self._parent.name} ({self._parent.id}) has been "
+                f"set to {self._logo_url}."
+            )
+        )
 
 ################################################################################
