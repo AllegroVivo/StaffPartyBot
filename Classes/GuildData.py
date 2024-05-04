@@ -225,6 +225,10 @@ class GuildData:
         
         url_parts = message_url.split("/")
         
+        if msg := self.bot.get_message(int(url_parts[-1])):
+            log.info("Core", "Message found in cache.")
+            return msg
+        
         channel = await self.get_or_fetch_channel(int(url_parts[-2]))
         if channel is None:
             log.info("Core", "Message channel not found.")
