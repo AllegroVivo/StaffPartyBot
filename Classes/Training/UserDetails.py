@@ -6,7 +6,7 @@ from discord import Embed, Interaction, User
 
 from UI.Common import YesNoView
 from UI.Training import TUserNameModal, TUserNotesModal, DataCenterSelectView
-from Utilities import Utilities as U, GlobalDataCenter
+from Utilities import Utilities as U, GlobalDataCenter, log
 
 if TYPE_CHECKING:
     from Classes import TUser, StaffPartyBot
@@ -131,18 +131,37 @@ class UserDetails:
 ################################################################################
     async def set_name(self, interaction: Interaction) -> None:
 
+        log.info(
+            "Training",
+            f"User {self.user_id} ({self.name}) is changing their name."
+        )
+
         modal = TUserNameModal(self._name)
 
         await interaction.response.send_modal(modal)
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Training", "User cancelled name change.")
             return
 
         self.name = modal.value
+        
+        log.info(
+            "Training",
+            (
+                f"User {self.user_id} ({self.name}) has changed their name to "
+                f"{modal.value}."
+            )
+        )
 
 ################################################################################
     async def set_notes(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"User {self.user_id} ({self.name}) is changing their notes."
+        )
 
         modal = TUserNotesModal(self._notes)
 
@@ -150,17 +169,39 @@ class UserDetails:
         await modal.wait()
 
         if not modal.complete:
+            log.debug("Training", "User cancelled notes change.")
             return
 
         self.notes = modal.value
+        
+        log.info(
+            "Training",
+            (
+                f"User {self.user_id} ({self.name}) has changed their notes to "
+                f"{modal.value}."
+            )
+        )
 
 ################################################################################
     def toggle_hiatus(self) -> None:
         
         self.hiatus = not self.hiatus
+        
+        log.info(
+            "Training",
+            (
+                f"User {self.user_id} ({self.name}) is toggling their hiatus "
+                f"status. New status: {self.hiatus}"    
+            )
+        )
 
 ################################################################################
     async def set_data_centers(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"User {self.user_id} ({self.name}) is changing their data centers."
+        )
         
         embed = U.make_embed(
             title="Data Center",
@@ -175,12 +216,26 @@ class UserDetails:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled data center selection.")
             return
         
         self.data_centers = view.value
+        
+        log.info(
+            "Training",
+            (
+                f"User {self.user_id} ({self.name}) has changed their data "
+                f"centers to {view.value}."
+            )
+        )
     
 ################################################################################
     async def accept_guidelines(self, interaction: Interaction) -> bool:
+        
+        log.info(
+            "Training",
+            f"User {self.user_id} ({self.name}) is accepting the trainer guidelines."
+        )
         
         prompt = U.make_embed(
             title="Please Accept the Trainer Guidelines",
@@ -197,9 +252,15 @@ class UserDetails:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "User declined the guidelines.")
             return False
         
         self.guidelines_accepted = True
+        
+        log.info(
+            "Training",
+            f"User {self.user_id} ({self.name}) has accepted the guidelines."
+        )
         
         return True
         

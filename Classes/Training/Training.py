@@ -7,7 +7,7 @@ from discord.ext.pages import Page
 
 from Assets import BotEmojis
 from UI.Training import TrainerDashboardButtonView, TrainingUpdateView
-from Utilities import Utilities as U, RequirementLevel, RoleType
+from Utilities import Utilities as U, RequirementLevel, log, RoleType
 
 if TYPE_CHECKING:
     from Classes import Position, TUser, StaffPartyBot, Requirement, TrainingManager
@@ -167,6 +167,11 @@ class Training:
 
 ################################################################################
     async def set_trainer(self, trainer: Optional[TUser]) -> None:
+        
+        log.info(
+            "Training",
+            f"Setting trainer for {self._trainee.name} to {trainer.name if trainer else None}."
+        )
 
         prev_trainer = self.trainer
         
@@ -201,10 +206,7 @@ class Training:
                 ),
             )
         
-        try:
-            await self._trainee.user.send(embed=confirm)
-        except:
-            pass
+        await self.trainee.send(embed=confirm)
         
         if trainer is None:
             trainer_confirm = U.make_embed(
@@ -217,6 +219,14 @@ class Training:
             await prev_trainer.send(embed=trainer_confirm)
             
         await self.manager.signup_message.update_components()
+        
+        log.info(
+            "Training",
+            (
+                f"Trainer for {self._trainee.name} has been set to "
+                f"{trainer.name if trainer else None}."
+            )
+        )
         
 ################################################################################
     def status_page(self, owner: User) -> Page:
@@ -282,6 +292,14 @@ class Training:
 ################################################################################
     async def set_requirements(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            (
+                f"Setting requirements for Training: {self.id} - {self._trainee.name} "
+                f"({self.position.name})."
+            )
+        )
+        
         embed = self.status()
         view = TrainingUpdateView(interaction.user, self)
         
@@ -289,6 +307,7 @@ class Training:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Training requirements update canceled.")
             return
         
         req_ids = view.value[0]
@@ -299,7 +318,22 @@ class Training:
         self.update()
         
         if self.is_complete:
+            log.info(
+                "Training",
+                (
+                    f"Training for {self._trainee.name} ({self.position.name}) "
+                    f"has been marked as complete."
+                )
+            )
             await self.on_complete(interaction)
+            
+        log.info(
+            "Training",
+            (
+                f"Requirements for Training: {self.id} - {self._trainee.name} "
+                f"({self.position.name}) have been updated."
+            )
+        )
     
 ################################################################################
     def get_override(self, req_id: str) -> Optional[RequirementLevel]:

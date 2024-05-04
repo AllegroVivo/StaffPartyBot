@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from itertools import islice
 from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
 from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField, Member
 from discord.ext.pages import Page
 
-from UI.Common import ConfirmCancelView, CloseMessageView, Frogginator
+from UI.Common import ConfirmCancelView, Frogginator
 from UI.Training import TUserAdminStatusView, TUserStatusView, InternshipMatchingView
 from Utilities import (
     Utilities as U,
@@ -17,30 +16,21 @@ from Utilities import (
     NotRegisteredError,
     RPLevel,
     NSFWPreference,
-    VenueSize,
-    VenueForumTag
+    VenueForumTag,
+    log
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
 from .Training import Training
 
 if TYPE_CHECKING:
-    from Classes import StaffPartyBot, GuildData, Venue, VenueTag
+    from Classes import StaffPartyBot, GuildData
 ################################################################################
 
 __all__ = ("TrainingManager",)
 
 ################################################################################
 class TrainingManager:
-    """A class performing management operations for all TUsers in the system.
-    
-    Attributes:
-    -----------
-    _state: :class:`TrainingBot`
-        The bot instance.
-    _tusers: List[:class:`TUser`]
-        A list of all TUsers in the system.
-    """
 
     __slots__ = (
         "_guild",
@@ -184,7 +174,19 @@ class TrainingManager:
 ################################################################################
     async def _add_tuser(self, interaction: Interaction, user: User) -> bool:
         
+        log.info(
+            "Training",
+            f"Adding user {user.name} ({user.id}) to the training system."
+        )
+        
         if user.bot:
+            log.warning(
+                "Training",
+                (
+                    f"User {user.name} ({user.id}) is a bot and cannot be "
+                    f"added to the training system."
+                )
+            )
             error = BotUserNotAllowedError()
             await interaction.respond(embed=error, ephemeral=True)
             return False
@@ -203,13 +205,17 @@ class TrainingManager:
         
 ################################################################################
     async def tuser_admin_status(self, interaction: Interaction, user: User) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting admin status for user {user.name} ({user.id})."
+        )
 
         tuser = self[user.id]
         if tuser is None:
             if not await self._add_tuser(interaction, user):
                 return
-            else:
-                tuser = self[user.id]
+            tuser = self[user.id]
 
         status = tuser.admin_status()
         view = TUserAdminStatusView(interaction.user, tuser)
@@ -219,6 +225,11 @@ class TrainingManager:
     
 ################################################################################
     async def add_training(self, training: Training) -> None:
+        
+        log.info(
+            "Training",
+            f"Adding training {training.id} to the system. (Trainee: {training.trainee.name})"
+        )
 
         self._trainings.append(training)
         
@@ -232,6 +243,11 @@ class TrainingManager:
 ################################################################################        
     async def notify_of_availability_change(self, tuser: TUser) -> None:
         
+        log.info(
+            "Training",
+            f"Notifying trainers of availability change for {tuser.name}."
+        )
+        
         for training in tuser.trainings_as_trainee:
             for t in self.get_qualified_trainers(training.position.id):
                 if t.accepting_trainee_pings():
@@ -244,6 +260,11 @@ class TrainingManager:
 
 ################################################################################
     async def remove_training(self, training_id: str) -> None:
+        
+        log.info(
+            "Training",
+            f"Removing training {training_id} from the system."
+        )
 
         for t in self._trainings:
             if t.id == training_id:
@@ -255,13 +276,17 @@ class TrainingManager:
 
 ################################################################################
     async def tuser_status(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting status for user {interaction.user.name} ({interaction.user.id})."
+        )
 
         tuser = self[interaction.user.id]
         if tuser is None:
             if not await self._add_tuser(interaction, interaction.user):
                 return
-            else:
-                tuser = self[interaction.user.id]
+            tuser = self[interaction.user.id]
 
         status = tuser.user_status()
         view = TUserStatusView(interaction.user, tuser)
@@ -272,12 +297,23 @@ class TrainingManager:
 ################################################################################
     async def post_signup_message(self, interaction: Interaction, channel: TextChannel) -> None:
         
+        log.info(
+            "Training",
+            f"Posting signup message to channel {channel.name} ({channel.id})."
+        )
+        
         if not isinstance(channel, TextChannel):
+            log.warning(
+                "Training",
+                f"Channel {channel.name} ({channel.id}) is not a text channel."
+            )
             error = ChannelTypeError(channel, "TextChannel")
             await interaction.respond(embed=error, ephemeral=True)
             return
 
         await self._message.post(interaction, channel)
+        
+        log.info("Training", "Signup message posted.")
 
 ################################################################################
     def get_trainings_for_position(self, position_id: str) -> List[Training]:
@@ -294,8 +330,17 @@ class TrainingManager:
 ################################################################################
     async def trainer_dashboard(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"Requesting dashboard for user {interaction.user.name} ({interaction.user.id})."
+        )
+        
         trainer = self[interaction.user.id]
         if trainer is None:
+            log.warning(
+                "Training",
+                f"User {interaction.user.name} ({interaction.user.id}) is not registered."
+            )
             error = NotRegisteredError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -327,6 +372,14 @@ class TrainingManager:
     
 ################################################################################
     async def match(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            (
+                f"Requesting internship matching for user "
+                f"{interaction.user.name} ({interaction.user.id})."
+            )
+        )
 
         initial_prompt = self._match_prompt()
         initial_prompt.description += (
@@ -341,6 +394,7 @@ class TrainingManager:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled internship matching.")
             return
         
         main_prompt = self._match_prompt()
@@ -353,6 +407,7 @@ class TrainingManager:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled internship matching.")
             return
         
         venues = self._matching_routine(*view.value)
@@ -374,6 +429,8 @@ class TrainingManager:
         )
         
         await interaction.respond(embed=report)
+        
+        log.info("Training", "Internship matching complete.")
 
 ################################################################################
     def _matching_routine(
@@ -420,6 +477,11 @@ class TrainingManager:
     
 ################################################################################
     async def start_bg_check(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"Starting background check for user {interaction.user.name} ({interaction.user.id})."
+        )
 
         tuser = self[interaction.user.id]
         if tuser is None:
@@ -431,8 +493,17 @@ class TrainingManager:
 ################################################################################
     async def trainee_profile(self, interaction: Interaction, user: User) -> None:
         
+        log.info(
+            "Training",
+            f"Requesting profile for user {user.name} ({user.id})."
+        )
+        
         tuser = self[user.id]
         if tuser is None:
+            log.warning(
+                "Training",
+                f"User {user.name} ({user.id}) is not registered."
+            )
             error = NotRegisteredError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -441,6 +512,8 @@ class TrainingManager:
 
 ################################################################################
     async def unpaid_report(self, interaction: Interaction) -> None:
+        
+        log.info("Training", "Requesting unpaid trainer report.")
         
         unpaid_trainings = [
             t 
@@ -511,8 +584,17 @@ class TrainingManager:
 ################################################################################
     async def staff_experience(self, interaction: Interaction, user: User) -> None:
         
+        log.info(
+            "Training",
+            f"Requesting staff experience for user {user.name} ({user.id})."
+        )
+        
         tuser = self[user.id]
         if tuser is None:
+            log.warning(
+                "Training",
+                f"User {user.name} ({user.id}) is not registered."
+            )
             error = NotRegisteredError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -521,9 +603,18 @@ class TrainingManager:
 
 ################################################################################
     async def settle_trainer(self, interaction: Interaction, user: User) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting settlement for user {user.name} ({user.id})."
+        )
 
         tuser = self[user.id]
         if tuser is None:
+            log.warning(
+                "Training",
+                f"User {user.name} ({user.id}) is not registered."
+            )
             error = NotRegisteredError()
             await interaction.respond(embed=error, ephemeral=True)
             return
@@ -532,9 +623,18 @@ class TrainingManager:
         
 ################################################################################
     async def trainer_management(self, interaction: Interaction, user: User) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting trainer management for user {user.name} ({user.id})."
+        )
 
         tuser = self[user.id]
         if tuser is None:
+            log.warning(
+                "Training",
+                f"User {user.name} ({user.id}) is not registered."
+            )
             error = NotRegisteredError()
             await interaction.respond(embed=error, ephemeral=True)
             return

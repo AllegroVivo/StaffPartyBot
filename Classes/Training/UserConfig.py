@@ -6,7 +6,7 @@ from discord import Embed
 from discord import EmbedField
 
 from Assets import BotEmojis
-from Utilities import Utilities as U
+from Utilities import Utilities as U, log
 
 if TYPE_CHECKING:
     from Classes import TUser
@@ -18,17 +18,6 @@ UC = TypeVar("UC", bound="UserConfiguration")
 
 ################################################################################
 class UserConfiguration:
-    """Class to represent a user's configuration settings.
-    
-    Attributes
-    ----------
-    _parent: TUser
-        The user to which this configuration belongs.
-    _image: Optional[str]
-        The image URL for the user's profile picture.
-    _trainee_pings: bool
-        Whether the user should be pinged when a job is available.
-    """
 
     __slots__ = (
         "_parent",
@@ -95,6 +84,14 @@ class UserConfiguration:
 
         self._trainee_pings = not self._trainee_pings
         self.update()
+        
+        log.info(
+            "Training",
+            (
+                f"Trainee pings for {self._parent.name} ({self._parent.user_id}) "
+                f"have been toggled to {self._trainee_pings}."
+            )
+        )
 
 ################################################################################
     def update(self) -> None:

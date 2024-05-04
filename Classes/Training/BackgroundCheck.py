@@ -19,8 +19,8 @@ from Utilities import (
     Utilities as U,
     MissingNameError,
     RoleType,
-    edit_message_helper,
     ExperienceExistsError,
+    log,
 )
 from .BGCheckVenue import BGCheckVenue
 
@@ -277,6 +277,11 @@ class BackgroundCheck:
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"Background Check Menu: {interaction.user.name} ({interaction.user.id})"
+        )
+        
         embed = self.status()
         view = BGCheckMenuView(interaction.user, self)
         
@@ -286,20 +291,49 @@ class BackgroundCheck:
 ################################################################################
     async def set_names(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"Background Check Names: {interaction.user.name} ({interaction.user.id})"
+        )
+        
         modal = BGCheckNamesModal(self.names)
 
         await interaction.response.send_modal(modal)
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Training", "BGCheckNamesModal not complete")
             return
         
         self.names = modal.value
         
+        log.info(
+            "Training",
+            (
+                f"Background Check Names Updated: {interaction.user.name} "
+                f"({interaction.user.id}) - {self.names}"
+            )
+        )
+        
 ################################################################################
     async def add_venue_experience(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            (
+                f"Background Check Add Venue: {interaction.user.name} "
+                f"({interaction.user.id})"
+            )
+        )
+        
         if len(self.venues) >= 3:
+            log.info(
+                "Training",
+                (
+                    f"Background Check Add Venue: {interaction.user.name} "
+                    f"({interaction.user.id}) - Maximum Venues Reached"
+                )
+            )
             prompt = U.make_embed(
                 title="Maximum Venues Reached",
                 description=(
@@ -315,9 +349,18 @@ class BackgroundCheck:
         await modal.wait()
         
         if not modal.complete:
+            log.debug("Training", "BGCheckVenueModal not complete")
             return
         
         name, jobs = modal.value
+        
+        log.info(
+            "Training",
+            (
+                f"Background Check Add Venue: {interaction.user.name} "
+                f"({interaction.user.id}) - {name} - {jobs}"
+            )
+        )
         
         prompt = U.make_embed(
             title="Select Data Center & World",
@@ -332,18 +375,35 @@ class BackgroundCheck:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "DataCenterWorldSelectView not complete")
             return
 
         data_center, world = view.value
         
         matching_venues = [v for v in self.venues if v.name.lower() == name.lower()]
         if matching_venues:
+            log.warning(
+                "Training",
+                (
+                    f"Background Check Add Venue: {interaction.user.name} "
+                    f"({interaction.user.id}) - Venue Already Exists"
+                )
+            )
             error = ExperienceExistsError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
 
-        self._venues.append(BGCheckVenue(name, data_center, world, jobs))
+        venue = BGCheckVenue(name, data_center, world, jobs)
+        self._venues.append(venue)
         self.update()
+        
+        log.info(
+            "Training",
+            (
+                f"Background Check Add Venue: {interaction.user.name} "
+                f"({interaction.user.id}) - Venue Added: {venue.name}"
+            )
+        )
         
 ################################################################################
     async def remove_venue_experience(self, interaction: Interaction) -> None:

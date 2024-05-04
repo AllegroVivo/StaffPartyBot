@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple, Any, List, Dict
+from typing import TYPE_CHECKING, Optional, Tuple, Any, List
 
 from discord import (
     Message,
-    TextChannel, 
+    TextChannel,
     HTTPException,
-    NotFound, 
-    Interaction, 
-    Embed, 
+    NotFound,
+    Interaction,
+    Embed,
     EmbedField
 )
 
-from Utilities import Utilities as U
 from UI.Common import ConfirmCancelView
 from UI.Training import TrainerMessageButtonView, TrainerSignUpSelectView
+from Utilities import Utilities as U, log
 
 if TYPE_CHECKING:
     from Classes import StaffPartyBot, TrainingManager, PositionManager
@@ -160,11 +160,20 @@ class SignUpMessage:
 
 ################################################################################
     async def post(self, interaction: Interaction, channel: TextChannel) -> None:
+        
+        log.info(
+            "Training",
+            (
+                f"SignupMessage post initiated by {interaction.user.name} "
+                f"({interaction.user.id})"
+            )
+        )
 
         self._channel = channel
         self.update(interaction.guild_id)
         
         if self._message is not None:
+            log.info("Training", f"SignupMessage already exists, deleting.")
             await self._message.delete()
 
         view = TrainerMessageButtonView(self)
@@ -176,19 +185,45 @@ class SignUpMessage:
         
         await interaction.respond("Signup message posted.", ephemeral=True)
         
+        log.info(
+            "Training",
+            (
+                f"SignupMessage posted in {channel.name} ({channel.id}) "
+                f"by {interaction.user.name} ({interaction.user.id})"
+            )
+        )
+        
 ################################################################################
     async def update_components(self) -> None:
         
         if self._channel is None or self._message is None:
             return
         
+        log.info(
+            "Training",
+            (
+                f"Updating SignupMessage components in {self._channel.name} "
+                f"({self._channel.id})"
+            )
+        )
+        
         view = TrainerMessageButtonView(self)
         self.bot.add_view(view, message_id=self._message.id)
         
         await self._message.edit(embed=self.status(), view=view)
+        
+        log.info("Training", "SignupMessage components updated.")
 
 ################################################################################
     async def acquire_trainee(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            (
+                f"Acquire trainee initiated by {interaction.user.name} "
+                f"({interaction.user.id})"
+            )
+        )
         
         prompt = U.make_embed(
             title="Acquire Trainee",
@@ -209,6 +244,7 @@ class SignUpMessage:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Acquire trainee cancelled.")
             return
         
         training = self._manager.get_training(view.value[1])
@@ -229,6 +265,7 @@ class SignUpMessage:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Acquire trainee cancelled.")
             return
         
         trainer = self._manager[interaction.user.id]
@@ -249,5 +286,14 @@ class SignUpMessage:
         )
         
         await interaction.respond(embed=confirm, ephemeral=True)
+        
+        log.info(
+            "Training",
+            (
+                f"Acquire trainee completed by {interaction.user.name} "
+                f"({interaction.user.id}). Acquired {training.trainee.name} "
+                f"({training.trainee.user.id}) for training in {training.position.name}"
+            )
+        )
     
 ################################################################################

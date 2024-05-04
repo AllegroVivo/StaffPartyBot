@@ -1,8 +1,9 @@
 from __future__ import annotations
-import pytz
+
 from datetime import datetime, time
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple, Union
 
+import pytz
 from discord import User, Embed, EmbedField, Interaction, SelectOption, Member
 from discord.ext.pages import Page
 
@@ -21,15 +22,15 @@ from UI.Training import (
 )
 from Utilities import (
     Utilities as U,
-    TrainingLevel, 
+    TrainingLevel,
     GlobalDataCenter,
-    NoTrainingsError,
-    Weekday,    
+    log,
+    Weekday,
     RoleType
 )
-from .TAvailability import TAvailability
 from .BackgroundCheck import BackgroundCheck
 from .Qualification import Qualification
+from .TAvailability import TAvailability
 from .Training import Training
 from .UserConfig import UserConfiguration
 from .UserDetails import UserDetails
@@ -465,6 +466,11 @@ class TUser:
 ################################################################################
     async def set_availability(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is setting availability."
+        )
+        
         footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
         status = U.make_embed(
             title="Set Availability",
@@ -483,10 +489,13 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Availability setup cancelled.")
             return
 
         # weekday, tz = view.value
         weekday = view.value
+        
+        log.info("Training", f"Availability setup for {weekday.proper_name}.")
         
         prompt = U.make_embed(
             title="Set Availability Start",
@@ -504,10 +513,13 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Availability setup cancelled.")
             return
 
         start_time = view.value if view.value != -1 else None
         end_time = None
+        
+        log.info("Training", f"Selected start time: {start_time}.")
 
         if start_time is not None:
             prompt = U.make_embed(
@@ -526,9 +538,11 @@ class TUser:
             await view.wait()
 
             if not view.complete or view.value is False:
+                log.debug("Training", "Availability setup cancelled.")
                 return
 
             end_time = view.value
+            log.info("Training", f"Selected end time: {end_time}.")
 
         for i, a in enumerate(self.availability):
             if a.day == weekday:
@@ -539,9 +553,16 @@ class TUser:
             self._availability.append(availability)
 
         await self._manager.notify_of_availability_change(self)
+        
+        log.info("Training", f"Availability setup complete for {weekday.proper_name}.")
 
 ################################################################################
     async def add_qualification(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is adding a qualification."
+        )
         
         if not self._details.guidelines_accepted:
             if not await self._details.accept_guidelines(interaction):
@@ -569,10 +590,16 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Qualification setup cancelled.")
             return
 
         positions = [self.position_manager.get_position(pos_id) for pos_id in view.value[0]]
         level = TrainingLevel(int(view.value[1]))
+        
+        log.info(
+            "Training",
+            f"Qualification setup for {', '.join([p.name for p in positions])}."
+        )
 
         for position in positions:
             qualification = Qualification.new(self.training_manager, self.user, position, level)
@@ -580,13 +607,18 @@ class TUser:
 
 ################################################################################
     async def modify_qualification(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is modifying a qualification."
+        )
 
         embed = U.make_embed(
             title="Modify Qualification",
             description=(
                 "Select the position you would like to modify a qualification\n"
                 "for. Subsequently, a second selector will appear to\n"
-                "allow you to select the individual qualification to modify.\n"
+                "allow you to select the individual qualification(s) to modify.\n"
                 f"{U.draw_line(extra=25)}"
             )
         )
@@ -596,9 +628,15 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Qualification setup cancelled.")
             return
 
         positions = [self.position_manager.get_position(pos_id) for pos_id in view.value[0]]
+        
+        log.info(
+            "Training",
+            f"Qualification modification for {', '.join([p.name for p in positions])}."
+        )
         
         for pos in positions:
             qualification = self.get_qualification(pos.id)
@@ -628,6 +666,11 @@ class TUser:
 
 ################################################################################
     async def remove_qualification(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is removing a qualification."
+        )
 
         embed = U.make_embed(
             title="Remove Qualification",
@@ -644,6 +687,7 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Qualification removal cancelled.")
             return
 
         qualifications = [self.get_qualification(q_id) for q_id in view.value]
@@ -654,6 +698,11 @@ class TUser:
                 inline=False
             )
         ]
+        
+        log.info(
+            "Training",
+            f"Qualification removal for {', '.join([q.position.name for q in qualifications])}."
+        )
 
         confirm = U.make_embed(
             title="Remove Qualification(s)",
@@ -670,19 +719,22 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Qualification removal cancelled.")
             return
 
         for qualification in qualifications:
             qualification.delete()
             self._qualifications.remove(qualification)
+            
+        log.info("Training", "Qualification removal complete.")
 
 ################################################################################
     async def add_training(self, interaction: Interaction) -> None:
-        """Add a new job training for this TUser.
         
-        We're doing this inside the TUser class because it's a user-specific
-        operation and things get muddy if we do it in the TrainingManager.
-        """
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is adding a training."
+        )
 
         embed = U.make_embed(
             title="Add Training",
@@ -706,19 +758,25 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Training setup cancelled.")
             return
         
         msg = await interaction.respond("Adding training(s)... Please Wait...")
 
         for pos_id in view.value:
-            await self.training_manager.add_training(
-                Training.new(self, pos_id)
-            )
+            await self.training_manager.add_training(Training.new(self, pos_id))
+            
+        log.info("Training", "Training setup complete.")
             
         await msg.delete()
 
 ################################################################################
     async def remove_training(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is removing a training."
+        )
 
         embed = U.make_embed(
             title="Remove Training",
@@ -733,9 +791,15 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Training removal cancelled.")
             return
         
         ids_to_remove = view.value
+        
+        log.info(
+            "Training",
+            f"Training removal for {', '.join(ids_to_remove)}."
+        )
 
         confirm = U.make_embed(
             title="Confirm Removal",
@@ -750,10 +814,13 @@ class TUser:
         await view.wait()
 
         if not view.complete or view.value is False:
+            log.debug("Training", "Training removal cancelled.")
             return
 
         for _id in ids_to_remove:
             await self.training_manager.remove_training(_id)
+            
+        log.info("Training", "Training removal complete.")
 
 ################################################################################
     def training_select_options(self) -> List[SelectOption]:
@@ -779,6 +846,11 @@ class TUser:
         
 ################################################################################
     async def notify_of_training_signup(self, training: Training) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is being notified of a training signup."
+        )
 
         common_availability = self._notify_check(training)
         if not common_availability:
@@ -817,13 +889,15 @@ class TUser:
             timestamp=True
         )
         
-        try:
-            await self.user.send(embed=notification)
-        except:
-            pass
+        await self.send(embed=notification)
 
 ################################################################################
     async def notify_of_modified_schedule(self, training: Training) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is being notified of a schedule change."
+        )
         
         common_availability = self._notify_check(training)
         if not common_availability:
@@ -858,15 +932,21 @@ class TUser:
             timestamp=True
         )
         
-        try:
-            await self.user.send(embed=notification)
-        except:
-            pass
+        await self.send(embed=notification)
         
 ################################################################################
     def toggle_pings(self) -> None:
         
         self._config.toggle_trainee_pings()
+        
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) is toggling trainee pings. "
+                f"Current status: {self.config.trainee_pings}."
+            )
+        
+        )
         
 ################################################################################
     def accepting_trainee_pings(self) -> bool:
@@ -875,6 +955,14 @@ class TUser:
     
 ################################################################################
     async def trainer_dashboard(self, interaction: Interaction, cur_page: int = 0) -> None:
+        
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) is viewing their trainer "
+                f"dashboard. Current page: {cur_page}."
+            )
+        )
 
         pages = [
             t.status_page(interaction.user) for t in self.trainings_as_trainer
@@ -907,6 +995,11 @@ class TUser:
         
 ################################################################################
     async def toggle_hiatus(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is toggling their hiatus status."
+        )
 
         if not self.on_hiatus:
             confirm = U.make_embed(
@@ -947,6 +1040,7 @@ class TUser:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Hiatus toggle cancelled.")
             return
         
         if self.on_hiatus:
@@ -962,6 +1056,14 @@ class TUser:
                 t.reset()
                 
         self._details.toggle_hiatus()
+        
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) has toggled their hiatus status. "
+                f"Current status: {self.on_hiatus}."
+            )
+        )
         
         await self.training_manager.signup_message.update_components()
         await self.guild.log.tuser_hiatus(self)
@@ -980,11 +1082,15 @@ class TUser:
                 f"{U.draw_line(extra=43)}"
             )
         )
+        await self.send(embed=notification)
         
-        try:
-            await self.user.send(embed=notification)
-        except:
-            pass
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) has been notified of a trainer hiatus. "
+                f"Trainer: {training.trainer.name} ({training.trainer.user_id})."
+            )
+        )
 
 ################################################################################
     async def is_eligible(
@@ -1052,19 +1158,32 @@ class TUser:
         
         try:
             await self.user.send(*args, **kwargs)
-        except:
-            pass
+        except Exception as ex:
+            log.critical(
+                "Training",
+                (
+                    f"An uncaught exception occurred while attempting to to "
+                    f"send message to {self.name} ({self.user_id}).\n{ex}"
+                )
+            )
 
 ################################################################################
     async def mute_venue(self, interaction: Interaction, venue: Venue) -> None:
         
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is toggling venue mute for {venue.name}."
+        )
+        
         if venue in self.muted_venues:
             self._mutes.remove(venue)
             flag = False
+            log.info("Training", f"Venue mute for {venue.name} has been disabled.")
         else:
             self._mutes.append(venue)
             flag = True
-        
+            log.info("Training", f"Venue mute for {venue.name} has been enabled.")
+            
         confirm = U.make_embed(
             title="Venue Mute Toggle",
             description=(
@@ -1082,8 +1201,17 @@ class TUser:
 
 ################################################################################
     async def settle_training_balance(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"The training balance for TUser {self.name} ({self.user_id}) is being settled."
+        )
 
         if not self.unpaid_trainings:
+            log.warning(
+                "Training",
+                f"No unpaid trainings found for TUser {self.name} ({self.user_id})."
+            )
             error = U.make_embed(
                 title="No Unpaid Trainings",
                 description=(
@@ -1130,6 +1258,7 @@ class TUser:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Training balance settlement cancelled.")
             return
         
         for t in self.unpaid_trainings:
@@ -1145,12 +1274,26 @@ class TUser:
         )
         
         await interaction.respond(embed=confirm)
+        
+        log.info(
+            "Training",
+            f"Training balance settlement complete for TUser {self.name} ({self.user_id})."
+        )
 
 ################################################################################
     async def manage_trainings(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"Trainings are being managed for TUser {self.name} ({self.user_id})."
+        )
+        
         source_trainings = [t for t in self.trainings_as_trainer if not t.is_complete]
         if not source_trainings:
+            log.warning(
+                "Training",
+                f"No active trainings found for TUser {self.name} ({self.user_id})."
+            )
             error = U.make_embed(
                 title="No Trainings Found",
                 description=(
@@ -1192,6 +1335,11 @@ class TUser:
 ################################################################################
     async def _select_training_to_decouple(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Training",
+            f"Trainings are being decoupled for TUser {self.name} ({self.user_id})."
+        )
+        
         options = [
             SelectOption(
                 label=t.position.name,
@@ -1216,9 +1364,14 @@ class TUser:
         await view.wait()
         
         if not view.complete or view.value is False:
+            log.debug("Training", "Decouple training cancelled.")
             return
         
         for training_id in view.value:
+            log.info(
+                "Training",
+                f"Decoupling training {training_id} for TUser {self.name} ({self.user_id})."
+            )
             await self.training_manager.get_training(training_id).set_trainer(None)
 
 ################################################################################
@@ -1234,6 +1387,14 @@ class TUser:
         for t in self.trainings_as_trainee:
             await self.training_manager.remove_training(t.id)
             deleted += 1
+            
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) has left the server. "
+                f"{modified} trainings were modified and {deleted} were deleted."
+            )
+        )
             
         return modified, deleted
 

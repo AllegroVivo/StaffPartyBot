@@ -16,19 +16,6 @@ Q = TypeVar("Q", bound="Qualification")
 
 ################################################################################
 class Qualification:
-    """Represents a user's qualification for a job position.
-    
-    Attributes:
-    -----------
-    _manager: :class:`TrainingManager`
-        The manager that created this qualification.
-    _id: :class:`str`
-        The unique identifier for this qualification.
-    _position: :class:`Position`
-        The position this qualification is for.
-    _level: :class:`TrainingLevel`
-        The level of training the user has for this position.
-    """
 
     __slots__ = (
         "_manager",
@@ -56,20 +43,6 @@ class Qualification:
 ################################################################################
     @classmethod
     def load(cls: Type[Q], mgr: TrainingManager, data: Tuple[Any, ...]) -> Q:
-        """Load a qualification from a database record.
-        
-        Parameters:
-        -----------
-        mgr: :class:`TrainingManager`
-            The manager that created this qualification.
-        data: Tuple[Any, ...]
-            The database record to load.
-            
-        Returns:
-        --------
-        :class:`Qualification`
-            The loaded qualification instance.
-        """
 
         pos = mgr.guild.position_manager.get_position(data[3])
         return cls(mgr, data[0], pos, TrainingLevel(data[4]))
@@ -100,20 +73,12 @@ class Qualification:
 
 ################################################################################
     def update(self, level: TrainingLevel) -> None:
-        """Update the user's qualification level.
-        
-        Parameters:
-        -----------
-        level: :class:`TrainingLevel`
-            The new level of training the user has for this position.
-        """
 
         self._level = level
         self.bot.database.update.qualification(self)
 
 ################################################################################
     def delete(self) -> None:
-        """Delete this qualification from its user and the database."""
 
         self.bot.database.delete.qualification(self)
 
