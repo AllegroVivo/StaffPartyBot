@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, List
 import pandas as pd
 from discord import Interaction, Member, Role, File
 
+from Utilities import log
+
 if TYPE_CHECKING:
     from Classes import StaffPartyBot
 ################################################################################
@@ -28,6 +30,11 @@ class ReportManager:
 ################################################################################
     @staticmethod
     async def roles_report(interaction: Interaction, members: List[Member], roles: List[Role]) -> None:
+        
+        log.info(
+            "Core",
+            f"Creating roles report for {len(members)} members and {len(roles)} roles."
+        )
         
         # Prepare the data structure
         data = {
@@ -75,5 +82,7 @@ class ReportManager:
             
         # Delete the Excel file
         os.remove("roles_report.xlsx")
+        
+        log.info("Core", "Roles report created and sent!")
         
 ################################################################################

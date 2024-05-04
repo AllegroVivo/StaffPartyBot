@@ -18,7 +18,7 @@ from Classes.Services.ServicesManager import ServicesManager
 from Classes.Training.TrainingManager import TrainingManager
 from Classes.Venues.VenueManager import VenueManager
 from UI.Guild import ReportMenuView, BulkUpdateView
-from Utilities import Utilities as U
+from Utilities import Utilities as U, log
 
 if TYPE_CHECKING:
     from Classes import StaffPartyBot, Profile
@@ -153,6 +153,11 @@ class GuildData:
     
 ################################################################################
     def get_or_create_profile(self, user: User) -> Profile:
+        
+        log.info(
+            "Core",
+            f"Getting or creating profile for {user.name} ({user.id})..."
+        )
 
         profile = self._profile_mgr[user.id]
         if profile is None:
@@ -162,6 +167,11 @@ class GuildData:
     
 ################################################################################
     async def report_menu(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Core",
+            f"Opening report menu for guild ({self.guild_id})..."
+        )
         
         prompt = U.make_embed(
             title="TrainerBot Report Menu",
@@ -178,13 +188,29 @@ class GuildData:
         if channel_id is None:
             return
         
+        log.info(
+            "Core",
+            f"Getting or fetching channel {channel_id}..."
+        )
+        
         if channel := self._parent.get_channel(channel_id):
+            log.info("Core", "Channel found in cache.")
             return channel
         
         try:
-            return await self._parent.fetch_channel(channel_id)
+            ret = await self._parent.fetch_channel(channel_id)
         except NotFound:
+            log.warning("Core", f"Channel {channel_id} not found.")
             return
+        except Exception as ex:
+            log.critical(
+                "Core",
+                f"Error fetching channel {channel_id}: {ex}"
+            )
+            return
+        else:
+            log.info("Core", "Channel fetched from Discord.")
+            return ret
 
 ################################################################################
     async def get_or_fetch_message(self, message_url: Optional[str]) -> Optional[Message]:
@@ -192,16 +218,32 @@ class GuildData:
         if message_url is None:
             return
         
+        log.info(
+            "Core",
+            f"Getting or fetching message {message_url}..."
+        )
+        
         url_parts = message_url.split("/")
         
         channel = await self.get_or_fetch_channel(int(url_parts[-2]))
         if channel is None:
+            log.info("Core", "Message channel not found.")
             return
         
         try:
-            return await channel.fetch_message(int(url_parts[-1]))  # type: ignore
+            ret = await channel.fetch_message(int(url_parts[-1]))  # type: ignore
         except NotFound:
+            log.warning("Core", f"Message {message_url} not found.")
             return
+        except Exception as ex:
+            log.critical(
+                "Core",
+                f"Error fetching message {message_url}: {ex}"
+            )
+            return
+        else:
+            log.info("Core", "Message fetched from Discord.")
+            return ret
 
 ################################################################################
     async def get_or_fetch_user(self, user_id: Optional[int]) -> Optional[Union[Member, User]]:
@@ -209,16 +251,33 @@ class GuildData:
         if user_id is None:
             return
         
+        log.info(
+            "Core",
+            f"Getting or fetching user/member {user_id}..."
+        )
+        
         if user := self._parent.get_member(user_id):
+            log.info("Core", "Member found in cache.")
             return user
         
         if member := await self._parent.fetch_member(user_id):
+            log.info("Core", "Member fetched from Discord.")
             return member
         
         try:
-            return await self.bot.get_or_fetch_user(user_id)
+            ret = await self.bot.get_or_fetch_user(user_id)
         except NotFound:
-            pass
+            log.warning("Core", f"User {user_id} not found.")
+            return
+        except Exception as ex:
+            log.critical(
+                "Core",
+                f"Error fetching user {user_id}: {ex}"
+            )
+            return
+        else:
+            log.info("Core", "User fetched from Discord.")
+            return ret
             
 ################################################################################
     async def get_or_fetch_role(self, role_id: Optional[int]) -> Optional[Role]:
@@ -226,13 +285,26 @@ class GuildData:
         if role_id is None:
             return
         
+        log.info("Core", f"Getting or fetching role {role_id}...")
+        
         if role := self._parent.get_role(role_id):
+            log.info("Core", "Role found in cache.")
             return role
         
         try:
-            return await self._parent._fetch_role(role_id)
+            ret = await self._parent._fetch_role(role_id)
         except NotFound:
+            log.warning("Core", f"Role {role_id} not found.")
             return
+        except Exception as ex:
+            log.critical(
+                "Core",
+                f"Error fetching role {role_id}: {ex}"
+            )
+            return
+        else:
+            log.info("Core", "Role fetched from Discord.")
+            return ret
     
 ################################################################################
     async def on_member_leave(self, member: Member) -> None:
@@ -254,6 +326,8 @@ class GuildData:
         
 ################################################################################
     async def on_member_join(self, member: Member) -> None:
+        
+        log.info("Core", f"Member joined! Sending welcome message in t-minus 60 seconds...")
         
         await self.log.member_join(member)
         self.member_welcome.start(member)
@@ -314,6 +388,11 @@ class GuildData:
     
 ################################################################################
     async def bulk_update_menu(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Core",
+            f"Opening bulk update menu for guild ({self.guild_id})..."
+        )
         
         prompt = U.make_embed(
             title="TrainerBot Bulk Update Menu",

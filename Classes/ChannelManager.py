@@ -11,7 +11,7 @@ from discord import (
 )
 
 from UI.Guild import ChannelStatusView
-from Utilities import Utilities as U, MentionableType, ChannelPurpose
+from Utilities import Utilities as U, MentionableType, ChannelPurpose, log
 
 if TYPE_CHECKING:
     from Classes import GuildData, StaffPartyBot
@@ -208,6 +208,8 @@ class ChannelManager:
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info("Core", f"Opening channel status menu for {self.guild_id}...")
+        
         embed = self.status()
         view = ChannelStatusView(interaction.user, self)
         
@@ -216,6 +218,11 @@ class ChannelManager:
         
 ################################################################################
     async def set_channel(self, interaction: Interaction, _type: ChannelPurpose) -> None:
+        
+        log.info(
+            "Core",
+            f"Setting channel for {_type.proper_name} in {self.guild_id}..."
+        )
 
         prompt = U.make_embed(
             title="Edit Channel",
@@ -230,6 +237,7 @@ class ChannelManager:
 
         channel = await U.listen_for_mentionable(interaction, prompt, MentionableType.Channel)
         if channel is None:
+            log.warning("Core", "User cancelled channel selection.")
             return
 
         match _type:
@@ -255,5 +263,13 @@ class ChannelManager:
             description=f"The {_type.proper_name} channel has been set to {channel.mention}!"  # type: ignore
         )
         await interaction.respond(embed=embed, ephemeral=True)
+        
+        log.info(
+            "Core",
+            (
+                f"{_type.proper_name} channel for {self.guild_id} has "
+                f"been set to {channel.name} ({channel.id})."
+            )
+        )
         
 ################################################################################

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 from discord import Interaction, Role, Embed, EmbedField, User, Member, Forbidden
 
 from UI.Guild import RolesStatusView
-from Utilities import Utilities as U, RoleType, FroggeColor
+from Utilities import Utilities as U, RoleType, FroggeColor, log, MentionableType
 
 if TYPE_CHECKING:
     from Classes import GuildData, StaffPartyBot
@@ -185,6 +185,11 @@ class RoleManager:
 ################################################################################
     async def menu(self, interaction: Interaction) -> None:
         
+        log.info(
+            "Core",
+            f"Opening roles menu for guild ({self.guild_id})."
+        )
+        
         embed = self.status()
         view = RolesStatusView(interaction.user, self)
         
@@ -193,6 +198,11 @@ class RoleManager:
         
 ################################################################################
     async def set_role(self, interaction: Interaction, _type: RoleType) -> None:
+        
+        log.info(
+            "Core",
+            f"Setting role {_type.proper_name} for guild ({self.guild_id})."
+        )
 
         prompt = U.make_embed(
             title="Edit Role",
@@ -205,64 +215,34 @@ class RoleManager:
             )
         )
 
-        response = await interaction.respond(embed=prompt)
+        role = await U.listen_for_mentionable(interaction, prompt, MentionableType.Role)
+        if role is None:
+            log.info("Core", "Role selection cancelled.")
+            return    
 
-        def check(m):
-            return m.author == interaction.user
-
-        try:
-            message = await self.bot.wait_for("message", check=check, timeout=180)
-        except TimeoutError:
-            embed = U.make_embed(
-                title="Timeout",
-                description=(
-                    "You took too long to respond. Please try again."
-                ),
-                color=FroggeColor.brand_red()
-            )
-            await response.respond(embed=embed)
-            return
-
-        error = U.make_embed(
-            title="Invalid Role Mention",
-            description=(
-                "You did not provide a valid role mention. "
-                "Please try again."
-            ),
-            color=FroggeColor.brand_red()
-        )
-
-        if message.content.lower() != "cancel":
-            results = re.match(r"<@&(\d+)>", message.content)
-            if not results:
-                await interaction.respond(embed=error, ephemeral=True)
-                return
+        match _type:
+            case RoleType.TrainerMain:
+                self.trainer_main = role
+            case RoleType.TrainerPending:
+                self.trainer_pending = role
+            case RoleType.TrainingHiatus:
+                self.trainer_hiatus = role
+            case RoleType.StaffMain:
+                self.staff_main = role
+            case RoleType.StaffNotValidated:
+                self.staff_unvalidated = role
+            case RoleType.VenueManagement:
+                self.venue_management = role
             
-            role_id = int(results.group(1))
-            role = await self._guild.parent._fetch_role(role_id)
-            if not role:
-                await interaction.respond(embed=error, ephemeral=True)
-                return                
-
-            match _type:
-                case RoleType.TrainerMain:
-                    self.trainer_main = role
-                case RoleType.TrainerPending:
-                    self.trainer_pending = role
-                case RoleType.TrainingHiatus:
-                    self.trainer_hiatus = role
-                case RoleType.StaffMain:
-                    self.staff_main = role
-                case RoleType.StaffNotValidated:
-                    self.staff_unvalidated = role
-                case RoleType.VenueManagement:
-                    self.venue_management = role
-
-        await message.delete()
-        await response.delete_original_response()
+        log.info("Core", f"Role {_type.proper_name} set to {role.id}.")
         
 ################################################################################
     async def add_role(self, user: Union[Member, User], _type: RoleType) -> None:
+        
+        log.info(
+            "Core",
+            f"Adding role {_type.proper_name} to {user.display_name} ({user.id})."
+        )
         
         if isinstance(user, User):
             user = await self._guild.parent.fetch_member(user.id)
@@ -283,11 +263,17 @@ class RoleManager:
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
-        try:
-            if role not in user.roles:
+        if role not in user.roles:
+            try:
                 await user.add_roles(role)
-        except:
-            pass
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    (
+                        f"Failed to add role {_type.proper_name} to {user.display_name} "
+                        f"({user.id}).\nError: {ex}"
+                    )
+                )
             
 ################################################################################
     async def remove_role(self, user: Union[Member, User], _type: RoleType) -> None:
@@ -314,22 +300,39 @@ class RoleManager:
         if role in user.roles:
             try:
                 await user.remove_roles(role)
-            except:
-                pass
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    (
+                        f"Failed to remove role {_type.proper_name} to {user.display_name} "
+                        f"({user.id}).\nError: {ex}"
+                    )
+                )
             
 ################################################################################
     async def add_role_manual(self, user: Union[Member, User], role: Optional[Role]) -> None:
         
         if role is None:
             return
+        
+        log.info(
+            "Core",
+            f"Manually adding role {role.name} to {user.display_name} ({user.id})."
+        )
 
         if isinstance(user, User):
             user = await self._guild.parent.fetch_member(user.id)
 
-        try:
-            if role not in user.roles:
+        if role not in user.roles:
+            try:
                 await user.add_roles(role)
-        except:
-            pass
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    (
+                        f"Failed to add role {role.name} to {user.display_name} "
+                        f"({user.id}).\nError: {ex}"
+                    )
+                )
         
 ################################################################################

@@ -3,15 +3,16 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Dict, Any, Optional
 
-from discord import Attachment, Bot, TextChannel, File
+from discord import Attachment, Bot, TextChannel, NotFound
 from discord.abc import GuildChannel
 from dotenv import load_dotenv
 
+from Utilities import log
 from Utilities.Database import Database
 from .GuildManager import GuildManager
 from .ReportManager import ReportManager
-from .XIVVenues import XIVVenuesClient
 from .Webhooks import FroggeHookManager
+from .XIVVenues import XIVVenuesClient
 
 if TYPE_CHECKING:
     from Classes import GuildData
@@ -104,6 +105,8 @@ class StaffPartyBot(Bot):
 
 ################################################################################
     def _parse_data(self, data: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
+        
+        log.info("Core", "Parsing data from database...")
          
         # Setup the return dictionary.
         ret = { g.id : {
@@ -222,13 +225,20 @@ class StaffPartyBot(Bot):
                 }
             )
             
+        log.info("Core", "Data parsed!")
+            
         return ret
     
 ################################################################################
     async def dump_image(self, image: Attachment) -> str:
         
+        log.info("Core", "Dumping image to image dump...")
+        
         file = await image.to_file()
         post = await self._img_dump.send(file=file)
+        
+        log.info("Core", "Image dumped!")
+        
         return post.attachments[0].url
 
 ################################################################################
@@ -236,13 +246,21 @@ class StaffPartyBot(Bot):
         
         if not channel_id:
             return
+        
+        log.info("Core", f"Getting or fetching channel {channel_id}...")
 
         ret = self.get_channel(channel_id)
         if ret is None:
             try:
                 ret = await self.fetch_channel(channel_id)
-            except:
-                pass
+            except NotFound:
+                log.warning("Core", f"Channel {channel_id} not found.")
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    f"An uncaught exception occurred while fetching channel "
+                    f"{channel_id}: {ex}"
+                )
             
         return ret
     
