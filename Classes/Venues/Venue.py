@@ -926,7 +926,7 @@ class Venue:
         
         log.info(
             "Venues",
-            f"Posting venue {self.name} ({self.id}) to channel {channel.name}"
+            f"Attempting to post venue {self.name} ({self.id}) to channel {channel}"
         )
         
         if channel is None:
