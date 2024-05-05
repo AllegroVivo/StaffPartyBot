@@ -374,7 +374,7 @@ class GuildData:
                 "profile afterwards! <a:dancer:1168134583158575175>\n\n"
             )
             flag = True
-        if "trainee" in [r.name for r in member.roles]:
+        if "trainee" in [r.name.lower() for r in member.roles]:
             welcome_message += (
                 "I see you've selected the Trainee role!\n"
                 "You can follow the instructions here <#1219488746664230974> to "
