@@ -23,9 +23,9 @@ class XIVVenuesClient:
     load_dotenv()
     
     if os.getenv("DEBUG") == "True":
-        URL_BASE = "https://api.ffxivvenues.dev/venue?"
+        URL_BASE = "https://api.ffxivvenues.dev/venue"
     else:
-        URL_BASE = "https://api.ffxivvenues.com/venue?"
+        URL_BASE = "https://api.ffxivvenues.com/venue"
     
 ################################################################################
     def __init__(self, state: StaffPartyBot):
@@ -35,7 +35,7 @@ class XIVVenuesClient:
 ################################################################################
     async def get_venues_by_manager(self, manager_id: int) -> List[XIVVenue]:
         
-        query = self.URL_BASE + "manager=" + str(manager_id)
+        query = self.URL_BASE + "?manager=" + str(manager_id)
         
         load_dotenv()
         if os.getenv("DEBUG") == "True":
@@ -62,7 +62,7 @@ class XIVVenuesClient:
 ################################################################################
     async def get_venues_by_name(self, name: str) -> List[XIVVenue]:
 
-        query = self.URL_BASE + "search=" + str(name)
+        query = self.URL_BASE + "?search=" + str(name)
         
         load_dotenv()
         if os.getenv("DEBUG") == "True":
@@ -87,4 +87,30 @@ class XIVVenuesClient:
         return ret
     
 ################################################################################
+    async def get_all_venues(self) -> List[XIVVenue]:
+        
+        query = self.URL_BASE
+        
+        load_dotenv()
+        if os.getenv("DEBUG") == "True":
+            print("Executing XIVClient query: " + query)
+            
+        response = requests.get(query)
+        
+        if response.status_code != 200:
+            raise WTFException(
+                "Failed to get all venues - response status code: " + 
+                str(response.status_code)
+            )
+        
+        if os.getenv("DEBUG") == "True":
+            print("Response: " + str(response.json()))
+        
+        ret = []
+        
+        for venue in response.json():
+            ret.append(await XIVVenue.from_data(self._state, venue))
+            
+        return ret
     
+################################################################################

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
@@ -8,6 +9,7 @@ from discord import Guild, User, Interaction, Message, NotFound, Member, Role
 from discord.abc import GuildChannel
 from discord.ext import tasks
 
+from Classes.Itinerary.ItineraryManager import ItineraryManager
 from Classes.ChannelManager import ChannelManager
 from Classes.Jobs.JobsManager import JobsManager
 from Classes.Logger import Logger
@@ -45,6 +47,7 @@ class GuildData:
     #     "_role_mgr",
     #     "_channel_mgr",
     #     "_service_mgr",
+    #     "_itinerary_mgr",
     # )
 
 ################################################################################
@@ -64,20 +67,26 @@ class GuildData:
         self._role_mgr: RoleManager = RoleManager(self)
         self._channel_mgr: ChannelManager = ChannelManager(self)
         self._service_mgr: ServicesManager = ServicesManager(self)
+        self._itinerary_mgr: ItineraryManager = ItineraryManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
         
         await self._logger.load()
         
+        await self._channel_mgr._load_all(data["channels"])
+        await self.begin_notify_of_bot_restart()
+        await self._role_mgr._load_all(data["roles"])
+        
         await self._pos_mgr._load_all(data)
         await self._venue_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
+        
         await self._job_mgr._load_all(data)
-        await self._role_mgr._load_all(data["roles"])
-        await self._channel_mgr._load_all(data["channels"])
         await self._service_mgr._load_all(data)
+        
+        await self.end_notify_of_bot_restart()
         
 ################################################################################
     @property
@@ -150,6 +159,12 @@ class GuildData:
     def service_manager(self) -> ServicesManager:
         
         return self._service_mgr
+    
+################################################################################
+    @property
+    def itinerary_manager(self) -> ItineraryManager:
+        
+        return self._itinerary_mgr
     
 ################################################################################
     def get_or_create_profile(self, user: User) -> Profile:
@@ -406,6 +421,67 @@ class GuildData:
         
         await interaction.respond(embed=prompt, view=view)
         await view.wait()
+
+################################################################################
+    async def begin_notify_of_bot_restart(self) -> None:
         
+        log.info("Core", "Notifying of bot restart...")
+        
+        ready_time = datetime.now() + timedelta(minutes=2)
+        notification = U.make_embed(
+            title="__Staff Party Bot Restarting!__",
+            description=(
+                "The Staff Party Bot is currently restarting and some "
+                "features may be temporarily unavailable. <a:DJ:1115502710914035722>\n\n"
+                
+                f"**Current estimated ready-to-go time: {U.format_dt(ready_time)}**\n\n"
+                
+                "This channel will receive a notification when the bot is back online. "
+                "<a:host:1168134582000943124>"
+            )
+        )
+        
+        for ch in self._channel_mgr.notification_channels:
+            try:
+                await ch.send(embed=notification)
+            except NotFound:
+                log.warning("Core", f"Notification channel '{ch.id}' not found.")
+                pass
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    f"Error sending bot restart notification to {ch.id}: {ex}"
+                )
+            else:
+                log.info("Core", f"Bot restart notification sent to {ch.id}.")
+
+################################################################################
+    async def end_notify_of_bot_restart(self) -> None:
+        
+        notification = U.make_embed(
+            title="__Staff Party Bot Restarted!__",
+            description=(
+                "<a:security:1168134596815224873> The Staff Party Bot has "
+                "finished restarting and all features should now be available. "
+                "<a:security:1168134596815224873>\n\n"
+                
+                "Thank you for your patience! <a:dancer:1168134583158575175>"
+            )
+        )
+        
+        for ch in self._channel_mgr.notification_channels:
+            try:
+                await ch.send(embed=notification)
+            except NotFound:
+                log.warning("Core", f"Notification channel '{ch.id}' not found.")
+                pass
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    f"Error sending bot restart notification to {ch.id}: {ex}"
+                )
+            else:
+                log.info("Core", f"Bot restart notification sent to {ch.id}.")
+
 ################################################################################
         

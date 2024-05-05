@@ -8,6 +8,7 @@ from discord import User
 from .XIVLocation import XIVLocation
 from .XIVScheduleComponent import XIVScheduleComponent
 from .XIVScheduleOverride import XIVScheduleOverride
+from .XIVTimeResolution import XIVTimeResolution
 
 if TYPE_CHECKING:
     from Classes import StaffPartyBot
@@ -38,7 +39,8 @@ class XIVVenue:
         "approved",
         "modified",
         "mare_id",
-        "mare_pass"
+        "mare_pass",
+        "resolution",
     )
     
 ################################################################################
@@ -62,6 +64,7 @@ class XIVVenue:
         self.modified: Optional[datetime] = kwargs.pop("modified")
         self.mare_id: Optional[str] = kwargs.pop("mare_id")
         self.mare_pass: Optional[str] = kwargs.pop("mare_pass")
+        self.resolution: XIVTimeResolution = kwargs.pop("resolution")
         
 ################################################################################
     @classmethod
@@ -95,7 +98,8 @@ class XIVVenue:
                 else None
             ),
             mare_id=data.get("mareCode"),
-            mare_pass=data.get("marePassword")
+            mare_pass=data.get("marePassword"),
+            resolution=XIVTimeResolution.from_data(data["resolution"])
         )
     
 ################################################################################

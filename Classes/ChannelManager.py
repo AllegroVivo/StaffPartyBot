@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple, List
 
 from discord import (
     Interaction,
@@ -31,6 +31,7 @@ class ChannelManager:
         "_log",
         "_services",
         "_welcome",
+        "_notification_channels",
     )
 
 ################################################################################
@@ -45,6 +46,7 @@ class ChannelManager:
         self._log: Optional[TextChannel] = None
         self._services: Optional[ForumChannel] = None
         self._welcome: Optional[TextChannel] = None
+        self._notification_channels: List[TextChannel] = []
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -56,6 +58,10 @@ class ChannelManager:
         self._log = await self._guild.get_or_fetch_channel(data[5])
         self._services = await self._guild.get_or_fetch_channel(data[6])
         self._welcome = await self._guild.get_or_fetch_channel(data[7])
+        self._notification_channels = [
+            await self._guild.get_or_fetch_channel(channel_id)
+            for channel_id in data[8]
+        ] if data[8] else []
         
 ################################################################################
     @property
@@ -154,6 +160,12 @@ class ChannelManager:
         self.update()
         
 ################################################################################
+    @property
+    def notification_channels(self) -> List[TextChannel]:
+        
+        return self._notification_channels
+    
+################################################################################
     def update(self) -> None:
     
         self.bot.database.update.channels(self)
@@ -195,6 +207,13 @@ class ChannelManager:
             EmbedField(
                 name="__Hireable Services__",
                 value=self.services_channel.mention if self.services_channel else "`Not Set`",
+                inline=False
+            ),
+            EmbedField(
+                name="__Bot Restart Notification Channels__",
+                value=(
+                    "\n".join(channel.mention for channel in self.notification_channels)
+                ) if self.notification_channels else "`Not Set`",
                 inline=False
             ),
         ]
@@ -255,6 +274,9 @@ class ChannelManager:
                 self.services_channel = channel
             case ChannelPurpose.Welcome:
                 self.welcome_channel = channel
+            case ChannelPurpose.BotNotify:
+                self._notification_channels.append(channel)  # type: ignore
+                self.update()
             case _:
                 raise ValueError(f"Invalid ChannelPurpose: {_type}")
         
@@ -271,5 +293,5 @@ class ChannelManager:
                 f"been set to {channel.name} ({channel.id})."
             )
         )
-        
+
 ################################################################################

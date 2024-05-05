@@ -30,6 +30,7 @@ class XIVTimeResolution:
     @classmethod
     def from_data(cls, data: Dict[str, Any]) -> XIVTimeResolution:
         
+        assert data, "No data provided."
         return cls(
             start=datetime.fromisoformat(data.get("start")),
             end=datetime.fromisoformat(data.get("end")),

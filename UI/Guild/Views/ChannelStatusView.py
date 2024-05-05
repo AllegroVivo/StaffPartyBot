@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from discord import ButtonStyle, User
 from discord.abc import GuildChannel
@@ -20,7 +20,7 @@ class ChannelStatusView(FroggeView):
 
     def __init__(self, owner: User, channels: ChannelManager):
         
-        super().__init__(owner, timeout=None)
+        super().__init__(owner)
         
         self.channels: ChannelManager = channels
         
@@ -32,6 +32,7 @@ class ChannelStatusView(FroggeView):
             TempJobsChannelButton(self.channels.temp_job_channel),
             PermJobsChannelButton(self.channels.perm_job_channel),
             ServicesButton(self.channels.services_channel),
+            BotNotifyChannelsButton(self.channels.notification_channels),
             CloseMessageButton()
         ]
         for btn in button_list:
@@ -186,6 +187,28 @@ class WelcomeChannelButton(FroggeButton):
     async def callback(self, interaction):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Welcome)
         self.set_style(self.view.channels.welcome_channel)
+
+        await edit_message_helper(
+            interaction, embed=self.view.channels.status(), view=self.view
+        )
+        
+################################################################################
+class BotNotifyChannelsButton(FroggeButton):
+
+    def __init__(self, channel: List[GuildChannel]):
+
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Bot Restart Notification",
+            disabled=False,
+            row=1,
+        )
+
+        self.set_style(channel)
+
+    async def callback(self, interaction):
+        await self.view.channels.set_channel(interaction, ChannelPurpose.BotNotify)
+        self.set_style(self.view.channels.notification_channels)
 
         await edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view

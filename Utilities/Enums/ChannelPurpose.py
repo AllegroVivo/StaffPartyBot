@@ -13,6 +13,7 @@ class ChannelPurpose(FroggeEnum):
     LogStream = 5
     Services = 6
     Welcome = 7
+    BotNotify = 8
 
 ################################################################################
     @staticmethod
@@ -32,6 +33,8 @@ class ChannelPurpose(FroggeEnum):
             return "Log Stream"
         elif self.value == 6:
             return "Hireable Services"
+        elif self.value == 8:
+            return "Bot Restart Notification"
         
         return self.name
     
