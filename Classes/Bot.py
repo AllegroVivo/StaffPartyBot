@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from pyshorturl import TinyUrlcom
 from typing import TYPE_CHECKING, Dict, Any, Optional
 
 from discord import Attachment, Bot, TextChannel, NotFound

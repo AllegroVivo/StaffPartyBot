@@ -8,3 +8,4 @@ flask~=3.0.3
 gunicorn~=21.2.0
 pandas~=2.2.2
 openpyxl~=3.1.2
+pyShortUrl~=0.9.4
