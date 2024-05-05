@@ -51,7 +51,7 @@ class PositionSelect(Select):
                 label=t.trainee.name,
                 value=t.id,
             )
-            for t in eligible_trainings
+            for t in eligible_trainings if t.trainer is None
         ]
         if not training_options:
             training_options = [SelectOption(label="No trainees available", value="-1")]
