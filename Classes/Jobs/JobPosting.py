@@ -958,7 +958,7 @@ class JobPosting:
                 )
                 continue
                 
-        log.info("Jobs" f"Notified {len(eligible)} eligible applicants of job posting")
+        log.info("Jobs", f"Notified {len(eligible)} eligible applicants of job posting")
             
 ################################################################################
     async def candidate_accept(self, interaction: Interaction) -> None:
