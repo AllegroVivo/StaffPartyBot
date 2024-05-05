@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import os
+from pyshorturl import TinyUrlcom
 from typing import TYPE_CHECKING, Dict, Any, Optional
 
 from discord import Attachment, Bot, TextChannel, NotFound
 from discord.abc import GuildChannel
 from dotenv import load_dotenv
 
-from Utilities import log
+from Utilities import Utilities as U, log
 from Utilities.Database import Database
 from .GuildManager import GuildManager
 from .ReportManager import ReportManager
@@ -239,7 +240,11 @@ class StaffPartyBot(Bot):
         
         log.info("Core", "Image dumped!")
         
-        return post.attachments[0].url
+        raw_url = post.attachments[0].url
+        if short_url := U.shorten_url(raw_url):
+            return short_url
+        
+        return raw_url
 
 ################################################################################
     async def get_or_fetch_channel(self, channel_id: int) -> Optional[GuildChannel]:

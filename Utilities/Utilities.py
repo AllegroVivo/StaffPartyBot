@@ -1,15 +1,20 @@
 import math
+import os
 import re
 import textwrap
+import urllib
 from datetime import datetime, time
 from typing import Any, List, Optional, Tuple, Union, Literal
 
 import pytz
+import requests
 from discord import Colour, Embed, EmbedField, NotFound, Interaction
 from discord.abc import Mentionable
+from dotenv import load_dotenv
 
 from .Colors import CustomColor
 from .Enums import Timezone, MentionableType
+
 ################################################################################
 
 __all__ = ("Utilities", )
@@ -443,4 +448,15 @@ class Utilities:
         return mentionable
 
 ################################################################################
-
+    @staticmethod
+    def shorten_url(long_url: str) -> Optional[str]:
+        
+        load_dotenv()
+        
+        key = os.getenv("CUTTLY_API_KEY")
+        r = requests.get("https://cutt.ly/api/api.php?key={}&short={}".format(key, long_url))
+        
+        return r.json()["url"]["shortLink"] if r.json()["url"]["status"] == 7 else None
+        
+################################################################################
+        
