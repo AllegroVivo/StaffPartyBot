@@ -87,7 +87,7 @@ class XIVVenuesClient:
         return ret
     
 ################################################################################
-    async def get_all_venues(self) -> List[XIVVenue]:
+    async def get_all_venues(self, for_report: bool = False) -> List[XIVVenue]:
         
         query = self.URL_BASE
         
@@ -103,14 +103,12 @@ class XIVVenuesClient:
                 str(response.status_code)
             )
         
-        if os.getenv("DEBUG") == "True":
-            print("Response: " + str(response.json()))
-        
         ret = []
         
         for venue in response.json():
-            ret.append(await XIVVenue.from_data(self._state, venue))
+            ret.append(await XIVVenue.from_data(self._state, venue, for_report))
             
+        print(f"Returned {len(ret)} venues.")
         return ret
     
 ################################################################################

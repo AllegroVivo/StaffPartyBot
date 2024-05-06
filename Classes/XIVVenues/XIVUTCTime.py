@@ -37,7 +37,7 @@ class XIVUTCTime:
             _from=data.get("from"),
             day=data.get("day"),
             start=XIVTime.from_data(data.get("start")),
-            end=XIVTime.from_data(data.get("end")),
+            end=XIVTime.from_data(data.get("end")) if data.get("end") else None,
             location=data.get("location")
         )
     

@@ -47,3 +47,16 @@ class GlobalDataCenter(FroggeEnum):
             return dc.value in [8, 9, 10, 11]
         
 ################################################################################
+    @staticmethod
+    def data_centers_by_region(region: str) -> List[DataCenter]:
+        
+        if region == "AM":
+            return [DataCenter.Aether, DataCenter.Crystal, DataCenter.Dynamis, DataCenter.Primal]
+        elif region == "EU":
+            return [DataCenter.Light, DataCenter.Chaos]
+        elif region == "OC":
+            return [DataCenter.Materia]
+        elif region == "JP":
+            return [DataCenter.Elemental, DataCenter.Gaia, DataCenter.Mana, DataCenter.Meteor]
+        
+################################################################################

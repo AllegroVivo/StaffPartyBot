@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional, List, Type, TypeVar, Any, Dict
 
@@ -68,7 +68,9 @@ class XIVVenue:
         
 ################################################################################
     @classmethod
-    async def from_data(cls: Type[V], bot: StaffPartyBot, data: Dict[str, Any]):
+    async def from_data(cls: Type[V], bot: StaffPartyBot, data: Dict[str, Any], for_report: bool) -> V:
+        
+        pprint.pprint(data)
 
         return cls(
             id=data["id"],
@@ -89,7 +91,7 @@ class XIVVenue:
                 m for m in 
                 [await bot.get_or_fetch_user(int(x)) for x in data["managers"]] 
                 if m is not None
-            ],
+            ] if not for_report else [],
             tags=data.get("tags", []),
             approved=data.get("approved", False),
             modified=(
@@ -99,7 +101,11 @@ class XIVVenue:
             ),
             mare_id=data.get("mareCode"),
             mare_pass=data.get("marePassword"),
-            resolution=XIVTimeResolution.from_data(data["resolution"])
+            resolution=(
+                XIVTimeResolution.from_data(data["resolution"])
+                if "resolution" in data and data["resolution"]
+                else None
+            )
         )
     
 ################################################################################

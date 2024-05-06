@@ -636,6 +636,10 @@ class Venue:
                 if v.name.lower() == self.name.lower()
             ]
             if not results:
+                log.warning(
+                    "Venues",
+                    f"Could not find venue {self.name} ({self.id}) in FFXIV Venues data."
+                )
                 error = VenueImportNotFoundError()
                 await interaction.respond(embed=error, ephemeral=True)
                 return

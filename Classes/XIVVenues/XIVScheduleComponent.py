@@ -48,7 +48,7 @@ class XIVScheduleComponent:
             commencing=data.get("commencing"),
             day=data.get("day"),
             start=XIVTime.from_data(data.get("start")),
-            end=XIVTime.from_data(data.get("end")),
+            end=XIVTime.from_data(data.get("end")) if data.get("end") else None,
             interval=data.get("interval"),
             location=data.get("location"),
             resolution=XIVTimeResolution.from_data(data.get("resolution")),
