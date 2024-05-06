@@ -262,8 +262,8 @@ class Profile:
                 return
 
             image_url = await self.bot.dump_image(file)
-            if shortened_url := U.shorten_url(image_url):
-                image_url = shortened_url
+            # if shortened_url := U.shorten_url(image_url):
+            #     image_url = shortened_url
             
             await self._images.add_additional(interaction, image_url, modal.value)
             
