@@ -1,5 +1,5 @@
 from __future__ import annotations
-import pprint
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional, List, Type, TypeVar, Any, Dict
 
@@ -69,8 +69,6 @@ class XIVVenue:
 ################################################################################
     @classmethod
     async def from_data(cls: Type[V], bot: StaffPartyBot, data: Dict[str, Any], for_report: bool) -> V:
-        
-        pprint.pprint(data)
 
         return cls(
             id=data["id"],
