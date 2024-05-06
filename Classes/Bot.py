@@ -239,11 +239,7 @@ class StaffPartyBot(Bot):
         
         log.info("Core", "Image dumped!")
         
-        raw_url = post.attachments[0].url
-        if short_url := U.shorten_url(raw_url):
-            return short_url
-        
-        return raw_url
+        return post.attachments[0].url
 
 ################################################################################
     async def get_or_fetch_channel(self, channel_id: int) -> Optional[GuildChannel]:

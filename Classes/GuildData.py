@@ -427,7 +427,7 @@ class GuildData:
         
         log.info("Core", "Notifying of bot restart...")
         
-        ready_time = datetime.now() + timedelta(minutes=2)
+        ready_time = datetime.now() + timedelta(minutes=3)
         notification = U.make_embed(
             title="__Staff Party Bot Restarting!__",
             description=(
@@ -473,7 +473,9 @@ class GuildData:
             try:
                 await ch.send(embed=notification)
             except NotFound:
-                log.warning("Core", f"Notification channel '{ch.id}' not found.")
+                log.warning("Core", f"Notification channel '{ch.id}' not found. Removing.")
+                self._channel_mgr.notification_channels.remove(ch)
+                self._channel_mgr.update()
                 pass
             except Exception as ex:
                 log.critical(
