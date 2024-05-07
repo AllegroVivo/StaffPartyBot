@@ -23,7 +23,7 @@ class XIVVenuesClient:
     load_dotenv()
     
     if os.getenv("DEBUG") == "True":
-        URL_BASE = "https://api.ffxivvenues.dev/venue"
+        URL_BASE = "https://api.ffxivvenues.com/venue"
     else:
         URL_BASE = "https://api.ffxivvenues.com/venue"
     
@@ -55,7 +55,7 @@ class XIVVenuesClient:
         ret = []
         
         for venue in response.json():
-            ret.append(await XIVVenue.from_data(self._state, venue))
+            ret.append(await XIVVenue.from_data(self._state, venue, False))
             
         return ret
     
