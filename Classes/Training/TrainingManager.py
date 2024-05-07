@@ -8,7 +8,12 @@ from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField,
 from discord.ext.pages import Page
 
 from UI.Common import ConfirmCancelView, Frogginator
-from UI.Training import TUserAdminStatusView, TUserStatusView, InternshipMatchingView
+from UI.Training import (
+    TUserAdminStatusView,
+    TUserStatusView,
+    TraineeStatusView,
+    InternshipMatchingView
+)
 from Utilities import (
     Utilities as U,
     ChannelTypeError,
@@ -279,7 +284,7 @@ class TrainingManager:
         
         log.info(
             "Training",
-            f"Requesting status for user {interaction.user.name} ({interaction.user.id})."
+            f"Requesting tuser status for user {interaction.user.name} ({interaction.user.id})."
         )
 
         tuser = self[interaction.user.id]
@@ -294,6 +299,26 @@ class TrainingManager:
         await interaction.respond(embed=status, view=view)
         await view.wait()
 
+################################################################################
+    async def trainee_status(self, interaction: Interaction) -> None:
+
+        log.info(
+            "Training",
+            f"Requesting trainee status for user {interaction.user.name} ({interaction.user.id})."
+        )
+
+        tuser = self[interaction.user.id]
+        if tuser is None:
+            if not await self._add_tuser(interaction, interaction.user):
+                return
+            tuser = self[interaction.user.id]
+
+        status = tuser.user_status()
+        view = TraineeStatusView(interaction.user, tuser)
+
+        await interaction.respond(embed=status, view=view)
+        await view.wait()
+        
 ################################################################################
     async def post_signup_message(self, interaction: Interaction, channel: TextChannel) -> None:
         

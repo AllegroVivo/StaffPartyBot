@@ -33,7 +33,7 @@ class Training(Cog):
     async def training_profile(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.training_manager.tuser_status(ctx.interaction)
+        await guild.training_manager.trainee_status(ctx.interaction)
 
 ################################################################################
     @trainees.command(
