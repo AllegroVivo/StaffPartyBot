@@ -199,7 +199,7 @@ class ReportManager:
             # anyway, so we aren't too worried about this.
             pass
         except Exception as ex:
-            log.critical("Core", f"Could not delete {xl_path} due to an unexpected error: {ex}")
+            log.error("Core", f"Could not delete {xl_path} due to an unexpected error: {ex}")
         else:
             log.info(
                 "Core",
