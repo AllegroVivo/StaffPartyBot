@@ -137,7 +137,8 @@ class SignUpMessage:
         }
 
         for training in self._manager.unmatched_trainings:
-            position_dict[training.position.name].append(training)
+            if training.trainee.availability:
+                position_dict[training.position.name].append(training)
 
         fields = []
         for position_name, trainings in position_dict.items():
@@ -147,8 +148,6 @@ class SignUpMessage:
             else:
                 for t in trainings:
                     if t.trainee.on_hiatus:
-                        continue
-                    if not t.trainee.availability:
                         continue
                     dc = (
                         "" if not t.trainee.data_centers 
