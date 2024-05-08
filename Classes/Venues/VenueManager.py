@@ -647,13 +647,9 @@ class VenueManager:
 
 ################################################################################
     async def venue_etiquette(self, interaction: Interaction) -> None:
-        
-        if self.__etiquette_file is None:
-            channel = await self.bot.fetch_channel(int(self.VENUE_ETIQUETTE.split("/")[-2]))
-            msg = await channel.fetch_message(int(self.VENUE_ETIQUETTE.split("/")[-1]))
-            self.__etiquette_file = await msg.attachments[0].to_file()
-        
-        await interaction.respond(file=self.__etiquette_file, delete_after=60)
+
+        msg = await self.guild.get_or_fetch_message(self.VENUE_ETIQUETTE)
+        await interaction.respond(file=await msg.attachments[0].to_file(), delete_after=60)
 
 ################################################################################
     async def bulk_update(self, interaction: Interaction) -> None:
