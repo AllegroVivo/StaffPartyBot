@@ -489,9 +489,12 @@ class Profile:
         
         view = ProfileUserMuteView(self)
         self.bot.add_view(view, message_id=self.post_message.id)
+
+        main_profile, availability, aboutme = self.compile()
+        embeds = [main_profile, availability] + ([aboutme] if aboutme else [])
         
         try:
-            await self.post_message.edit(view=view)
+            await self.post_message.edit(embeds=embeds, view=view)
         except NotFound:
             log.warning(
                 "Profiles",
