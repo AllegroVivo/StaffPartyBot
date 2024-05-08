@@ -12,7 +12,8 @@ from UI.Training import (
     TUserAdminStatusView,
     TUserStatusView,
     TraineeStatusView,
-    InternshipMatchingView
+    InternshipMatchingView,
+    VenueMatchView
 )
 from Utilities import (
     Utilities as U,
@@ -438,8 +439,10 @@ class TrainingManager:
         venues = self._matching_routine(*view.value)
         description = ""
         
+        v_list = []
         for v_id, score in venues:
             v = self.guild.venue_manager[v_id]
+            v_list.append(v)
             desc = '\n'.join(v.description)
             if len(desc) > 150:
                 desc = desc[:150] + "..."
@@ -451,11 +454,16 @@ class TrainingManager:
         report = U.make_embed(
             title="Internship Matching Results",
             description=description or "`No venues found.`",
+            footer_text=(
+                "Click one of the buttons below to express interest in a venue."
+            )
         )
-        
-        await interaction.respond(embed=report)
-        
+        view = VenueMatchView(interaction.user, v_list)
+
         log.info("Training", "Internship matching complete.")
+        
+        await interaction.respond(embed=report, view=view)
+        await view.wait()
 
 ################################################################################
     def _matching_routine(

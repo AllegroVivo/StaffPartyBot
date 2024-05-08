@@ -1141,6 +1141,57 @@ class Venue:
             await self._update_post_components(addl_attempt=True)
             
         log.info("Venues", "Post components updated successfully.")
-            
+
+################################################################################
+    async def notify_of_interest(self, interaction) -> None:
+        
+        user = interaction.user
+        notification = U.make_embed(
+            title="Interest in Venue",
+            description=(
+                "__**Good News!**__\n\n"
+                
+                "A new staff member is looking for some floor training\n"
+                "(internship) and has expressed interest in your venue!\n\n"
+                
+                f"Please contact {user.display_name} ({user.mention}) in DMs\n"
+                f"and coordinate with them for your next openings.\n\n"
+                
+                "*(This staff member should ideally be paired with a current\n"
+                "staff member of the same role and compensated as you see fit.)*"
+            ),
+            thumbnail_url=BotImages.GoodNews,
+        )
+        
+        for user in self.authorized_users:
+            if member := self.guild.parent.get_member(user.id):
+                try:
+                    await member.send(embed=notification)
+                except Exception as ex:
+                    log.error(
+                        "Venues",
+                        (
+                            f"Failed to send interest notification to user {user.id} "
+                            f"for venue {self.name} ({self.id}).\nError: {ex}"
+                        )
+                    )
+                else:
+                    log.info(
+                        "Venues",
+                        (
+                            f"Interest notification sent to user {user.display_name} "
+                            f"({user.id}) for venue {self.name} ({self.id})"
+                        )
+                    )
+                    
+        confirm = U.make_embed(
+            title="Interest Notification Sent",
+            description=(
+                "The venue has been notified of your interest.\n"
+                f"{U.draw_line(extra=20)}"
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
+
 ################################################################################
             

@@ -638,7 +638,6 @@ class VenueManager:
         for v in self.venues:
             if member in v.authorized_users:
                 if len(v.authorized_users) == 1:
-                    self._venues.remove(v)
                     await v.delete()
                     return True
                 else:

@@ -137,7 +137,7 @@ class SignUpMessage:
         }
 
         for training in self._manager.unmatched_trainings:
-            if training.trainee.availability:
+            if not training.trainee.on_hiatus and len(training.trainee.availability) != 0:
                 position_dict[training.position.name].append(training)
 
         fields = []
@@ -147,8 +147,6 @@ class SignUpMessage:
                 value = "`No trainees available.`\n"
             else:
                 for t in trainings:
-                    if t.trainee.on_hiatus:
-                        continue
                     dc = (
                         "" if not t.trainee.data_centers 
                         else f" - *({'/'.join([dc.abbreviation for dc in t.trainee.data_centers])})*"

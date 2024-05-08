@@ -18,5 +18,6 @@ from .TrainerDashboardButtonView import TrainerDashboardButtonView
 from .TrainerMessageButtonView import TrainerMessageButtonView
 from .TrainerSignUpSelectView import TrainerSignUpSelectView
 from .TrainingUpdateView import TrainingUpdateView
+from .VenueMatchView import VenueMatchView
 from .WeekdayTZSelectView import WeekdayTZSelectView
 ################################################################################
