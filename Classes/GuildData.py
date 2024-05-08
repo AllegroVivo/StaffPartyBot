@@ -278,7 +278,17 @@ class GuildData:
             log.info("Core", "Member found in cache.")
             return user
         
-        if member := await self._parent.fetch_member(user_id):
+        try:
+            member = await self._parent.fetch_member(user_id)
+        except NotFound:
+            pass
+        except Exception as ex:
+            log.error(
+                "Core",
+                f"Error fetching member {user_id}: {ex}"
+            )
+            return
+        else:
             log.info("Core", "Member fetched from Discord.")
             return member
         
