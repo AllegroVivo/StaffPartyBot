@@ -35,18 +35,6 @@ class ItineraryManager:
         await interaction.response.defer()
 
         all_venues = await self.bot.veni_client.get_all_venues(for_report=True)
-        # if region is None:
-        #     filtered_venues = all_venues
-        # else:
-        #     filtered_venues = [
-        #         venue for venue in all_venues
-        #         if venue.location.data_center.lower() in 
-        #         [
-        #             dc.proper_name.lower() 
-        #             for dc in GlobalDataCenter.data_centers_by_region(region)
-        #         ]
-        #     ]
-
         await self.bot.report_manager.itinerary_report(interaction, all_venues, region)
 
 ################################################################################
