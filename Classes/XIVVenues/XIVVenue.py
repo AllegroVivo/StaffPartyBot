@@ -58,7 +58,7 @@ class XIVVenue:
         self.sfw: bool = kwargs.pop("sfw")
         self.schedule: List[XIVScheduleComponent] = kwargs.pop("schedule")
         self.schedule_overrides: List[XIVScheduleOverride] = kwargs.pop("schedule_overrides")
-        self.managers: List[User] = kwargs.pop("managers")
+        self.managers: List[int] = kwargs.pop("managers")
         self.tags: List[str] = kwargs.pop("tags")
         self.approved: bool = kwargs.pop("approved")
         self.modified: Optional[datetime] = kwargs.pop("modified")
@@ -68,7 +68,7 @@ class XIVVenue:
         
 ################################################################################
     @classmethod
-    async def from_data(cls: Type[V], bot: StaffPartyBot, data: Dict[str, Any], for_report: bool) -> V:
+    def from_data(cls: Type[V], data: Dict[str, Any]) -> V:
 
         return cls(
             id=data["id"],
@@ -85,11 +85,7 @@ class XIVVenue:
             schedule_overrides=[
                 XIVScheduleOverride.from_data(x) for x in data.get("scheduleOverrides", [])
             ],
-            managers=[
-                m for m in 
-                [await bot.get_or_fetch_user(int(x)) for x in data["managers"]] 
-                if m is not None
-            ] if not for_report else [],
+            managers=[int(m) for m in data["managers"]],
             tags=data.get("tags", []),
             approved=data.get("approved", False),
             modified=(

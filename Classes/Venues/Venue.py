@@ -72,6 +72,7 @@ class Venue:
         "_mare_id",
         "_mare_pass",
         "_mutes",
+        "_xiv_id",
     )
 
 ################################################################################
@@ -79,6 +80,7 @@ class Venue:
         
         self._mgr: VenueManager = mgr
         self._id: str = venue_id
+        self._xiv_id: Optional[str] = kwargs.get("xiv_id", None)
         
         self._name: str = name
         self._description: List[str] = kwargs.get("description", [])
@@ -127,6 +129,7 @@ class Venue:
 
         self._mgr = mgr
         self._id = venue[0]
+        self._xiv_id = venue[12]
 
         self._name = venue[6]
         self._description = venue[7]
@@ -137,8 +140,8 @@ class Venue:
         self._hiring = venue[8]
         self._pending = venue[4]
 
-        self._location = VenueLocation.load(self, venue[12:20])
-        self._aag = VenueAtAGlance.load(self, venue[20:24])
+        self._location = VenueLocation.load(self, venue[13:21])
+        self._aag = VenueAtAGlance.load(self, venue[21:25])
         
         self._mutes = [
             m for m in
@@ -159,11 +162,11 @@ class Venue:
         self._urls = VenueURLs.load(
             self,
             {
-                "discord": venue[24],
-                "website": venue[25],
-                "banner": venue[26],
-                "logo": venue[27],
-                "app": venue[28],
+                "discord": venue[25],
+                "website": venue[26],
+                "banner": venue[27],
+                "logo": venue[28],
+                "app": venue[29],
             }
         )
         
@@ -645,6 +648,7 @@ class Venue:
                 return
             venue = results[0]
 
+        self._xiv_id = venue.id
         self._name: str = venue.name
         self._description: List[str] = venue.description.copy() if venue.description else []
 
@@ -657,10 +661,10 @@ class Venue:
         self._aag.update_from_xiv_venue(venue)
         self._urls.update_from_xiv_venue(venue)
 
-        managers = venue.managers.copy()
-        if interaction.user not in managers:
-            managers.append(interaction.user)
-        self._users: List[User] = managers
+        self._users: List[User] = [
+            await self.guild.get_or_fetch_user(user_id) 
+            for user_id in venue.managers
+        ]
         
         for s in self._schedule:
             s.delete()

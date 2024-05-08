@@ -108,6 +108,7 @@ class DatabaseBuilder(DBWorkerBranch):
             "v.mare_id,"
             "v.mare_pass,"
             "v.mute_list,"
+            "v.xivvenues_id,"
             "l.data_center,"
             "l.world,"
             "l.zone,"

@@ -232,11 +232,12 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE venues SET users = %s, positions = %s, pending = %s, "
             "post_url = %s, name = %s, description = %s, hiring = %s, "
-            "mare_id = %s, mare_pass = %s, mute_list = %s WHERE _id = %s;",
+            "mare_id = %s, mare_pass = %s, mute_list = %s, xivvenues_id = %s "
+            "WHERE _id = %s;",
             [u.id for u in venue.authorized_users], [p.id for p in venue.positions],
             venue.pending, venue.post_url, venue.name, venue.description,
             venue.hiring, venue.mare_id, venue.mare_password,
-            [u.id for u in venue.muted_users], venue.id
+            [u.id for u in venue.muted_users], venue._xiv_id, venue.id
         )
         
 ################################################################################

@@ -34,7 +34,7 @@ class ItineraryManager:
         
         await interaction.response.defer()
 
-        all_venues = await self.bot.veni_client.get_all_venues(for_report=True)
+        all_venues = await self.bot.veni_client.get_all_venues()
         await self.bot.report_manager.itinerary_report(interaction, all_venues, region)
 
 ################################################################################

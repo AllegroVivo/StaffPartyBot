@@ -699,12 +699,16 @@ class VenueManager:
             return
         
         msg = await interaction.followup.send("Please wait...")
+        payload = await self.bot.veni_client.get_all_venues()
         
         count = 0
         for venue in self.venues:
-            await venue.update_from_xiv_venue(interaction)
-            await venue._update_post_components()
-            count += 1
+            for vdata in payload:
+                if venue._xiv_id == vdata.id:
+                    await venue.update_from_xiv_venue(interaction, vdata)
+                    await venue._update_post_components()
+                    count += 1
+                    break
         
         await msg.delete()
         
