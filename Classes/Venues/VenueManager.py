@@ -648,7 +648,9 @@ class VenueManager:
 ################################################################################
     async def venue_etiquette(self, interaction: Interaction) -> None:
 
-        msg = await self.guild.get_or_fetch_message(self.VENUE_ETIQUETTE)
+        await interaction.response.defer()
+        
+        msg = await self.bot[955933227372122173].get_or_fetch_message(self.VENUE_ETIQUETTE)
         await interaction.respond(file=await msg.attachments[0].to_file(), delete_after=60)
 
 ################################################################################
