@@ -148,6 +148,8 @@ class SignUpMessage:
                 for t in trainings:
                     if t.trainee.on_hiatus:
                         continue
+                    if not t.trainee.availability:
+                        continue
                     dc = (
                         "" if not t.trainee.data_centers 
                         else f" - *({'/'.join([dc.abbreviation for dc in t.trainee.data_centers])})*"
