@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union, List
 
 import discord.utils
 from discord import Guild, User, Interaction, Message, NotFound, Member, Role
@@ -73,20 +73,19 @@ class GuildData:
     async def load_all(self, data: Dict[str, Any]) -> None:
         
         await self._logger.load()
-        
         await self._channel_mgr._load_all(data["channels"])
-        await self.begin_notify_of_bot_restart()
-        await self._role_mgr._load_all(data["roles"])
         
+        msgs = await self.begin_notify_of_bot_restart()
+        
+        await self._role_mgr._load_all(data["roles"])
         await self._pos_mgr._load_all(data)
         await self._venue_mgr._load_all(data)
         await self._training_mgr._load_all(data)
         await self._profile_mgr._load_all(data)
-        
         await self._job_mgr._load_all(data)
         await self._service_mgr._load_all(data)
         
-        await self.end_notify_of_bot_restart()
+        await self.end_notify_of_bot_restart(msgs)
         
 ################################################################################
     @property
@@ -423,7 +422,7 @@ class GuildData:
         await view.wait()
 
 ################################################################################
-    async def begin_notify_of_bot_restart(self) -> None:
+    async def begin_notify_of_bot_restart(self) -> List[Message]:
         
         log.info("Core", "Notifying of bot restart...")
         
@@ -441,9 +440,10 @@ class GuildData:
             )
         )
         
+        messages = []
         for ch in self._channel_mgr.notification_channels:
             try:
-                await ch.send(embed=notification)
+                messages.append(await ch.send(embed=notification))
             except NotFound:
                 log.warning("Core", f"Notification channel '{ch.id}' not found.")
                 pass
@@ -454,9 +454,11 @@ class GuildData:
                 )
             else:
                 log.info("Core", f"Bot restart notification sent to {ch.id}.")
+        
+        return messages
 
 ################################################################################
-    async def end_notify_of_bot_restart(self) -> None:
+    async def end_notify_of_bot_restart(self, messages: List[Message]) -> None:
         
         notification = U.make_embed(
             title="__Staff Party Bot Restarted!__",
@@ -471,7 +473,7 @@ class GuildData:
         
         for ch in self._channel_mgr.notification_channels:
             try:
-                await ch.send(embed=notification)
+                await ch.send(embed=notification, delete_after=30)
             except NotFound:
                 log.warning("Core", f"Notification channel '{ch.id}' not found. Removing.")
                 self._channel_mgr.notification_channels.remove(ch)
@@ -484,6 +486,15 @@ class GuildData:
                 )
             else:
                 log.info("Core", f"Bot restart notification sent to {ch.id}.")
+        
+        for msg in messages:
+            try:
+                await msg.delete()
+            except Exception as ex:
+                log.critical(
+                    "Core",
+                    f"Error deleting bot restart notification message {msg.id}: {ex}"
+                )
 
 ################################################################################
         
