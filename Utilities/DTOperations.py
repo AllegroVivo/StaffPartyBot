@@ -342,22 +342,28 @@ class DTOperations:
             
         today = datetime.now().date()
         py_tz = Utilities.TIMEZONE_OFFSETS[tz]
-        start_dt = py_tz.normalize(
-            datetime(
-                today.year,
-                today.month,
-                today.day,
-                start_time.hour,
-                start_time.minute
+        utc_tz = Utilities.TIMEZONE_OFFSETS[Timezone.GMT]
+        
+        start_dt = utc_tz.normalize(
+            py_tz.localize(
+                datetime(
+                    today.year,
+                    today.month,
+                    today.day,
+                    start_time.hour,
+                    start_time.minute
+                )
             )
         )
-        end_dt = py_tz.normalize(
-            datetime(
-                today.year,
-                today.month,
-                today.day,
-                end_time.hour,
-                end_time.minute
+        end_dt = utc_tz.normalize(
+            py_tz.localize(
+                datetime(
+                    today.year,
+                    today.month,
+                    today.day,
+                    end_time.hour,
+                    end_time.minute
+                )
             )
         )
 
