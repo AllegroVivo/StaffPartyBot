@@ -241,7 +241,7 @@ class Profile:
             f"User {interaction.user.name} ({interaction.user.id}) is assigning an image"
         )
         
-        if img_type is ImageType.AdditionalImage and len(self._images.additional) >= 10:
+        if img_type is ImageType.AdditionalImage and len(self._images.additional) >= 3:
             log.warning(
                 "Profiles",
                 f"User {interaction.user.name} ({interaction.user.id}) attempted to assign too many images"
