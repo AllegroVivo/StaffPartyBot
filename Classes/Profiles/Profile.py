@@ -75,6 +75,8 @@ class Profile:
         "_images",
     )
 
+    MAX_ADDL_IMAGES = 3
+
 ################################################################################
     def __init__(self, mgr: ProfileManager, user: User, **kwargs) -> None:
         
@@ -241,7 +243,7 @@ class Profile:
             f"User {interaction.user.name} ({interaction.user.id}) is assigning an image"
         )
         
-        if img_type is ImageType.AdditionalImage and len(self._images.additional) >= 3:
+        if img_type is ImageType.AdditionalImage and len(self._images.additional) >= self.MAX_ADDL_IMAGES:
             log.warning(
                 "Profiles",
                 f"User {interaction.user.name} ({interaction.user.id}) attempted to assign too many images"
