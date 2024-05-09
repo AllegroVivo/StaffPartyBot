@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
 from UI.Common import FroggeView
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import TUser
@@ -83,7 +82,7 @@ class ModifyScheduleButton(Button):
 
     async def callback(self, interaction: Interaction) -> None:
         await self.view.tuser.set_availability(interaction)
-        await edit_message_helper(interaction, embed=self.view.tuser.user_status())
+        await self.view.edit_message_helper(interaction, embed=self.view.tuser.user_status())
 
 ################################################################################
 class DataCenterButton(Button):
@@ -99,7 +98,7 @@ class DataCenterButton(Button):
 
     async def callback(self, interaction: Interaction) -> None:
         await self.view.tuser.set_data_centers(interaction)
-        await edit_message_helper(interaction, embed=self.view.tuser.admin_status())
+        await self.view.edit_message_helper(interaction, embed=self.view.tuser.admin_status())
 
 ################################################################################
 class HiatusToggleButton(Button):
@@ -125,7 +124,7 @@ class HiatusToggleButton(Button):
         await self.view.tuser.toggle_hiatus(interaction)
         self._set_style(self.view.tuser.on_hiatus)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.tuser.user_status(), view=self.view
         )
 
@@ -144,7 +143,7 @@ class TogglePingsButton(Button):
     async def callback(self, interaction: Interaction) -> None:
         self.view.tuser.toggle_pings()
         await interaction.respond("** **", delete_after=0.1)
-        await edit_message_helper(interaction, embed=self.view.tuser.user_status())
+        await self.view.edit_message_helper(interaction, embed=self.view.tuser.user_status())
         
 ################################################################################
 class AddTrainingButton(Button):
@@ -161,7 +160,7 @@ class AddTrainingButton(Button):
         await self.view.tuser.add_training(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(interaction, embed=self.view.tuser.user_status(), view=self.view)
+        await self.view.edit_message_helper(interaction, embed=self.view.tuser.user_status(), view=self.view)
 
 ################################################################################
 class RemoveTrainingButton(Button):
@@ -178,7 +177,7 @@ class RemoveTrainingButton(Button):
         await self.view.tuser.remove_training(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(interaction, embed=self.view.tuser.user_status(), view=self.view)
+        await self.view.edit_message_helper(interaction, embed=self.view.tuser.user_status(), view=self.view)
 
 ################################################################################
 class AddQualificationButton(Button):
@@ -196,7 +195,7 @@ class AddQualificationButton(Button):
         await self.view.tuser.add_qualification(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction,
             embed=self.view.tuser.user_status(),
             view=self.view
@@ -217,7 +216,7 @@ class ModifyQualificationButton(Button):
         await self.view.tuser.modify_qualification(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction,
             embed=self.view.tuser.user_status(),
             view=self.view
@@ -238,7 +237,7 @@ class RemoveQualificationButton(Button):
         await self.view.tuser.remove_qualification(interaction)
         self.view.set_buttons()
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction,
             embed=self.view.tuser.user_status(),
             view=self.view

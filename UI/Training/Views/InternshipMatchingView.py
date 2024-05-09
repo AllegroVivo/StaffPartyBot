@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import RPLevel, NSFWPreference, VenueSize, VenueForumTag
-
-if TYPE_CHECKING:
-    pass
+from Utilities import RPLevel, NSFWPreference, VenueForumTag
 ################################################################################
 
 __all__ = ("InternshipMatchingView",)

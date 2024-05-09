@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import BackgroundCheck, BGCheckVenue
@@ -75,7 +74,7 @@ class AddVenueButton(FroggeButton):
         if len(self.view.bg_check.venues) > 0:
             self.view.children[2].disabled = False
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.bg_check.status(), view=self.view
         )
         
@@ -101,7 +100,7 @@ class RemoveVenueButton(FroggeButton):
         await self.view.bg_check.remove_venue_experience(interaction)
         self.set_style(self.view.bg_check.venues)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.bg_check.status(), view=self.view
         )
         
@@ -122,7 +121,7 @@ class SubmitAndAgreeButton(FroggeButton):
         await self.view.bg_check.submit(interaction, True)
         self.view.complete = True
 
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
         await self.view.stop()  # type: ignore
 
 ################################################################################
@@ -142,7 +141,7 @@ class SubmitAndRejectButton(FroggeButton):
         await self.view.bg_check.submit(interaction, False)
         self.view.complete = True
 
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
         await self.view.stop()  # type: ignore
 
 ################################################################################

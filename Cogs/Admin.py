@@ -338,7 +338,7 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].bulk_update_menu(ctx.interaction)
         
-################################################################################      
+################################################################################     
 def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Admin(bot))

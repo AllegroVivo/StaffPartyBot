@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle, SelectOption
 from discord.ui import Select, Button
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import ProfileImages, PAdditionalImage
@@ -51,7 +50,7 @@ class AdditionalImageSelect(Select):
         self.view.value = self.values[0]
         self.view.complete = True
         
-        await edit_message_helper(interaction)
+        await self.view.edit_message_helper(interaction)
         await self.view.stop()  # type: ignore
 
 ################################################################################
@@ -68,7 +67,7 @@ class EditCaptionButton(Button):
     async def callback(self, interaction: Interaction):
         await self.view.image.set_caption(interaction)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction,
             embed=self.view.images._manage_additional_embed(self.view.image),
             view=self.view

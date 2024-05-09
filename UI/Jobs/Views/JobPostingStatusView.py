@@ -7,7 +7,7 @@ from discord import User
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import Utilities as U, edit_message_helper
+from Utilities import Utilities as U
 
 if TYPE_CHECKING:
     from Classes import JobPosting, Position
@@ -73,7 +73,7 @@ class PositionButton(FroggeButton):
         await self.view.posting.set_position(interaction)
         self.set_style(self.view.posting.position)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.posting.status(), view=self.view
         )
         
@@ -94,7 +94,7 @@ class SalaryButton(FroggeButton):
         await self.view.posting.set_salary(interaction)
         self.set_style(self.view.posting.salary)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.posting.status(), view=self.view
         )
         
@@ -115,7 +115,7 @@ class PostingTypeButton(FroggeButton):
         await self.view.posting.set_posting_type(interaction)
         self.set_style(self.view.posting.post_type)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.posting.status(), view=self.view
         )
         
@@ -136,7 +136,7 @@ class HoursButton(FroggeButton):
         await self.view.posting.set_schedule(interaction)
         self.set_style(self.view.posting.end_time)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.posting.status(), view=self.view
         )
         
@@ -154,7 +154,7 @@ class PostMessageButton(FroggeButton):
         
     async def callback(self, interaction):
         await self.view.posting.create_post(interaction)
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.posting.status()
         )
         

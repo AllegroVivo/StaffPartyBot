@@ -6,7 +6,7 @@ from discord import Interaction, SelectOption, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel, RequirementLevel
+from Utilities import RequirementLevel
 
 if TYPE_CHECKING:
     from Classes import Training

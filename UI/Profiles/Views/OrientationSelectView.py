@@ -7,7 +7,7 @@ from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
 from UI.Profiles import CustomOrientationModal
-from Utilities import Orientation, Pronoun, edit_message_helper
+from Utilities import Orientation
 
 if TYPE_CHECKING:
     from Classes import ProfileAtAGlance

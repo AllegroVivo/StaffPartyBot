@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from discord import Interaction
 from discord.ui import Modal
 ################################################################################
 
@@ -17,3 +18,10 @@ class FroggeModal(Modal):
         self.value: Optional[Any] = None
 
 ################################################################################
+    @staticmethod
+    async def dummy_response(interaction: Interaction) -> None:
+        
+        await interaction.respond("** **", delete_after=0.1)
+        
+################################################################################
+        

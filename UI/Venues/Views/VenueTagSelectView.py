@@ -4,7 +4,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import VenueForumTag, edit_message_helper
+from Utilities import VenueForumTag
 ################################################################################
 
 __all__ = ("VenueTagSelectView",)
@@ -37,7 +37,7 @@ class VenueTagSelect(Select):
         self.view.value = [VenueForumTag(int(t)) for t in self.values]
         self.view.complete = True
         
-        await edit_message_helper(interaction, embed=self.view.venue.status())
+        await self.view.edit_message_helper(interaction, embed=self.view.venue.status())
         await self.view.stop()  # type: ignore
     
 ################################################################################

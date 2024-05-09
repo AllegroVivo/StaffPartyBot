@@ -26,7 +26,7 @@ from UI.Profiles import (
 from UI.Training import TimeSelectView, WeekdayTZSelectView
 from UI.Venues import PositionSelectView
 from Utilities import Utilities as U, NS, MalformedURLError
-from Utilities import log
+from Utilities import log, DTOperations
 from .PAvailability import PAvailability
 from .ProfileSection import ProfileSection
 
@@ -559,77 +559,11 @@ class ProfileDetails(ProfileSection):
             f"Setting availability for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
         )
 
-        footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
-        status = U.make_embed(
-            title="Set Availability",
-            description=(
-                "Please select the appropriate day from the initial selector, "
-                "followed by your timezone, and finally available time frame.\n\n"
-
-                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                f"{U.draw_line(extra=46)}"
-            ),
-            footer_text=footer
-        )
-        view = WeekdayTZSelectView(interaction.user)
-
-        await interaction.respond(embed=status, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            log.debug("Profiles", "WeekdayTZSelectView was not completed.")
+        result = await DTOperations.collect_availability(interaction)
+        if result is None:
             return
-
-        # weekday, tz = view.value
-        weekday = view.value
         
-        log.info("Profiles", f"Selected weekday: {weekday.proper_name}.")
-
-        prompt = U.make_embed(
-            title="Set Availability Start",
-            description=(
-                f"Please select the beginning of your availability "
-                f"for `{weekday.proper_name}`...\n\n"
-
-                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-            ),
-            footer_text=footer
-        )
-        view = TimeSelectView(interaction.user)
-
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            log.debug("Profiles", "Starting TimeSelectView was not completed.")
-            return
-
-        start_time = view.value if view.value != -1 else None
-        end_time = None
-        
-        log.debug("Profiles", f"Selected start time: {start_time}.")
-
-        if start_time is not None:
-            prompt = U.make_embed(
-                title="Set Availability End",
-                description=(
-                    f"Please select the end of your availability "
-                    f"for `{weekday.proper_name}`...\n\n"
-
-                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                ),
-                footer_text=footer
-            )
-            view = TimeSelectView(interaction.user)
-
-            await interaction.respond(embed=prompt, view=view)
-            await view.wait()
-
-            if not view.complete or view.value is False:
-                log.debug("Profiles", "Ending TimeSelectView was not completed.")
-                return
-
-            end_time = view.value
+        tz, weekday, start_time, end_time = result
 
         for i, a in enumerate(self.availability):
             if a.day == weekday:
@@ -646,7 +580,14 @@ class ProfileDetails(ProfileSection):
                     f"{availability.end_time}' on {availability.day.proper_name} "
                     f"for {self.name} ({self.parent.user.name}: {self.parent.user_id})."
                 )
-            
+            )
+        else:
+            log.info(
+                "Profiles",
+                (
+                    f"Availability cleared for {self.name} ({self.parent.user.name}: "
+                    f"{self.parent.user_id})."
+                )
             )
         
 ################################################################################

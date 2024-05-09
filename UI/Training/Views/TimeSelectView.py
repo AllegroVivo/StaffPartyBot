@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import os
-
-import pytz
 from datetime import time
-from dotenv import load_dotenv
 
 from discord import Interaction, User
 from discord.ui import Select
+from dotenv import load_dotenv
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import Utilities as U, Hours, Minutes, Timezone
+from Utilities import Hours, Minutes
 ################################################################################
 
 __all__ = ("TimeSelectView",)

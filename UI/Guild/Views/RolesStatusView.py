@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 from discord import User, Role
 
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper, RoleType
+from Utilities import RoleType
 
 if TYPE_CHECKING:
     from Classes import RoleManager
@@ -51,7 +51,7 @@ class TrainerRoleButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.TrainerMain)
         self.set_style(self.view.roles.trainer_main)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         
@@ -72,7 +72,7 @@ class TrainerPendingRoleButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.TrainerPending)
         self.set_style(self.view.roles.trainer_main)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         
@@ -93,7 +93,7 @@ class TrainerHiatusRoleButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.TrainingHiatus)
         self.set_style(self.view.roles.trainer_hiatus)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         
@@ -114,7 +114,7 @@ class StaffMainRoleButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.StaffMain)
         self.set_style(self.view.roles.staff_main)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         
@@ -135,7 +135,7 @@ class StaffUnvalidatedRoleButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.StaffNotValidated)
         self.set_style(self.view.roles.staff_unvalidated)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         
@@ -156,7 +156,7 @@ class VenueManagementButton(FroggeButton):
         await self.view.roles.set_role(interaction, RoleType.VenueManagement)
         self.set_style(self.view.roles.venue_management)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
         )
         

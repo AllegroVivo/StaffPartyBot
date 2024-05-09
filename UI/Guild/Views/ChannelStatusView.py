@@ -7,7 +7,7 @@ from discord.abc import GuildChannel
 from discord.ui import Button, View
 
 from UI.Common import CloseMessageButton, FroggeButton, FroggeView
-from Utilities import edit_message_helper, ChannelPurpose
+from Utilities import ChannelPurpose
 
 if TYPE_CHECKING:
     from Classes import ChannelManager
@@ -55,7 +55,7 @@ class LogChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.LogStream)
         self.set_style(self.view.channels.log_channel)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
         
@@ -78,7 +78,7 @@ class ProfilesChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Profiles)
         self.set_style(self.view.channels.profiles_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
 
@@ -100,7 +100,7 @@ class VenuesChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Venues)
         self.set_style(self.view.channels.venues_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
 
@@ -122,7 +122,7 @@ class TempJobsChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.TempJobs)
         self.set_style(self.view.channels.temp_job_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
 
@@ -144,7 +144,7 @@ class PermJobsChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.PermJobs)
         self.set_style(self.view.channels.perm_job_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
 
@@ -166,7 +166,7 @@ class ServicesButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Services)
         self.set_style(self.view.channels.services_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
         
@@ -188,7 +188,7 @@ class WelcomeChannelButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.Welcome)
         self.set_style(self.view.channels.welcome_channel)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
         
@@ -210,7 +210,7 @@ class BotNotifyChannelsButton(FroggeButton):
         await self.view.channels.set_channel(interaction, ChannelPurpose.BotNotify)
         self.set_style(self.view.channels.notification_channels)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view
         )
         

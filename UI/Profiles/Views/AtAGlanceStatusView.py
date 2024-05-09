@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional, Any, Union
 from discord import Interaction, User
 
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import ProfileAtAGlance
@@ -52,7 +51,7 @@ class GenderPronounButton(FroggeButton):
         await self.view.aag.set_gender(interaction)
         self.set_style(self.view.aag.gender)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=self.view.aag.status(),
             view=self.view
@@ -75,7 +74,7 @@ class RaceClanButton(FroggeButton):
         await self.view.aag.set_raceclan(interaction)
         self.set_style(self.view.aag.race)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=self.view.aag.status(), 
             view=self.view
@@ -98,7 +97,7 @@ class OrientationButton(FroggeButton):
         await self.view.aag.set_orientation(interaction)
         self.set_style(self.view.aag.orientation)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=self.view.aag.status(),
             view=self.view
@@ -178,7 +177,7 @@ class HomeRegionButton(FroggeButton):
         await self.view.aag.set_data_centers(interaction)
         self.set_style(self.view.aag.data_centers)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.aag.status(), view=self.view
         )
         

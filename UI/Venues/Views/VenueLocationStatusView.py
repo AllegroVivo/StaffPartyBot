@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Any
 
 from discord import Interaction, User, ButtonStyle
-from discord.ui import Button
 
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper, DataCenter, GameWorld, HousingZone
+from Utilities import DataCenter, GameWorld, HousingZone
 
 if TYPE_CHECKING:
     from Classes import VenueLocation
@@ -54,7 +53,7 @@ class DataCenterButton(FroggeButton):
         await self.view.location.set_data_center(interaction)
         self.set_style(self.view.location.data_center)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
@@ -75,7 +74,7 @@ class WorldButton(FroggeButton):
         await self.view.location.set_world(interaction)
         self.set_style(self.view.location.world)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
@@ -96,7 +95,7 @@ class ZoneButton(FroggeButton):
         await self.view.location.set_zone(interaction)
         self.set_style(self.view.location.zone)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
@@ -121,7 +120,7 @@ class SubdivisionToggleButton(FroggeButton):
         await self.view.location.toggle_subdivision(interaction)
         self.set_style(self.view.location.subdivision)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
         
@@ -142,7 +141,7 @@ class WardButton(FroggeButton):
         await self.view.location.set_location_element(interaction, "Ward")
         self.set_style(self.view.location.ward)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
@@ -163,7 +162,7 @@ class PlotButton(FroggeButton):
         await self.view.location.set_location_element(interaction, "Plot")
         self.set_style(self.view.location.plot)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
 
@@ -184,7 +183,7 @@ class ApartmentButton(FroggeButton):
         await self.view.location.set_location_element(interaction, "Apartment")
         self.set_style(self.view.location.apartment)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
         
@@ -205,7 +204,7 @@ class RoomButton(FroggeButton):
         await self.view.location.set_location_element(interaction, "Room")
         self.set_style(self.view.location.room)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.location.status(), view=self.view
         )
         

@@ -6,10 +6,9 @@ from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
 from UI.Common import FroggeView
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import TUser, Venue
+    from Classes import Venue
 ################################################################################
 
 __all__ = ("VenueMatchView",)

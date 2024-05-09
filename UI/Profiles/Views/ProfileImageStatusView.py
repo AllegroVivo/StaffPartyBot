@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional, List
 from discord import Interaction, User
 
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import ProfileImages, PAdditionalImage
@@ -52,7 +51,7 @@ class RemoveThumbnailButton(FroggeButton):
         self.set_style(images.thumbnail)
         self.disabled = images.thumbnail is None
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=images.status(),
             view=self.view
@@ -79,7 +78,7 @@ class RemoveMainImageButton(FroggeButton):
         self.set_style(images.thumbnail)
         self.disabled = images.main_image is None
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=images.status(),
             view=self.view
@@ -105,7 +104,7 @@ class PaginateAdditionalImagesButton(FroggeButton):
 
         self.disabled = len(images.additional) == 0
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=images.status(),
             view=self.view

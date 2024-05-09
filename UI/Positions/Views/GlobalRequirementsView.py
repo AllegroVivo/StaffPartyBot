@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import PositionManager
@@ -65,7 +64,7 @@ class RemoveRequirementButton(Button):
     async def callback(self, interaction: Interaction):
         await self.view.manager.remove_global_requirement(interaction)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction=interaction,
             embed=self.view.manager.global_requirements_status(),
             view=self.view

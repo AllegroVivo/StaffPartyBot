@@ -6,7 +6,7 @@ from discord import User, ButtonStyle, Role
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper, FroggeColor
+from Utilities import FroggeColor
 
 if TYPE_CHECKING:
     from Classes import HireableService
@@ -101,7 +101,7 @@ class RoleButton(FroggeButton):
         await self.view.service.set_role(interaction)
         self.set_style(self.view.service.role)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.service.status(), view=self.view
         )
         

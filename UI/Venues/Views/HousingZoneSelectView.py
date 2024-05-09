@@ -4,7 +4,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import HousingZone, edit_message_helper
+from Utilities import HousingZone
 ################################################################################
 
 __all__ = ("HousingZoneSelectView",)
@@ -37,7 +37,7 @@ class HousingZoneSelect(Select):
         self.view.value = HousingZone(int(self.values[0]))
         self.view.complete = True
         
-        await edit_message_helper(interaction)
+        await self.view.edit_message_helper(interaction)
         await self.view.stop()  # type: ignore
     
 ################################################################################

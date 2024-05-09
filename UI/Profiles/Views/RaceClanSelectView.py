@@ -7,7 +7,7 @@ from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
 from UI.Profiles import CustomRaceClanModal, CustomClanModal
-from Utilities import Race, Clan, edit_message_helper
+from Utilities import Race, Clan
 
 if TYPE_CHECKING:
     from Classes import ProfileAtAGlance
@@ -66,7 +66,7 @@ class RaceSelect(Select):
         self.disabled = True
         self.view.add_item(ClanSelect(response))
 
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
 
 ################################################################################
 class ClanSelect(Select):

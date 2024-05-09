@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import Profile

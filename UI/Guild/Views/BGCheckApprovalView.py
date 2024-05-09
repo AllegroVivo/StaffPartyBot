@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from discord import ButtonStyle
+from discord import ButtonStyle, Interaction
 from discord.ui import Button, View
-
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import BackgroundCheck
@@ -26,7 +24,19 @@ class BGCheckApprovalView(View):
         for btn in button_list:
             if not self.bg_check.approved:
                 self.add_item(btn)
-        
+
+################################################################################
+    @staticmethod
+    async def edit_message_helper(interaction: Interaction, *args, **kwargs) -> None:
+    
+        try:
+            await interaction.message.edit(*args, **kwargs)
+        except:
+            try:
+                await interaction.edit_original_response(*args, **kwargs)
+            except:
+                print("Edit Message Helper FAILED")
+
 ################################################################################
 class ApproveButton(Button):
     
@@ -42,7 +52,7 @@ class ApproveButton(Button):
         
     async def callback(self, interaction):
         await self.view.bg_check.approve(interaction.user)
-        await edit_message_helper(interaction, view=None)
+        await self.view.edit_message_helper(interaction, view=None)
         self.view.stop()
         
 ################################################################################

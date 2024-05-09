@@ -4,7 +4,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import GameWorld, edit_message_helper, DataCenter
+from Utilities import GameWorld, DataCenter
 ################################################################################
 
 __all__ = ("HomeWorldSelectView",)
@@ -37,7 +37,7 @@ class HomeWorldSelect(Select):
         self.view.value = GameWorld(int(self.values[0]))
         self.view.complete = True
         
-        await edit_message_helper(interaction)
+        await self.view.edit_message_helper(interaction)
         await self.view.stop()  # type: ignore
     
 ################################################################################

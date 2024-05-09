@@ -7,7 +7,6 @@ from discord.ui import Button
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import Position, GuildData
@@ -104,7 +103,7 @@ class PositionRemoveReqButton(Button):
         await self.view.position.remove_requirement(interaction)
         self.view.set_button_style()
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.position.status(), view=self.view
         )
         
@@ -125,7 +124,7 @@ class PositionRoleButton(FroggeButton):
         await self.view.position.edit_role(interaction)
         self.set_style(self.view.position.linked_role)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.position.status(), view=self.view
         )
         

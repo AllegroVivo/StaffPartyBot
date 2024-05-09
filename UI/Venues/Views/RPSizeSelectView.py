@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from discord import Interaction, SelectOption, User
+from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel, VenueSize, edit_message_helper
+from Utilities import VenueSize
 
 if TYPE_CHECKING:
     from Classes import Venue
@@ -44,7 +44,7 @@ class RPSizeSelect(Select):
         self.view.value = VenueSize(int(self.values[0]))
         self.view.complete = True
         
-        await edit_message_helper(interaction, embed=self.view.venue.status())
+        await self.view.edit_message_helper(interaction, embed=self.view.venue.status())
         await self.view.stop()  # type: ignore
     
 ################################################################################

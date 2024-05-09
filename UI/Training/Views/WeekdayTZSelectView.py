@@ -4,7 +4,7 @@ from discord import Interaction, User
 from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
-from Utilities import Weekday, Timezone, edit_message_helper
+from Utilities import Weekday, Timezone
 ################################################################################
 
 __all__ = ("WeekdayTZSelectView",)

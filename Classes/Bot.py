@@ -7,7 +7,7 @@ from discord import Attachment, Bot, TextChannel, NotFound
 from discord.abc import GuildChannel
 from dotenv import load_dotenv
 
-from Utilities import Utilities as U, log
+from Utilities import log
 from Utilities.Database import Database
 from .GuildManager import GuildManager
 from .ReportManager import ReportManager

@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from discord import Interaction, User, ButtonStyle
 
-from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
-    from Classes import BackgroundCheck, BGCheckVenue
+    from Classes import BackgroundCheck
 ################################################################################
 
 __all__ = ("ApproveBGCheckView",)
@@ -46,7 +44,7 @@ class AcceptBGCheckButton(FroggeButton):
         await self.view.bg_check.approve()
         self.view.complete = True
         
-        await edit_message_helper(interaction, view=None)
+        await self.view.edit_message_helper(interaction, view=None)
         await self.view.stop()  # type: ignore
 
 ################################################################################

@@ -1,18 +1,19 @@
 from __future__ import annotations
+
 from datetime import time
+
 from discord import Interaction, User
 from discord.ui import Select
-import pytz
 
 from UI.Common import FroggeView, CloseMessageButton
 from Utilities import (
     Utilities as U,
     Weekday,
-    edit_message_helper,
-    Timezone, 
+    Timezone,
     Hours,
     Minutes
 )
+
 ################################################################################
 
 __all__ = ("ScheduleOpenSelectView",)
@@ -52,7 +53,7 @@ class WeekdaySelect(Select):
         self.placeholder = self.view.weekday.proper_name
         self.disabled = True
         
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
     
 ################################################################################
 class TimezoneSelect(Select):
@@ -75,7 +76,7 @@ class TimezoneSelect(Select):
         self.placeholder = self.view.timezone.proper_name
         self.disabled = True
 
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
         
 ################################################################################
 class HourSelect(Select):
@@ -98,7 +99,7 @@ class HourSelect(Select):
         self.placeholder = self.view.hour.proper_name
         self.disabled = True
         
-        await edit_message_helper(interaction, view=self.view)
+        await self.view.edit_message_helper(interaction, view=self.view)
         
 ################################################################################
 class MinuteSelect(Select):
@@ -122,7 +123,7 @@ class MinuteSelect(Select):
         )
         self.view.complete = True
         
-        await edit_message_helper(interaction)
+        await self.view.edit_message_helper(interaction)
         await self.view.stop()  # type: ignore
         
 ################################################################################

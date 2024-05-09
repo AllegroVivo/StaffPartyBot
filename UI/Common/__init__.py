@@ -6,5 +6,6 @@ from .FroggeButton import FroggeButton
 from .FroggeModal import FroggeModal
 from .FroggeView import FroggeView
 from .Frogginator import Frogginator
+from .TimezoneSelectView import TimezoneSelectView
 from .YesNoView import YesNoView
 ################################################################################

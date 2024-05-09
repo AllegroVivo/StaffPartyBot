@@ -6,7 +6,6 @@ from discord import Interaction, User, ButtonStyle
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper
 
 if TYPE_CHECKING:
     from Classes import ProfileDetails, Position, PAvailability
@@ -149,7 +148,7 @@ class PositionsButton(FroggeButton):
         await self.view.details.set_positions(interaction)
         self.set_style(self.view.details.positions)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.details.status(), view=self.view
         )
         
@@ -170,7 +169,7 @@ class SetAvailabilityButton(FroggeButton):
         await self.view.details.set_availability(interaction)
         self.set_style(self.view.details.availability)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.details.status(), view=self.view
         )
         

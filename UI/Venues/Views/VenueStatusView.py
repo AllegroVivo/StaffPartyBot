@@ -7,7 +7,7 @@ from discord.ui import Button
 
 from Assets import BotEmojis
 from UI.Common import FroggeView, CloseMessageButton, FroggeButton
-from Utilities import edit_message_helper, RPLevel, VenueSize
+from Utilities import RPLevel
 
 if TYPE_CHECKING:
     from Classes import Venue, Position, VenueHours, VenueTag
@@ -100,7 +100,7 @@ class RPLevelButton(FroggeButton):
         await self.view.venue.set_rp_level(interaction)
         self.set_style(self.view.venue.rp_level)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
 
@@ -124,7 +124,7 @@ class NSFWToggleButton(FroggeButton):
         await self.view.venue.toggle_nsfw(interaction)
         self._set_style(self.view.venue.nsfw)
 
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
 
@@ -145,7 +145,7 @@ class VenueTagsButton(FroggeButton):
         await self.view.venue.set_tags(interaction)       
         self.set_style(self.view.venue.tags)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -166,7 +166,7 @@ class SetScheduleButton(FroggeButton):
         await self.view.venue.set_schedule(interaction)
         self.set_style(self.view.venue.schedule)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
 
@@ -187,7 +187,7 @@ class LocationButton(FroggeButton):
         await self.view.venue.set_location(interaction)
         self.set_style(self.view.venue.location.format())
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
 
@@ -214,7 +214,7 @@ class ToggleHiringButton(Button):
             BotEmojis.Check if self.view.venue.hiring else BotEmojis.ThumbsDown
         )
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -235,7 +235,7 @@ class LogoButton(FroggeButton):
         await self.view.venue.set_logo(interaction)
         self.set_style(self.view.venue.logo_url)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -256,7 +256,7 @@ class SetPositionsButton(FroggeButton):
         await self.view.venue.set_positions(interaction)
         self.set_style(self.view.venue.positions)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -277,7 +277,7 @@ class DiscordURLButton(FroggeButton):
         await self.view.venue.set_discord_url(interaction)
         self.set_style(self.view.venue.discord_url)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -298,7 +298,7 @@ class WebsiteURLButton(FroggeButton):
         await self.view.venue.set_website_url(interaction)
         self.set_style(self.view.venue.website_url)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -319,7 +319,7 @@ class RemoveManagerButton(FroggeButton):
         await self.view.venue.remove_authorized_user(interaction)
         self.set_style(self.view.venue.authorized_users)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
             
@@ -340,7 +340,7 @@ class ApplicationURLButton(FroggeButton):
         await self.view.venue.set_application_url(interaction)
         self.set_style(self.view.venue.application_url)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status(), view=self.view
         )
         
@@ -374,7 +374,7 @@ class PostVenueButton(Button):
 
     async def callback(self, interaction):
         await self.view.venue.post(interaction, None)
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status()
         )
 
@@ -395,7 +395,7 @@ class UpdateVenueButton(Button):
         await interaction.response.defer()
         await self.view.venue.update_from_xiv_venue(interaction)
         
-        await edit_message_helper(
+        await self.view.edit_message_helper(
             interaction, embed=self.view.venue.status()
         )
         

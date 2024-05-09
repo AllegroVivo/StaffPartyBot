@@ -7,7 +7,7 @@ from discord.ui import Select
 
 from UI.Common import FroggeView, CloseMessageButton
 from UI.Profiles import CustomGenderModal
-from Utilities import Gender, Pronoun, edit_message_helper
+from Utilities import Gender, Pronoun
 
 if TYPE_CHECKING:
     from Classes import ProfileAtAGlance
@@ -64,7 +64,7 @@ class GenderSelect(Select):
         
         self.view.add_item(PronounSelect())
 
-        await edit_message_helper(interaction=interaction, view=self.view)
+        await self.view.edit_message_helper(interaction=interaction, view=self.view)
 
 ################################################################################
 class PronounSelect(Select):
@@ -84,7 +84,7 @@ class PronounSelect(Select):
         self.view.complete = True
 
         await interaction.response.edit_message()
-        await edit_message_helper(interaction, embed=self.view.aag.status())
+        await self.view.edit_message_helper(interaction, embed=self.view.aag.status())
 
         await self.view.stop()  # type: ignore
 

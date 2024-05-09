@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from discord import Interaction, SelectOption, User, ButtonStyle
+from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
-from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel
+from UI.Common import FroggeView
 
 if TYPE_CHECKING:
     from Classes import TUser
