@@ -49,6 +49,8 @@ class GuildData:
     #     "_service_mgr",
     #     "_itinerary_mgr",
     # )
+    
+    RESTART_TIME = 5  # minutes
 
 ################################################################################
     def __init__(self, bot: StaffPartyBot, parent: Guild):
@@ -436,7 +438,7 @@ class GuildData:
         
         log.info("Core", "Notifying of bot restart...")
         
-        ready_time = datetime.now() + timedelta(minutes=3)
+        ready_time = datetime.now() + timedelta(minutes=self.RESTART_TIME)
         notification = U.make_embed(
             title="__Staff Party Bot Restarting!__",
             description=(
