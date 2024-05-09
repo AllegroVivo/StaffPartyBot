@@ -342,7 +342,7 @@ class DTOperations:
             
         today = datetime.now().date()
         py_tz = Utilities.TIMEZONE_OFFSETS[tz]
-        start_dt = py_tz.localize(
+        start_dt = py_tz.normalize(
             datetime(
                 today.year,
                 today.month,
@@ -351,7 +351,7 @@ class DTOperations:
                 start_time.minute
             )
         )
-        end_dt = py_tz.localize(
+        end_dt = py_tz.normalize(
             datetime(
                 today.year,
                 today.month,
