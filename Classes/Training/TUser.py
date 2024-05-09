@@ -26,7 +26,8 @@ from Utilities import (
     GlobalDataCenter,
     log,
     Weekday,
-    RoleType
+    RoleType,
+    DTOperations
 )
 from .BackgroundCheck import BackgroundCheck
 from .Qualification import Qualification
@@ -470,79 +471,12 @@ class TUser:
             "Training",
             f"TUser {self.name} ({self.user_id}) is setting availability."
         )
-        
-        footer = "Current Time EST: " + datetime.now(pytz.timezone("US/Eastern")).strftime("%I:%M %p")
-        status = U.make_embed(
-            title="Set Availability",
-            description=(
-                "Please select the appropriate day from the initial selector, "
-                "followed by your timezone, and finally available time frame.\n\n"
 
-                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                f"{U.draw_line(extra=44)}"
-            ),
-            footer_text=footer
-        )
-        view = WeekdayTZSelectView(interaction.user)
-
-        await interaction.respond(embed=status, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            log.debug("Training", "Availability setup cancelled.")
+        result = await DTOperations.collect_availability(interaction)
+        if result is None:
             return
 
-        # weekday, tz = view.value
-        weekday = view.value
-        
-        log.info("Training", f"Availability setup for {weekday.proper_name}.")
-        
-        prompt = U.make_embed(
-            title="Set Availability Start",
-            description=(
-                f"Please select the beginning of your availability "
-                f"for `{weekday.proper_name}`...\n\n"
-
-                "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-            ),
-            footer_text=footer
-        )
-        view = TimeSelectView(interaction.user)
-
-        await interaction.respond(embed=prompt, view=view)
-        await view.wait()
-
-        if not view.complete or view.value is False:
-            log.debug("Training", "Availability setup cancelled.")
-            return
-
-        start_time = view.value if view.value != -1 else None
-        end_time = None
-        
-        log.info("Training", f"Selected start time: {start_time}.")
-
-        if start_time is not None:
-            prompt = U.make_embed(
-                title="Set Availability End",
-                description=(
-                    f"Please select the end of your availability "
-                    f"for `{weekday.proper_name}`...\n\n"
-
-                    "(__**PLEASE NOTE: ALL TIME INPUTS ARE IN EASTERN STANDARD TIME**__.)\n"
-                ),
-                footer_text=footer
-            )
-            view = TimeSelectView(interaction.user)
-
-            await interaction.respond(embed=prompt, view=view)
-            await view.wait()
-
-            if not view.complete or view.value is False:
-                log.debug("Training", "Availability setup cancelled.")
-                return
-
-            end_time = view.value
-            log.info("Training", f"Selected end time: {end_time}.")
+        tz, weekday, start_time, end_time = result
 
         for i, a in enumerate(self.availability):
             if a.day == weekday:
