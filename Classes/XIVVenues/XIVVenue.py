@@ -86,7 +86,7 @@ class XIVVenue:
                 XIVScheduleOverride.from_data(x) for x in data.get("scheduleOverrides", [])
             ],
             managers=[int(m) for m in data["managers"]],
-            tags=data.get("tags", []),
+            tags=[t for t in data.get("tags", []) if t is not None],
             approved=data.get("approved", False),
             modified=(
                 datetime.fromisoformat(data["lastModified"]) if "lastModified" in data
