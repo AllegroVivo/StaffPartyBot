@@ -537,11 +537,13 @@ class Profile:
             char_name = f"{BotEmojis.Envelope}  {char_name}  {BotEmojis.Envelope}"
         
         dm_emoji = BotEmojis.Check if dm_pref else BotEmojis.Cross 
-        dm_text = str(dm_emoji) + (
-            " **Accepting staffing-oriented DMs** " 
-            if dm_pref 
-            else " **Not accepting staffing-oriented DMs** "
-        ) + str(dm_emoji)
+        if dm_pref:
+            dm_text = (
+                f"{str(dm_emoji)} **Accepting staffing-oriented DMs** {str(dm_emoji)}\n"
+                f"({self.user.mention})"
+            )
+        else:
+            dm_text = f"{str(dm_emoji)} **Not accepting staffing-oriented DMs** {str(dm_emoji)}"
 
         description = dm_text
         if jobs:
