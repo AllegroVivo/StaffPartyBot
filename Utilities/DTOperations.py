@@ -322,23 +322,25 @@ class DTOperations:
         start_time = view.value if view.value != -1 else None
         end_time = None
 
-        if start_time is not None:
-            prompt = Utilities.make_embed(
-                title="Set Availability End",
-                description=(
-                    f"Please select the end of your availability "
-                    f"for `{weekday.proper_name}`..."
-                )
+        if start_time is None:
+            return tz, weekday, None, None
+            
+        prompt = Utilities.make_embed(
+            title="Set Availability End",
+            description=(
+                f"Please select the end of your availability "
+                f"for `{weekday.proper_name}`..."
             )
-            view = TimeSelectView(interaction.user)
+        )
+        view = TimeSelectView(interaction.user)
 
-            await interaction.respond(embed=prompt, view=view)
-            await view.wait()
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
 
-            if not view.complete or view.value is False:
-                return
+        if not view.complete or view.value is False:
+            return
 
-            end_time = view.value
+        end_time = view.value
             
         today = datetime.now().date()
         py_tz = Utilities.TIMEZONE_OFFSETS[tz]
