@@ -27,7 +27,8 @@ from Utilities import (
     log,
     Weekday,
     RoleType,
-    DTOperations
+    DTOperations,
+    PayAlreadyRequestedError
 )
 from .BackgroundCheck import BackgroundCheck
 from .Qualification import Qualification
@@ -66,6 +67,7 @@ class TUser:
         "_details",
         "_bg_check",
         "_mutes",
+        "_pay_requested",
     )
 
 ################################################################################
@@ -91,6 +93,8 @@ class TUser:
         self._qualifications: List[Qualification] = qualifications or []
         self._bg_check: BackgroundCheck = bg_check or BackgroundCheck(self)
         self._mutes: List[Venue] = mutes or []
+        
+        self._pay_requested = False
 
 ################################################################################
     @classmethod
@@ -112,6 +116,8 @@ class TUser:
         self._qualifications = []
         self._bg_check = BackgroundCheck(self)
         self._mutes = []
+        
+        self._pay_requested = False
 
         return self
 
@@ -136,6 +142,8 @@ class TUser:
             mgr.guild.venue_manager.get_venue(venue_id)
             for venue_id in tuser[2]
         ] if tuser[2] is not None else []
+        
+        self._pay_requested = False
 
         return self
 
@@ -1197,6 +1205,7 @@ class TUser:
         
         for t in self.unpaid_trainings:
             t.trainer_paid = True
+        self._pay_requested = False
             
         confirm = U.make_embed(
             title="Settle Training Balance",
@@ -1333,4 +1342,97 @@ class TUser:
         return modified, deleted
 
 ################################################################################
-    
+    async def request_pay(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"Pay is being requested for TUser {self.name} ({self.user_id})."
+        )
+        
+        if not self.unpaid_trainings:
+            log.warning(
+                "Training",
+                f"No unpaid trainings found for TUser {self.name} ({self.user_id})."
+            )
+            # We shouldn't ever reach this, so a generic error is fine
+            error = U.make_embed(
+                title="No Unpaid Trainings",
+                description=(
+                    "No unpaid trainings were found to request pay for.\n"
+                    f"{U.draw_line(extra=25)}"
+                ),
+            )
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if self._pay_requested:
+            log.warning(
+                "Training",
+                (
+                    f"Pay has already been requested for TUser {self.name} "
+                    f"({self.user_id})."
+                )
+            )
+            error = PayAlreadyRequestedError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        pos_dict = {}
+        for t in self.unpaid_trainings:
+            if t.position.name not in pos_dict:
+                pos_dict[t.position.name] = []
+            pos_dict[t.position.name].append(t)
+
+        amount = 0
+        training_str = ""
+        
+        for pos, trainings in pos_dict.items():
+            position = self.position_manager.get_position_by_name(pos)
+            amount += position.trainer_pay * len(trainings)
+            training_str += (
+                f"[{len(trainings)}] **{position.name}** = "
+                f"`{(position.trainer_pay * len(trainings)):,}`\n"
+            )
+            
+        embed = U.make_embed(
+            title="Request Pay",
+            description=(
+                "Please confirm you want to request pay for the\n"
+                "following unpaid training balances.\n\n"
+
+                f"{training_str}\n"
+                
+                "__**Total Amount Due:**__\n"
+                f"`{amount:,}`\n"
+                f"{U.draw_line(extra=12)}"
+            ),
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=embed, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Training", "Pay request cancelled.")
+            return
+        
+        await self.guild.log.pay_request(self)
+        self._pay_requested = True
+            
+        confirm = U.make_embed(
+            title="Request Pay",
+            description=(
+                "Pay has been requested for all unpaid training balances.\n"
+                f"__**Total Amount Requested:**__ `{amount:,}`\n"
+                f"{U.draw_line(extra=25)}"
+            ),
+        )
+        
+        await interaction.respond(embed=confirm)
+        
+        log.info(
+            "Training",
+            f"Pay request complete for TUser {self.name} ({self.user_id})."
+        )
+        
+################################################################################

@@ -31,6 +31,7 @@ class TUserStatusView(FroggeView):
             AddQualificationButton(),
             ModifyQualificationButton(),
             RemoveQualificationButton(),
+            RequestPayButton(),
             AddTrainingButton(),
             RemoveTrainingButton()
         ]
@@ -44,13 +45,16 @@ class TUserStatusView(FroggeView):
 
         disable_qualification_buttons = len(self.tuser.qualifications) == 0
         disable_training_buttons = len(self.tuser.trainings_as_trainee) == 0
+        pay_waiting = len(self.tuser.unpaid_trainings) > 0
 
         # We can safely access the 'disabled' attribute of the components because
         # we know they are all buttons.
         self.children[6].disabled = disable_qualification_buttons
         self.children[7].disabled = disable_qualification_buttons
         
-        self.children[9].disabled = disable_training_buttons
+        self.children[8].disabled = not pay_waiting
+        
+        self.children[10].disabled = disable_training_buttons
 
 ################################################################################
 class EditNameButton(Button):
@@ -242,6 +246,20 @@ class RemoveQualificationButton(Button):
             embed=self.view.tuser.user_status(),
             view=self.view
         )
+        
+################################################################################
+class RequestPayButton(Button):
+
+    def __init__(self) -> None:
+
+        super().__init__(
+            style=ButtonStyle.danger,
+            label="Request Pay",
+            row=1
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        await self.view.tuser.request_pay(interaction)
         
 ################################################################################
         

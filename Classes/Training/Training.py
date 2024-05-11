@@ -420,6 +420,8 @@ class Training:
             self.trainee.user, RoleType.StaffMain 
         )
         
+        self.trainer._pay_requested = False
+        
         if self.trainee.profile and self.trainee.profile.post_message is not None:
             await self.manager.guild.role_manager.add_role_manual(
                 self.trainee.user, self.position.linked_role
