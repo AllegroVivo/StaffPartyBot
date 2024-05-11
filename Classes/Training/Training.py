@@ -238,6 +238,8 @@ class Training:
         embed = U.make_embed(
             title=f"Training Status for {self._trainee.name}",
             description=(
+                f"({self.trainee.user.mention})\n"
+                f"{U.draw_line(text=description)}\n"
                 f"{description}\n"
                 f"{U.draw_line(text=description)}\n"
             ),
