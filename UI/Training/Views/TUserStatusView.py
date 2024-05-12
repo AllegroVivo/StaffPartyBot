@@ -253,9 +253,10 @@ class RequestPayButton(Button):
     def __init__(self) -> None:
 
         super().__init__(
-            style=ButtonStyle.danger,
+            style=ButtonStyle.primary,
             label="Request Pay",
-            row=1
+            row=1,
+            disabled=False
         )
 
     async def callback(self, interaction: Interaction) -> None:

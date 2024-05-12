@@ -407,5 +407,22 @@ class Logger:
         )
 
         await self._log(embed, LogType.BGCheckApproved)
+
+################################################################################
+    async def pay_request(self, tuser: TUser) -> None:
         
+        amount = sum([t.position.trainer_pay for t in tuser.unpaid_trainings])
+        embed = U.make_embed(
+            title="Pay Requested!",
+            description=(
+                f"{tuser.name} has requested payment for training services!\n\n"
+                
+                f"__**Amount:**__\n"
+                f"`{amount:,} gil`"
+            ),
+            timestamp=True
+        )
+        
+        await self._alyah.send(embed=embed)
+
 ################################################################################
