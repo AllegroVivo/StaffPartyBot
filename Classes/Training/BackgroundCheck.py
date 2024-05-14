@@ -485,7 +485,7 @@ class BackgroundCheck:
         await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.StaffMain)
         await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.StaffNotValidated)
         
-        if self.is_trainer:
+        if self.want_to_train:
             await self.parent.guild.role_manager.add_role(self.parent.user, RoleType.TrainerMain)
             await self.parent.guild.role_manager.remove_role(self.parent.user, RoleType.TrainerPending)
             
