@@ -17,7 +17,8 @@ from discord import (
     Thread,
     File,
     SelectOption,
-    HTTPException
+    HTTPException,
+    ForumTag
 )
 from dotenv import load_dotenv
 
@@ -325,6 +326,29 @@ class Profile:
         await view.wait()
 
 ################################################################################
+    def get_tags(self) -> List[ForumTag]:
+        
+        if self.post_message is None or self.manager.guild.channel_manager.profiles_channel is None:
+            return []
+
+        # Tags - Start with DM status
+        tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
+        channel = self.manager.guild.channel_manager.profiles_channel
+        
+        tags = [
+            t for t in channel.available_tags
+            if t.name.lower() == tag_text.lower()
+        ]
+        # Add position tags according to weights
+        tags += [
+            t for t in channel.available_tags
+            if t.name.lower() in
+            [p.name.lower() for p in self._get_top_positions()]
+        ]
+        
+        return tags
+        
+################################################################################
     async def post(self, interaction: Interaction) -> None:
         
         log.info(
@@ -399,11 +423,12 @@ class Profile:
                     )
                 )
                 await member.add_roles(*pos_roles)
+                
+        if await self._update_post_components():
+            return
     
-        # Prepare embeds
+        # Prepare embeds and persistent view
         embeds = [main_profile, availability] + ([aboutme] if aboutme else [])
-        
-        # Prepare persistent view
         view = ProfileUserMuteView(self)
 
         # Handling threads
@@ -414,48 +439,19 @@ class Profile:
             "Profiles",
             (
                 f"Attempting to post profile for {member.display_name} in {channel.name}, "
-                f"{'**creating**' if matching_thread is None else '**editing**'} thread"
+                f"**creating** thread"
             )
         )
         
-        # Tags - Start with DM status
-        tag_text = "Accepting DMs" if self._details.dm_preference else "Not Accepting DMs"
-        tags = [t for t in channel.available_tags if t.name.lower() == tag_text.lower()]
-        # Add position tags according to weights
-        tags += [
-            t for t in channel.available_tags 
-            if t.name.lower() in 
-            [p.name.lower() for p in self._get_top_positions()]
-        ]
-        
-        log.debug(
-            "Profiles",
-            f"Tags for profile post: {', '.join([t.name for t in tags])}"
-        )
-    
-        # Attempt to edit an existing post
-        if self.post_message:
-            log.info("Profiles", "Editing existing profile post")
-            try:
-                self.bot.add_view(view, message_id=self.post_message.id)
-                await self.post_message.channel.edit(applied_tags=tags)
-                await self.post_message.edit(embeds=embeds, view=view)
-                await interaction.respond(embed=self.success_message())
-                log.info("Profiles", "Profile post edited successfully")
-                return
-            except NotFound:
-                log.info("Profiles", "Existing profile post not found")
-                self.post_message = None  # Proceed to post anew if not found
-        
         if matching_thread:
             # Clear the matching thread
-            await matching_thread.edit(applied_tags=tags)
+            await matching_thread.edit(applied_tags=self.get_tags())
             async for m in matching_thread.history():
                 await m.delete()
             action = matching_thread.send  # type: ignore
         else:
             # Or create a new thread if no matching one
-            action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=tags, **kw)  # type: ignore
+            action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=self.get_tags(), **kw)
 
         self.bot.add_view(view)
         
@@ -478,16 +474,65 @@ class Profile:
             log.info("Profiles", "Profile post created successfully")
 
 ################################################################################
-    async def _update_post_components(self, addl_attempt: bool = False) -> None:
+    async def update_tags(self, addl_attempt: bool = False) -> bool:
+        
+        if self.post_message is None or self.manager.guild.channel_manager.profiles_channel is None:
+            return False
+
+        tags = self.get_tags()
+        log.debug(
+            "Profiles",
+            f"Tags for profile post: {', '.join([t.name for t in tags])}"
+        )
+
+        try:
+            await self.post_message.channel.edit(applied_tags=tags)
+        except Forbidden:
+            log.warning(
+                "Profiles",
+                "User attempted to update profile post without sufficient bot permissions"
+            )
+            error = InsufficientPermissionsError(self.post_message.channel, "Send Messages")
+            await self.post_message.channel.send(embed=error)
+            return False
+        except NotFound:
+            log.warning("Profiles", "Thread could not be located. Exiting.")
+            return False
+        except HTTPException as ex:
+            if ex.code != 50083 and not addl_attempt:
+                log.critical(
+                    "Profiles",
+                    f"An uncaught error occurred while updating the post components: {ex}"
+                )
+            log.warning(
+                "Profiles",
+                "Thread was archived for exceeding 30 day limit - attempting to revive."
+            )
+            await self.post_message.channel.send("Hey Ur Cute", delete_after=0.1)
+            await self.update_tags(addl_attempt=True)
+            log.critical(
+                "Profiles",
+                f"An uncaught error occurred while updating profile tags: {ex}"
+            )
+            return False
+        else:
+            log.info("Profiles", "Profile tags updated successfully")
+            return True
+        
+################################################################################
+    async def _update_post_components(self, addl_attempt: bool = False) -> bool:
+        
+        if self.post_message is None:
+            log.debug("Profiles", "Post message not found - skipping update")
+            return False
         
         log.info(
             "Profiles",
             f"Updating profile post components for {self._user.name} ({self._user.id})"
         )
         
-        if self.post_message is None:
-            log.debug("Profiles", "Post message not found - skipping update")
-            return
+        if not await self.update_tags():
+            return False
         
         view = ProfileUserMuteView(self)
         self.bot.add_view(view, message_id=self.post_message.id)
@@ -503,23 +548,24 @@ class Profile:
                 "Post message not found - clearing post message object"
             )
             self.post_message = None
+            return False
         except HTTPException as ex:
             if ex.code != 50083 and not addl_attempt:
                 log.critical(
                     "Profiles",
                     f"An uncaught error occurred while updating the post components: {ex}"
                 )
+                return False
             log.warning(
                 "Profiles",
                 "Thread was archived for exceeding 30 day limit - attempting to revive."
             )
             await self.post_message.channel.send("Hey Ur Cute", delete_after=0.1)
             await self._update_post_components(addl_attempt=True)
+            return False
         else:
-            log.info(
-                "Profiles",
-                "Profile post components updated successfully"
-            )
+            log.info("Profiles", "Profile post components updated successfully")
+            return True
         
 ################################################################################
     def compile(self) -> Tuple[Embed, Embed, Optional[Embed]]:
