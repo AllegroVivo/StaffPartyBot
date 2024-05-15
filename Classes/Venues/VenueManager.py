@@ -702,7 +702,7 @@ class VenueManager:
         count = 0
         for venue in self.venues:
             for vdata in payload:
-                if venue._xiv_id == vdata.id:
+                if venue.name.lower() == vdata.name.lower():
                     await venue.update_from_xiv_venue(interaction, vdata)
                     await venue._update_post_components()
                     count += 1
