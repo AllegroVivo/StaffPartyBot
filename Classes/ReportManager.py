@@ -89,7 +89,8 @@ class ReportManager:
 ################################################################################
     @staticmethod
     async def itinerary_report(
-        interaction: Interaction, 
+        interaction: Interaction,
+        hours_out: int,
         venues: List[XIVVenue], 
         region: Optional[str]
     ) -> None:
@@ -105,28 +106,35 @@ class ReportManager:
             ]
             filtered_venues = [
                 venue for venue in venues
-                if venue.location.data_center.lower() in dc_names
+                if venue.location.data_center and
+                venue.location.data_center.lower() in dc_names
             ]
             
         log.info("Core", f"Filtered venues count: {len(filtered_venues)}")
 
         # Prepare the data structure
         data = {
+            "Itinerary String": [],
             "Venue Name": [],
+            "Data Center": [],
             "Home World": [],
             "Housing Div.": [],
             "Ward": [],
             "Plot": [],
             "Open Time": [],
             "Close Time": [],
+            "Tags": []
         }
         
+        # Nightclubs sorted by DC
+        # Everything else sorted by 
+        
         start_limit = datetime.now()
-        end_limit = datetime.now() + timedelta(hours=24)
+        end_limit = start_limit + timedelta(hours=hours_out)
         
         for venue in filtered_venues:
             if venue.resolution:
-                # Need to create tz-naive datetime objects for comparison
+                # Need to create tz-naive datetime object for comparison
                 res_start = datetime(
                     year=venue.resolution.start.year,
                     month=venue.resolution.start.month,
@@ -134,15 +142,9 @@ class ReportManager:
                     hour=venue.resolution.start.hour,
                     minute=venue.resolution.start.minute
                 )
-                res_end = datetime(
-                    year=venue.resolution.end.year,
-                    month=venue.resolution.end.month,
-                    day=venue.resolution.end.day,
-                    hour=venue.resolution.end.hour,
-                    minute=venue.resolution.end.minute
-                )
-                if res_start > start_limit and res_end < end_limit:
+                if res_start < end_limit:
                     data["Venue Name"].append(venue.name)
+                    data["Data Center"].append(venue.location.data_center)
                     data["Home World"].append(venue.location.world)
                     data["Housing Div."].append(venue.location.district)
                     data["Ward"].append(venue.location.ward)
@@ -154,9 +156,7 @@ class ReportManager:
                             day=venue.resolution.start.day,
                             hour=venue.resolution.start.hour,
                             minute=venue.resolution.start.minute
-                        )
-                        if venue.resolution
-                        else "N/A"
+                        ).strftime("%H:%M %p")
                     )
                     data["Close Time"].append(
                         datetime(
@@ -165,10 +165,10 @@ class ReportManager:
                             day=venue.resolution.end.day,
                             hour=venue.resolution.end.hour,
                             minute=venue.resolution.end.minute
-                        )
-                        if venue.resolution
-                        else "N/A"
+                        ).strftime("%H:%M %p")
                     )
+                    data["Tags"].append(", ".join(venue.tags[:3]) if venue.tags else "None")
+                    data["Itinerary String"].append(venue.to_itinerary_string())
 
         # Create a DataFrame
         df = pd.DataFrame(data)

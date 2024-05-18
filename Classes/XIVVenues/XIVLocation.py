@@ -56,5 +56,16 @@ class XIVLocation:
             shard=data.get("shard"),
             override=data.get("override")
         )
-    
+
+################################################################################
+    def to_itinerary_string(self) -> None:
+        
+        ret = f"{self.world}-{self.district}-W{self.ward}"
+        if self.plot:
+            ret += f"-P{self.plot}"
+        if self.apartment:
+            ret += f"-APT{self.apartment}"
+        if self.room:
+            ret += f"-R{self.room}"
+
 ################################################################################

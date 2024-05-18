@@ -63,15 +63,16 @@ class FroggeView(View):
 
         super().stop()
 
-        if self._close_on_complete:
-            if self._interaction is not None:
-                try:
-                    await self._interaction.message.delete()
-                except:
-                    try:
-                        await self._interaction.delete_original_response()
-                    except:
-                        pass
+        if not self._close_on_complete or self._interaction is None:
+            return
+        
+        try:
+            await self._interaction.message.delete()
+        except:
+            try:
+                await self._interaction.delete_original_response()
+            except:
+                pass
 
 ################################################################################
     def close_on_complete(self, value: bool) -> None:

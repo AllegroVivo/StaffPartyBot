@@ -101,5 +101,12 @@ class XIVVenue:
                 else None
             )
         )
-    
+
+################################################################################
+    def to_itinerary_string(self) -> str:
+        
+        return (
+            f"{self.name}::{self.location.to_itinerary_string()}"
+        )
+
 ################################################################################

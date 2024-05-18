@@ -34,12 +34,19 @@ class Itinerary(Cog):
     async def compile_itinerary(
         self, 
         ctx: ApplicationContext,
+        hours: Option(
+            SlashCommandOptionType.integer,
+            name="hours_out",
+            description="The number of hours to compile the itinerary for.",
+            required=True,
+            max_value=48
+        ),
         region: Option(
             SlashCommandOptionType.string,
             name="region",
             description="The datacenter to compile the itinerary for.",
-            required=False,
-            options=[
+            required=True,
+            choices=[
                 OptionChoice(name="North America", value="NA"),
                 OptionChoice(name="Europe", value="EU"),
                 OptionChoice(name="Oceanan", value="OC"),
@@ -49,7 +56,9 @@ class Itinerary(Cog):
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.itinerary_manager.compile_itinerary(ctx.interaction, region or None)
+        await guild.itinerary_manager.compile_itinerary(
+            ctx.interaction, hours, region or None
+        )
         
 ################################################################################
 def setup(bot: "StaffPartyBot") -> None:

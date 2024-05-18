@@ -50,7 +50,7 @@ class GlobalDataCenter(FroggeEnum):
     @staticmethod
     def data_centers_by_region(region: str) -> List[DataCenter]:
         
-        if region == "AM":
+        if region == "NA":
             return [DataCenter.Aether, DataCenter.Crystal, DataCenter.Dynamis, DataCenter.Primal]
         elif region == "EU":
             return [DataCenter.Light, DataCenter.Chaos]

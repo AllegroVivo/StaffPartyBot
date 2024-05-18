@@ -320,7 +320,6 @@ class DTOperations:
             return
 
         start_time = view.value if view.value != -1 else None
-        end_time = None
 
         if start_time is None:
             return tz, weekday, None, None
