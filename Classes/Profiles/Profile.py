@@ -355,7 +355,7 @@ class Profile:
             "Profiles",
             f"User {interaction.user.name} ({interaction.user.id}) is attempting to post profile"
         )
-
+    
         await interaction.response.defer(invisible=False)
         
         if self.manager.guild.channel_manager.profiles_channel is None:
@@ -425,12 +425,13 @@ class Profile:
                 await member.add_roles(*pos_roles)
                 
         if await self._update_post_components():
+            await interaction.respond(embed=self.success_message())
             return
     
         # Prepare embeds and persistent view
         embeds = [main_profile, availability] + ([aboutme] if aboutme else [])
         view = ProfileUserMuteView(self)
-
+    
         # Handling threads
         channel = self.manager.guild.channel_manager.profiles_channel
         matching_thread = next((t for t in channel.threads if t.name.lower() == self.char_name.lower()), None)
@@ -452,7 +453,7 @@ class Profile:
         else:
             # Or create a new thread if no matching one
             action = lambda **kw: channel.create_thread(name=self.char_name, applied_tags=self.get_tags(), **kw)
-
+    
         self.bot.add_view(view)
         
         # Post or create thread and handle permissions error
