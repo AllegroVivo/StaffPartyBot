@@ -77,7 +77,7 @@ class GuildData:
         await self._logger.load()
         await self._channel_mgr._load_all(data["channels"])
         
-        msgs = await self.begin_notify_of_bot_restart()
+        # msgs = await self.begin_notify_of_bot_restart()
         
         await self._role_mgr._load_all(data["roles"])
         await self._pos_mgr._load_all(data)
@@ -87,7 +87,7 @@ class GuildData:
         await self._job_mgr._load_all(data)
         await self._service_mgr._load_all(data)
         
-        await self.end_notify_of_bot_restart(msgs)
+        # await self.end_notify_of_bot_restart(msgs)
         
 ################################################################################
     @property
