@@ -476,7 +476,7 @@ class TrainingManager:
         venue_scores = {}
     
         for venue in self.guild.venue_manager.venues:
-            if venue.post_url is None or not venue.hiring:
+            if venue.post_url is None:
                 continue
     
             # Normalize level difference (assuming _calculate_distance returns a non-negative number)
