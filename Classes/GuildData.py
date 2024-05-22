@@ -442,8 +442,10 @@ class GuildData:
         notification = U.make_embed(
             title="__Staff Party Bot Restarting!__",
             description=(
-                "The Staff Party Bot is currently restarting and some "
-                "features may be temporarily unavailable. <a:DJ:1115502710914035722>\n\n"
+                "The Staff Party Bot is currently restarting and some\n"
+                "features **WILL** be temporarily unavailable. <a:DJ:1115502710914035722>\n\n"
+                
+                "__**PLEASE DO NOT USE THE APPLICATION DURING THIS TIME~!**__\n\n"
                 
                 f"**Current estimated ready-to-go time: {U.format_dt(ready_time)}**\n\n"
                 
