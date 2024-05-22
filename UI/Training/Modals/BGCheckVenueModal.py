@@ -23,8 +23,8 @@ class BGCheckVenueModal(FroggeModal):
                 label="Instructions",
                 placeholder="Enter your character's venue experience.",
                 value=(
-                    "Please enter the name(s) of the venue which you'd like "
-                    "to list as a reference, as well as the positions in which "
+                    "Please enter the name of a venue which you'd like "
+                    "to list as a reference, as well as the position(s) in which "
                     "you were employed."
                 ),
                 required=False
