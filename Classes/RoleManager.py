@@ -25,6 +25,7 @@ class RoleManager:
         "_staff_main",
         "_staff_unvalidated",
         "_venue_management",
+        "_trainee",
     )
 
 ################################################################################
@@ -38,6 +39,7 @@ class RoleManager:
         self._staff_main: Optional[Role] = None
         self._staff_unvalidated: Optional[Role] = None
         self._venue_management: Optional[Role] = None
+        self._trainee: Optional[Role] = None
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -50,6 +52,7 @@ class RoleManager:
         self._staff_main = guild.get_role(data[4]) if data[4] else None
         self._staff_unvalidated = guild.get_role(data[5]) if data[5] else None
         self._venue_management = guild.get_role(data[6]) if data[6] else None
+        self._trainee = guild.get_role(data[7]) if data[7] else None
         
 ################################################################################
     @property
@@ -133,6 +136,18 @@ class RoleManager:
     def venue_management(self, role: Optional[Role]) -> None:
             
         self._venue_management = role
+        self.update()
+       
+################################################################################
+    @property
+    def trainee(self) -> Optional[Role]:
+        
+        return self._trainee
+    
+    @trainee.setter
+    def trainee(self, role: Optional[Role]) -> None:
+        
+        self._trainee = role
         self.update()
         
 ################################################################################

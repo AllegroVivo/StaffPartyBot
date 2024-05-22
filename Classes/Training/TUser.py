@@ -224,6 +224,12 @@ class TUser:
 
 ################################################################################
     @property
+    def is_trainer(self) -> bool:
+        
+        return len(self.qualifications) > 0
+    
+################################################################################
+    @property
     def qualified_positions(self) -> List[Position]:
 
         return [q.position for q in self.qualifications if q.level == TrainingLevel.Active]
@@ -985,12 +991,17 @@ class TUser:
             log.debug("Training", "Hiatus toggle cancelled.")
             return
         
+        # Checking current hiatus status before flipping it
         if self.on_hiatus:
-            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerMain)
+            if self.is_trainer:
+                await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerMain)
+            else:
+                await self.guild.role_manager.add_role(interaction.user, RoleType.Trainee)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainingHiatus)
         else:
             await self.guild.role_manager.add_role(interaction.user, RoleType.TrainingHiatus)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.Trainee)
 
         if not self.on_hiatus:
             for t in self.trainings_as_trainer:

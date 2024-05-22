@@ -14,6 +14,7 @@ class RoleType(FroggeEnum):
     NewStaff = 6
     # VenuePending = 7  # Don't need this, but keeping here, so I know why it's skipped
     VenueManagement = 8
+    Trainee = 9
 
 ################################################################################
     @property
