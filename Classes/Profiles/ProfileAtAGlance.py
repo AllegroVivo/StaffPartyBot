@@ -293,7 +293,7 @@ class ProfileAtAGlance(ProfileSection):
             EmbedField("__Mare ID__", mare_val, True),
             EmbedField("", U.draw_line(extra=30), False),
             EmbedField("__Height__", height_val, True),
-            EmbedField("__Age__", age_val, True),
+            EmbedField("__RP Age__", age_val, True),
         ]
 
         return U.make_embed(
@@ -511,7 +511,7 @@ class ProfileAtAGlance(ProfileSection):
         log.info(
             "Profiles",
             (
-                f"Setting Age for {self.parent.char_name} "
+                f"Setting RP Age for {self.parent.char_name} "
                 f"({self.parent.user_id})"
             )
         )
@@ -530,7 +530,7 @@ class ProfileAtAGlance(ProfileSection):
         log.info(
             "Profiles",
             (
-                f"Age set for {self.parent.char_name} "
+                f"RP Age set for {self.parent.char_name} "
                 f"({self.parent.user_id}) Value: {self.age}"
             )
         )
@@ -620,7 +620,7 @@ class ProfileAtAGlance(ProfileSection):
             f"{em_race} -- Race / Clan\n"
             f"{em_orientation} -- Orientation\n"
             f"{em_height} -- Height\n"
-            f"{em_age} -- Age\n"
+            f"{em_age} -- RP Age\n"
             f"{em_mare} -- Friend ID\n"
         )
 
@@ -715,7 +715,7 @@ class ProfileAtAGlance(ProfileSection):
         if self.age is None:
             return ""
 
-        return f"__Age:__ {self.age}\n"
+        return f"__RP Age:__ {self.age}\n"
 
 ################################################################################
     def compile_mare(self) -> str:
