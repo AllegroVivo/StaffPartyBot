@@ -8,18 +8,7 @@ class TrainingLevel(FroggeEnum):
 
     Null = 0
     Active = 1
-    OnHold = 2
-    Inactive = 3
-    Pending = 4
-
-################################################################################
-    @property
-    def proper_name(self) -> str:
-
-        if self.value == 2:
-            return "On Hold" 
-            
-        return self.name
+    Inactive = 2
 
 ################################################################################
     @staticmethod
