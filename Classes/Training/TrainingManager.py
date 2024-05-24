@@ -481,7 +481,7 @@ class TrainingManager:
     
             # Normalize level difference (assuming _calculate_distance returns a non-negative number)
             level_diff = self._calculate_distance(rp_level, venue.rp_level)
-            normalized_level_diff = 1 - (level_diff / 10)
+            normalized_level_diff = 1 - (level_diff / 5)
     
             # NSFW match (1 for match, 0 for mismatch)
             nsfw_score = 1 if nsfw_pref == venue.nsfw else 0
