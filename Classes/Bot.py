@@ -108,7 +108,7 @@ class StaffPartyBot(Bot):
         
         log.info("Core", "Parsing data from database...")
          
-        # Setup the return dictionary.
+        # Set up the return dictionary.
         ret = { g.id : {
             "bot_config": None,
             "tusers": [],
@@ -221,6 +221,18 @@ class StaffPartyBot(Bot):
                     "images": [
                         img for img in data["sp_images"]
                         if img[1] == sp[0]
+                    ]
+                }
+            )
+            
+        ### Group Trainings ###
+        for gt in data["group_trainings"]:
+            ret[gt[1]]["group_trainings"].append(
+                {
+                    "training": gt,
+                    "signups": [
+                        gts for gts in data["group_training_signups"]
+                        if gts[1] == gt[0]
                     ]
                 }
             )

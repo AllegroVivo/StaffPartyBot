@@ -9,11 +9,12 @@ from discord import (
     NotFound,
     Interaction,
     Embed,
-    EmbedField
+    EmbedField,
+    SelectOption
 )
 
 from UI.Common import ConfirmCancelView
-from UI.Training import TrainerMessageButtonView, TrainerSignUpSelectView
+from UI.Training import TrainerMessageButtonView, TrainerSignUpSelectView, AcquireTraineeView
 from Utilities import Utilities as U, log
 
 if TYPE_CHECKING:
@@ -214,12 +215,12 @@ class SignUpMessage:
         log.info("Training", "SignupMessage components updated.")
 
 ################################################################################
-    async def acquire_trainee(self, interaction: Interaction) -> None:
+    async def acquire_single_trainee(self, interaction: Interaction) -> None:
         
         log.info(
             "Training",
             (
-                f"Acquire trainee initiated by {interaction.user.name} "
+                f"Acquire single trainee initiated by {interaction.user.name} "
                 f"({interaction.user.id})"
             )
         )
@@ -296,3 +297,121 @@ class SignUpMessage:
         )
     
 ################################################################################
+    async def acquire_trainings(self, interaction: Interaction) -> None:
+
+        log.info(
+            "Training",
+            (
+                f"Acquire trainings initiated by {interaction.user.name} "
+                f"({interaction.user.id})"
+            )
+        )
+
+        prompt = U.make_embed(
+            title="Acquire All Trainings for a User",
+            description=(
+                "Below is a list of all users who are signed up for trainings. "
+                "Please select the trainee whose training(s) you would like to acquire.\n\n"
+                
+                "__**NOTE: This can only be completed if you are qualified to train in "
+                "*ALL* the positions you select.**__"
+            )
+        )
+
+        trainings = {}
+        for training in self._manager.unmatched_trainings:
+            if training.trainee.user_id not in trainings:
+                trainings[training.trainee.user_id] = []
+            trainings[training.trainee.user_id].append(training)
+            
+        options = []
+        for _, t in trainings.items():
+            if len(t) == 0:
+                continue
+                
+            count = 0
+            value_str = ""
+            for train in t:
+                if count >= 3:
+                    value_str += f"(+ {len(t) - 3} more)..."
+                    break
+                value_str += f" {train.position.name},"
+                count += 1
+                
+            options.append(
+                SelectOption(
+                    label=t[0].trainee.name,
+                    value=value_str,
+                )
+            )
+        
+        view = AcquireTraineeView(interaction.user, self, options)
+
+        await interaction.respond(embed=prompt, view=view, ephemeral=True)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            log.debug("Training", "Acquire training cancelled.")
+            return
+
+        trainee, training_ids = view.value
+        trainings = [self._manager.get_training(t) for t in training_ids]
+        
+        # TODO: Confirm that the trainer is qualified to train in all positions
+
+        pos_str = "* " + "\n* ".join([t.position.name for t in trainings])
+        acquire = U.make_embed(
+            title=f"Acquire Trainee __{trainee.name}__?",
+            description=(
+                f"Are you sure you want to pick up {trainee.name} for "
+                f"training in the following positions?\n"
+                f"{pos_str}\n\n"
+
+                "Please keep in mind that changing this later will\n"
+                "require administrator intervention."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+
+        await interaction.respond(embed=acquire, view=view, ephemeral=True)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            log.debug("Training", "Acquire trainee cancelled.")
+            return
+
+        trainer = self._manager[interaction.user.id]
+        await trainings[0].set_trainer(trainer)
+        await self._manager.guild.log.training_matched(trainings[0])
+
+        if len(trainings) > 1:
+            for training in trainings[1:]:
+                await training.set_trainer(trainer, False)
+                await self._manager.guild.log.training_matched(training)
+
+        await self.update_components()
+
+        confirm = U.make_embed(
+            title="Trainee Acquired",
+            description=(
+                f"Congratulations! You have successfully acquired {trainee.name} "
+                f"({trainee.user.mention}) as a trainee for the following:\n"
+                f"{pos_str}\n\n"
+
+                "Please reach out to them as soon as possible to begin the training process."
+            )
+        )
+
+        await interaction.respond(embed=confirm, ephemeral=True)
+
+        log.info(
+            "Training",
+            (
+                f"Acquire trainee completed by {interaction.user.name} "
+                f"({interaction.user.id}). Acquired {trainee.name} "
+                f"({trainee.user.id}) for {len(trainings)} trainings."
+            )
+        )
+    
+################################################################################
+    

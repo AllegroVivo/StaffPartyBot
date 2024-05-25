@@ -267,6 +267,12 @@ class TUser:
             )
         ]
     
+################################################################################
+    @property
+    def unmatched_trainings(self) -> List[Training]:
+        
+        return [t for t in self._manager.unmatched_trainings if t.trainee == self]
+    
 ################################################################################    
     @property
     def position_manager(self) -> PositionManager:

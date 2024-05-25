@@ -1,4 +1,6 @@
 from .AddQualificationView import AddQualificationView
+from .AcquireTraineeView import AcquireTraineeView
+from .GroupTrainingMenuView import GroupTrainingMenuView
 from .AddTrainingView import AddTrainingView
 from .BGCheckMenuView import BGCheckMenuView
 from .BGCheckRemoveVenueView import BGCheckRemoveVenueView

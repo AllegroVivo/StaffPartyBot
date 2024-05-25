@@ -20,7 +20,7 @@ class TrainerMessageButtonView(View):
         
         self.msg: SignUpMessage = msg
         
-        self.add_item(TrainerMessageButton())        
+        self.add_item(AcquireTrainingsButton())
         self.set_disabled()
         
 ################################################################################
@@ -29,18 +29,18 @@ class TrainerMessageButtonView(View):
         self.children[0].disabled = len(self.msg.training_manager.unmatched_trainings) == 0
         
 ################################################################################
-class TrainerMessageButton(Button):
+class AcquireTrainingsButton(Button):
     
     def __init__(self):
                                    
         super().__init__(
             style=ButtonStyle.success,
-            label="Pick Up a Trainee!",
+            label="Pick Up Training(s)!",
             row=0,
-            custom_id="trainer_message_button"
+            custom_id="training_pickup_button"
         )
         
     async def callback(self, interaction: Interaction):
-        await self.view.msg.acquire_trainee(interaction)
+        await self.view.msg.acquire_trainings(interaction)
     
 ################################################################################

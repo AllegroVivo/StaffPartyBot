@@ -76,6 +76,16 @@ class Trainers(Cog):
         await guild.training_manager.trainee_profile(ctx.interaction, user)
         
 ################################################################################
+    @trainer.command(
+        name="group_training",
+        description="Create and manage Group Training events."
+    )
+    async def group_training(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.group_training_menu(ctx.interaction)
+        
+################################################################################
 def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Trainers(bot))

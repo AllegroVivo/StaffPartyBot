@@ -41,6 +41,8 @@ class DatabaseLoader(DBWorkerBranch):
             "services" : self._load_services(),
             "sp_availability" : self._load_sp_availability(),
             "sp_images" : self._load_sp_images(),
+            "group_trainings": self._load_group_trainings(),
+            "group_training_signups": self._load_group_training_signups(),
         }
 
 ################################################################################
@@ -179,6 +181,18 @@ class DatabaseLoader(DBWorkerBranch):
     def _load_sp_images(self) -> Tuple[Tuple[Any, ...], ...]:
         
         self.execute("SELECT * FROM sp_images;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_group_trainings(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM group_trainings;")
+        return self.fetchall()
+    
+################################################################################
+    def _load_group_training_signups(self) -> Tuple[Tuple[Any, ...], ...]:
+        
+        self.execute("SELECT * FROM group_training_signups;")
         return self.fetchall()
     
 ################################################################################

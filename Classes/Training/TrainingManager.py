@@ -14,7 +14,8 @@ from UI.Training import (
     TUserStatusView,
     TraineeStatusView,
     InternshipMatchingView,
-    VenueMatchView
+    VenueMatchView,
+    GroupTrainingMenuView,
 )
 from Utilities import (
     Utilities as U,
@@ -692,5 +693,29 @@ class TrainingManager:
         
         return await tuser.on_server_leave()
 
+################################################################################
+    async def group_training_menu(self, interaction: Interaction) -> None:
+        
+        prompt = U.make_embed(
+            title="Group Training Menu",
+            description=(
+                "Select an option below to manage Group Training events."
+            ),
+        )
+        view = GroupTrainingMenuView(interaction.user, self)
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+################################################################################
+    async def add_group_training(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting creation of new Group Training event."
+        )
+
+        await interaction.respond("Under construction.")
+        
 ################################################################################
         

@@ -166,7 +166,7 @@ class Training:
         self.bot.database.update.training(self)
 
 ################################################################################
-    async def set_trainer(self, trainer: Optional[TUser]) -> None:
+    async def set_trainer(self, trainer: Optional[TUser], send_confirmation: bool = True) -> None:
         
         log.info(
             "Training",
@@ -206,7 +206,8 @@ class Training:
                 ),
             )
         
-        await self.trainee.send(embed=confirm)
+        if send_confirmation:
+            await self.trainee.send(embed=confirm)
         
         if trainer is None:
             trainer_confirm = U.make_embed(
