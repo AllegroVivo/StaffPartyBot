@@ -496,7 +496,7 @@ class TrainingManager:
             tag_score = (len(matching_tags) / len(tags)) * 20 if tags else 0
             score += tag_score
     
-            venue_scores[venue.id] = tag_score
+            venue_scores[venue.id] = score
     
         # Sort venues by score, if more than 5, then slice the first 5
         max_results = 5 if len(venue_scores) >= 5 else len(venue_scores)    
