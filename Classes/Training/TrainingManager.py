@@ -82,11 +82,11 @@ class TrainingManager:
                 
         await self._message.load(payload["signup_message"])
         
-        self._groups = [
-            GroupTraining.load(self, g) 
-            for g in data["group_trainings"]
-        ]
-        
+        # self._groups = [
+        #     GroupTraining.load(self, g) 
+        #     for g in data["group_trainings"]
+        # ]
+        # 
 ################################################################################
     @staticmethod    
     def _parse_data(data: Dict[str, Any]) -> Dict[str, Any]:
