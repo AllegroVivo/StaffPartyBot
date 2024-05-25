@@ -480,22 +480,23 @@ class TrainingManager:
         for venue in self.guild.venue_manager.venues:
             if venue.post_url is None:
                 continue
+                
+            score = 0
+            
+            rp_score = 50 - 10 * abs(rp_level.value - venue.rp_level.value)
+            score += rp_score
+            
+            if nsfw_pref == venue.nsfw:
+                score += 30
+                
+            matching_tags = set(
+                [t.proper_name.lower() for t in tags]).intersection(
+                set([v.tag_text.lower() for v in venue.tags])
+            )
+            tag_score = (len(matching_tags) / len(tags)) * 20 if tags else 0
+            score += tag_score
     
-            # Normalize level difference (assuming _calculate_distance returns a non-negative number)
-            level_diff = self._calculate_distance(rp_level, venue.rp_level)
-            normalized_level_diff = 1 - (level_diff / 5)
-    
-            # NSFW match (1 for match, 0 for mismatch)
-            nsfw_score = 1 if nsfw_pref == venue.nsfw else 0
-    
-            # Calculate tag similarity as a ratio
-            venue_tags = [v.tag_text.lower() for v in venue.tags]
-            tags_scalar = sum(1 for tag in tags if tag.proper_name.lower() in venue_tags) / len(tags)
-    
-            # Calculate the overall score as an average of the three normalized scores, then convert to percentage
-            overall_score = ((normalized_level_diff + nsfw_score + tags_scalar) / 3) * 100
-    
-            venue_scores[venue.id] = overall_score
+            venue_scores[venue.id] = tag_score
     
         # Sort venues by score, if more than 5, then slice the first 5
         max_results = 5 if len(venue_scores) >= 5 else len(venue_scores)    
