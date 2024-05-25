@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField, Member
 from discord.ext.pages import Page
 
+from .GroupTraining import GroupTraining
 from UI.Common import ConfirmCancelView, Frogginator
 from UI.Training import (
     TUserAdminStatusView,
@@ -53,7 +54,7 @@ class TrainingManager:
         
         self._tusers: List[TUser] = []
         self._trainings: List[Training] = []
-        self._groups: List[TrainingGroup] = []
+        self._groups: List[GroupTraining] = []
         
         self._message: SignUpMessage = SignUpMessage(self)
 
@@ -79,6 +80,11 @@ class TrainingManager:
                 self._trainings.append(training)
                 
         await self._message.load(payload["signup_message"])
+        
+        self._groups = [
+            GroupTraining.load(self, g) 
+            for g in data["group_trainings"]
+        ]
         
 ################################################################################
     @staticmethod    
@@ -478,7 +484,7 @@ class TrainingManager:
         venue_scores = {}
     
         for venue in self.guild.venue_manager.venues:
-            if venue.post_url is None:
+            if venue.post_url is None or venue.rp_level is None:
                 continue
                 
             score = 0
