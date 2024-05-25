@@ -43,6 +43,7 @@ class TrainingManager:
         "_tusers",
         "_trainings",
         "_message",
+        "_groups",
     )
 
 ################################################################################
@@ -52,6 +53,7 @@ class TrainingManager:
         
         self._tusers: List[TUser] = []
         self._trainings: List[Training] = []
+        self._groups: List[TrainingGroup] = []
         
         self._message: SignUpMessage = SignUpMessage(self)
 
@@ -246,8 +248,9 @@ class TrainingManager:
             if t.accepting_trainee_pings():
                 await t.notify_of_training_signup(training)
         
-################################################################################        
-    async def notify_of_availability_change(self, tuser: TUser) -> None:
+################################################################################ 
+    @staticmethod
+    async def notify_of_availability_change(tuser: TUser) -> None:
         
         log.info(
             "Training",
@@ -255,9 +258,8 @@ class TrainingManager:
         )
         
         for training in tuser.trainings_as_trainee:
-            for t in self.get_qualified_trainers(training.position.id):
-                if t.accepting_trainee_pings():
-                    await t.notify_of_modified_schedule(training)
+            if training.trainer is not None and training.trainer.accepting_trainee_pings():
+                await training.trainer.notify_of_modified_schedule(training)
                 
 ################################################################################
     def get_qualified_trainers(self, position_id: str) -> List[TUser]:
