@@ -18,7 +18,6 @@ from Classes.Profiles.ProfileManager import ProfileManager
 from Classes.RoleManager import RoleManager
 from Classes.Services.ServicesManager import ServicesManager
 from Classes.Training.TrainingManager import TrainingManager
-from Classes.Scheduling.ScheduleManager import ScheduleManager
 from Classes.Venues.VenueManager import VenueManager
 from UI.Guild import ReportMenuView, BulkUpdateView
 from Utilities import Utilities as U, log
@@ -49,7 +48,6 @@ class GuildData:
     #     "_channel_mgr",
     #     "_service_mgr",
     #     "_itinerary_mgr",
-    #     "_schedule_mgr",
     # )
     
     RESTART_TIME = 5  # minutes
@@ -72,7 +70,6 @@ class GuildData:
         self._channel_mgr: ChannelManager = ChannelManager(self)
         self._service_mgr: ServicesManager = ServicesManager(self)
         self._itinerary_mgr: ItineraryManager = ItineraryManager(self)
-        self._schedule_mgr: ScheduleManager = ScheduleManager(self)
 
 ################################################################################
     async def load_all(self, data: Dict[str, Any]) -> None:
@@ -89,7 +86,6 @@ class GuildData:
         await self._profile_mgr._load_all(data)
         await self._job_mgr._load_all(data)
         await self._service_mgr._load_all(data)
-        await self._schedule_mgr.load_all(data)
         
         await self.end_notify_of_bot_restart(msgs)
         
@@ -170,12 +166,6 @@ class GuildData:
     def itinerary_manager(self) -> ItineraryManager:
         
         return self._itinerary_mgr
-    
-################################################################################
-    @property
-    def schedule_manager(self) -> ScheduleManager:
-        
-        return self._schedule_mgr
     
 ################################################################################
     def get_or_create_profile(self, user: User) -> Profile:
