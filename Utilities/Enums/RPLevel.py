@@ -7,15 +7,10 @@ from ._Enum import FroggeEnum
 class RPLevel(FroggeEnum):
 
     NoRP = 1
-    MinimalRP = 2
-    SomeRP = 3
-    CasualRP = 4
-    ModerateRP = 5
-    HalfRP = 6
-    ConsiderableRP = 7
-    MostlyRP = 8
-    HighRP = 9
-    FullyRP = 10
+    CasualRP = 2
+    ConsiderableRP = 3
+    HighRP = 4
+    FullyRP = 5
 
 ################################################################################
     @property
