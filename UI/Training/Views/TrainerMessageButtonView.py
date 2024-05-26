@@ -41,6 +41,6 @@ class AcquireTrainingsButton(Button):
         )
         
     async def callback(self, interaction: Interaction):
-        await self.view.msg.acquire_trainings(interaction)
+        await self.view.msg.acquire_single_trainee(interaction)
     
 ################################################################################
