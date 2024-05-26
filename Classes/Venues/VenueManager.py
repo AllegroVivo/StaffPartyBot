@@ -662,7 +662,7 @@ class VenueManager:
             await de_escalation_msg.attachments[0].to_file()
         ]
         
-        await interaction.respond(file=files, delete_after=120)
+        await interaction.respond(files=files, delete_after=120)
 
 ################################################################################
     async def bulk_update(self, interaction: Interaction) -> None:
