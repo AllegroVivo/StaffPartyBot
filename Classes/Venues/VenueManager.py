@@ -41,6 +41,10 @@ class VenueManager:
         "https://canary.discord.com/channels/955933227372122173/"
         "957656105092272208/1231769147113738260"
     )
+    DE_ESCALATION = (
+        "https://canary.discord.com/channels/955933227372122173/"
+        "957656105092272208/1244338542029832333"
+    )
 
 ################################################################################
     def __init__(self, guild: GuildData) -> None:
@@ -650,8 +654,15 @@ class VenueManager:
 
         await interaction.response.defer()
         
-        msg = await self.bot[955933227372122173].get_or_fetch_message(self.VENUE_ETIQUETTE)
-        await interaction.respond(file=await msg.attachments[0].to_file(), delete_after=60)
+        etiquette_msg = await self.bot[955933227372122173].get_or_fetch_message(self.VENUE_ETIQUETTE)
+        de_escalation_msg = await self.bot[955933227372122173].get_or_fetch_message(self.DE_ESCALATION)
+        
+        files = [
+            await etiquette_msg.attachments[0].to_file(),
+            await de_escalation_msg.attachments[0].to_file()
+        ]
+        
+        await interaction.respond(file=files, delete_after=120)
 
 ################################################################################
     async def bulk_update(self, interaction: Interaction) -> None:
