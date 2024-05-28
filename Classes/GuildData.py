@@ -379,9 +379,11 @@ class GuildData:
         
         flag = False
         attempts = 0
+        target_dt = member.joined_at
         while attempts < 5:
+            target_dt += timedelta(minutes=1)
             # One minute for role selection
-            await discord.utils.sleep_until(member.joined_at + timedelta(minutes=1))
+            await discord.utils.sleep_until(target_dt)
             
             # Get updated member object
             if get_member := self.parent.get_member(member.id):
