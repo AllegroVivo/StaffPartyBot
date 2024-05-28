@@ -246,7 +246,7 @@ class Admin(Cog):
         name="trainer_workload",
         description="Manage a trainer's training assignments."
     )
-    async def settle_trainee(
+    async def trainer_workload(
         self,
         ctx: ApplicationContext,
         user: Option(
@@ -338,7 +338,7 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].bulk_update_menu(ctx.interaction)
         
-################################################################################     
+################################################################################           
 def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Admin(bot))

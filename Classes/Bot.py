@@ -13,6 +13,8 @@ from .GuildManager import GuildManager
 from .ReportManager import ReportManager
 from .Webhooks import FroggeHookManager
 from .XIVVenues import XIVVenuesClient
+from Utilities import Utilities
+from Assets import BotImages
 
 if TYPE_CHECKING:
     from Classes import GuildData
@@ -126,6 +128,7 @@ class StaffPartyBot(Bot):
             "channels": None,
             "services": [],
             "service_profiles": [],
+            "group_trainings": [],
         } for g in self.guilds }
         
         load_dotenv()
@@ -275,5 +278,5 @@ class StaffPartyBot(Bot):
                 )
             
         return ret
-    
+
 ################################################################################

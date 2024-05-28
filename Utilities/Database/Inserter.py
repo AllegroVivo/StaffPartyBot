@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from Utilities import TrainingLevel, Weekday
 from .Branch import DBWorkerBranch
@@ -282,6 +282,32 @@ class DatabaseInserter(DBWorkerBranch):
         )
         
 ################################################################################
+    def _add_group_training(self, guild_id: int, trainer_id: int, pos_ids: List[str]) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO group_trainings (_id, guild_id, trainer_id, position_ids) "
+            "VALUES (%s, %s, %s, %s);",
+            new_id, guild_id, trainer_id, pos_ids
+        )
+        
+        return new_id
+    
+################################################################################
+    def _add_group_training_signup(self, group_id: str, user_id: int, level: int) -> str:
+        
+        new_id = self.generate_id()
+        
+        self.execute(
+            "INSERT INTO group_training_signups (_id, group_id, user_id, level) "
+            "VALUES (%s, %s, %s, %s);",
+            new_id, group_id, user_id, level
+        )
+        
+        return new_id
+        
+################################################################################
 
     position                = _add_position
     requirement             = _add_requirement
@@ -300,6 +326,8 @@ class DatabaseInserter(DBWorkerBranch):
     service                 = _add_service
     service_profile         = _add_service_profile
     sp_availability         = _add_service_availability
+    group_training          = _add_group_training
+    group_training_signup   = _add_group_training_signup
     
 ################################################################################
     

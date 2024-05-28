@@ -1,4 +1,5 @@
 from .AboutMeNotSet import AboutMeNotSetError
+from .GroupTrainingNotComplete import GroupTrainingNotCompleteError
 from .PayAlreadyRequested import PayAlreadyRequestedError
 from .AvailabilityNotComplete import AvailabilityNotCompleteError
 from .BotUserNotAllowed import BotUserNotAllowedError

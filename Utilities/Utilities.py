@@ -2,7 +2,7 @@ import math
 import os
 import re
 import textwrap
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 from typing import Any, List, Optional, Tuple, Union, Literal
 
 import pytz
@@ -458,3 +458,51 @@ class Utilities:
         return r.json()["url"]["shortLink"] if r.json()["url"]["status"] == 7 else None
         
 ################################################################################
+    @staticmethod
+    def string_clamp(text: str, length: int) -> str:
+        
+        return text[:length] + "..." if len(text) > length else text
+    
+################################################################################
+    @staticmethod
+    def compare_datetimes(dt1: Optional[datetime], dt2: Optional[datetime]) -> int:
+        """
+        Compare two Optional[datetime] objects, handling tz-aware and naive datetimes.
+        
+        Args:
+            dt1: First datetime object, may be None.
+            dt2: Second datetime object, may be None.
+        
+        Returns:
+            -1 if dt1 < dt2
+             0 if dt1 == dt2
+             1 if dt1 > dt2
+        """
+        
+        def make_tz_aware(dt: Optional[datetime]) -> Optional[datetime]:
+            if dt is None:
+                return None
+            if dt.tzinfo is None:
+                # Assuming naive datetime is in local timezone, convert it to UTC
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc)
+
+        dt1_aware = make_tz_aware(dt1)
+        dt2_aware = make_tz_aware(dt2)
+
+        if dt1_aware is None and dt2_aware is None:
+            return 0
+        if dt1_aware is None:
+            return -1
+        if dt2_aware is None:
+            return 1
+
+        if dt1_aware < dt2_aware:
+            return -1
+        elif dt1_aware > dt2_aware:
+            return 1
+        else:
+            return 0
+        
+################################################################################
+        

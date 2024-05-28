@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import random
 from dotenv import load_dotenv
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from UI.Guild import BGCheckApprovalView
 from discord import (
@@ -426,3 +426,58 @@ class Logger:
         await self._alyah.send(embed=embed)
 
 ################################################################################
+    async def group_training_created(self, group: GroupTraining) -> None:
+        
+        embed = U.make_embed(
+            title="Group Training Created!",
+            description=(
+                f"New group training for `{group.pos_string}` has been created "
+                f"by {group.trainer.user.mention} (`{group.trainer.name}`)!"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.GroupTrainingCreated)
+
+################################################################################
+    async def group_training_no_show_report(self, training: GroupTraining, no_shows: List[TUser]) -> None:
+        
+        no_show_list = "\n".join(
+            [f"* {n.user.mention} ({n.user.display_name})" for n in no_shows]
+        )
+        
+        embed = U.make_embed(
+            title="Group Training No-Shows!",
+            description=(
+                f"The following trainees have failed to show up for their group "
+                f"training with {training.trainer.name} for position(s) {training.pos_string}:\n\n"
+                
+                f"{no_show_list}"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.GroupTrainingNoShow)
+
+################################################################################
+    async def group_training_complete_report(self, training: GroupTraining, attendees: List[TUser]) -> None:
+        
+        attendee_list = "\n".join(
+            [f"* {a.user.mention} ({a.user.display_name})" for a in attendees]
+        )
+        
+        embed = U.make_embed(
+            title="Group Training Completed!",
+            description=(
+                f"Group training with {training.trainer.name} for position(s) "
+                f"{training.pos_string} has been completed by the following trainees:\n\n"
+                
+                f"{attendee_list}"
+            ),
+            timestamp=True
+        )
+
+        await self._log(embed, LogType.GroupTrainingComplete)
+
+################################################################################
+        

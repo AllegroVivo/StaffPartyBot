@@ -22,6 +22,7 @@ class Internal(Cog):
 
         print("Starting tasks...")
         self.cull_job_postings.start()
+        # self.training_reminder.start()
         
         print("TrainingBot Online!")
 
@@ -50,6 +51,14 @@ class Internal(Cog):
         for f in self.bot.guild_manager.fguilds:
             await f.jobs_manager.cull_job_postings()
         
+################################################################################
+    @tasks.loop(minutes=5)
+    async def training_reminder(self) -> None:
+
+        for frogge in self.bot.guild_manager.fguilds:
+            for group in frogge.training_manager.groups:
+                await group.reminder()    
+            
 ################################################################################
 def setup(bot: StaffPartyBot) -> None:
 

@@ -411,8 +411,7 @@ class Training:
                 "Additionally, you need to run the `/staffing profile` "
                 "command to set up your profile! (Follow the instructions "
                 "at https://discord.com/channels/1104515062187708525/1219788797223374938 "
-                "to get started!)\n\n"
-                f"{U.draw_line(extra=25)}\n"
+                "to get started!)"
             ),
         )
         
@@ -429,3 +428,20 @@ class Training:
             )
     
 ################################################################################
+    async def group_override(self) -> None:
+        
+        if self.trainer is not None:
+            notification = U.make_embed(
+                title="Training Canceled",
+                description=(
+                    f"Your trainee has canceled their training for the position of "
+                    f"`{self.position.name}`. You're off the hook~"
+                )
+            )
+            await self.trainer.send(embed=notification)
+
+        self.delete()
+        await self.manager.signup_message.update_components()
+                
+################################################################################
+                

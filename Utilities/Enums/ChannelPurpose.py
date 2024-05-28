@@ -14,6 +14,7 @@ class ChannelPurpose(FroggeEnum):
     Services = 6
     Welcome = 7
     BotNotify = 8
+    GroupTraining = 9
 
 ################################################################################
     @staticmethod
@@ -35,6 +36,8 @@ class ChannelPurpose(FroggeEnum):
             return "Hireable Services"
         elif self.value == 8:
             return "Bot Restart Notification"
+        elif self.value == 9:
+            return "Group Training"
         
         return self.name
     

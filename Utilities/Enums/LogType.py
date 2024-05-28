@@ -19,5 +19,8 @@ class LogType(FroggeEnum):
     TempJobPosted = 14
     BGCheckSubmitted = 15
     BGCheckApproved = 16
+    GroupTrainingCreated = 17
+    GroupTrainingNoShow = 18
+    GroupTrainingComplete = 19
 
 ################################################################################

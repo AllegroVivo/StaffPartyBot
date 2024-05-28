@@ -29,6 +29,7 @@ class ChannelStatusView(FroggeView):
             LogChannelButton(self.channels.log_channel),
             ProfilesChannelButton(self.channels.profiles_channel),
             VenuesChannelButton(self.channels.venues_channel),
+            GroupTrainingChannelButton(self.channels.group_training_channel),
             TempJobsChannelButton(self.channels.temp_job_channel),
             PermJobsChannelButton(self.channels.perm_job_channel),
             ServicesButton(self.channels.services_channel),
@@ -209,6 +210,28 @@ class BotNotifyChannelsButton(FroggeButton):
     async def callback(self, interaction):
         await self.view.channels.set_channel(interaction, ChannelPurpose.BotNotify)
         self.set_style(self.view.channels.notification_channels)
+
+        await self.view.edit_message_helper(
+            interaction, embed=self.view.channels.status(), view=self.view
+        )
+        
+################################################################################
+class GroupTrainingChannelButton(FroggeButton):
+
+    def __init__(self, channel: Optional[GuildChannel]):
+
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Group Training Channel",
+            disabled=False,
+            row=0,
+        )
+
+        self.set_style(channel)
+
+    async def callback(self, interaction):
+        await self.view.channels.set_channel(interaction, ChannelPurpose.GroupTraining)
+        self.set_style(self.view.channels.group_training_channel)
 
         await self.view.edit_message_helper(
             interaction, embed=self.view.channels.status(), view=self.view

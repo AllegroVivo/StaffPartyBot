@@ -18,7 +18,7 @@ class GroupTrainingMenuView(FroggeView):
 
     def __init__(self, user: User, mgr: TrainingManager) -> None:
 
-        super().__init__(user)
+        super().__init__(user, close_on_complete=True)
 
         self.mgr: TrainingManager = mgr
 
@@ -36,8 +36,8 @@ class AddGroupTrainingButton(Button):
     def __init__(self) -> None:
 
         super().__init__(
-            style=ButtonStyle.primary,
-            label="Add New Group Training",
+            style=ButtonStyle.success,
+            label="Add a New Group Training",
             disabled=False,
             row=0
         )
@@ -55,7 +55,7 @@ class ModifyGroupTrainingButton(Button):
 
         super().__init__(
             style=ButtonStyle.primary,
-            label="Modify Existing Group Training",
+            label="Manage an Existing Group Training",
             disabled=False,
             row=0
         )
@@ -64,7 +64,7 @@ class ModifyGroupTrainingButton(Button):
         self.view.complete = True
         await self.view.stop()  # type: ignore
 
-        await self.view.mgr.modify_group_training(interaction)
+        await self.view.mgr.manage_group_trainings(interaction)
 
 ################################################################################
 class RemoveGroupTrainingButton(Button):
@@ -72,8 +72,8 @@ class RemoveGroupTrainingButton(Button):
     def __init__(self) -> None:
 
         super().__init__(
-            style=ButtonStyle.primary,
-            label="Remove/Delete Group Training",
+            style=ButtonStyle.danger,
+            label="Remove/Delete a Group Training",
             disabled=False,
             row=0
         )

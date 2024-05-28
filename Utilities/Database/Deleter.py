@@ -106,6 +106,20 @@ class DatabaseDeleter(DBWorkerBranch):
         )
         
 ################################################################################
+    def delete_group_training(self, group: GroupTraining) -> None:
+        
+        self.execute("DELETE FROM group_trainings WHERE _id = %s;", group.id)
+        self.execute("DELETE FROM group_training_signups WHERE group_id = %s;", group.id)
+        
+################################################################################
+    def delete_group_training_signup(self, signup: GroupTrainingSignup) -> None:
+        
+        self.execute(
+            "DELETE FROM group_training_signups WHERE _id = %s;", 
+            signup.id
+        )
+        
+################################################################################
 
     requirement             = _delete_requirement
     availability            = _delete_availability
@@ -118,6 +132,8 @@ class DatabaseDeleter(DBWorkerBranch):
     job_posting             = _delete_job_post
     profile_availability    = _delete_profile_availability
     sp_availability         = _delete_service_profile_availability
+    group_training          = delete_group_training
+    group_training_signup   = delete_group_training_signup
     
 ################################################################################
     

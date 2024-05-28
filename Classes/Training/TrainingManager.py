@@ -4,7 +4,16 @@ import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
-from discord import User, Interaction, TextChannel, NotFound, Embed, EmbedField, Member
+from discord import (
+    User,
+    Interaction,
+    TextChannel,
+    NotFound,
+    Embed,
+    EmbedField,
+    Member,
+    SelectOption
+)
 from discord.ext.pages import Page
 
 from .GroupTraining import GroupTraining
@@ -16,6 +25,8 @@ from UI.Training import (
     InternshipMatchingView,
     VenueMatchView,
     GroupTrainingMenuView,
+    PositionSelectView,
+    GroupTrainingSelectView,
 )
 from Utilities import (
     Utilities as U,
@@ -32,7 +43,7 @@ from .TUser import TUser
 from .Training import Training
 
 if TYPE_CHECKING:
-    from Classes import StaffPartyBot, GuildData
+    from Classes import StaffPartyBot, GuildData, Position
 ################################################################################
 
 __all__ = ("TrainingManager",)
@@ -82,11 +93,13 @@ class TrainingManager:
                 
         await self._message.load(payload["signup_message"])
         
-        # self._groups = [
-        #     GroupTraining.load(self, g) 
-        #     for g in data["group_trainings"]
-        # ]
-        # 
+        self._groups = [
+            await GroupTraining.load(self, g) 
+            for g in data["group_trainings"]
+        ]
+        for g in self._groups:
+            await g._update_post_components()
+
 ################################################################################
     @staticmethod    
     def _parse_data(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -167,6 +180,18 @@ class TrainingManager:
     def signup_message(self) -> SignUpMessage:
         
         return self._message
+    
+################################################################################
+    @property
+    def groups(self) -> List[GroupTraining]:
+        
+        return self._groups
+    
+################################################################################
+    @property
+    def unpaid_groups(self) -> List[GroupTraining]:
+        
+        return [g for g in self._groups if not g.is_paid]
     
 ################################################################################
     @property
@@ -708,14 +733,121 @@ class TrainingManager:
         await view.wait()
 
 ################################################################################
+    def get_group_trainings_by_trainer(
+        self, 
+        trainer: TUser, 
+        positions: Optional[List[Position]] = None
+    ) -> List[GroupTraining]:
+
+        return [
+            g for g in self._groups 
+            if g.trainer == trainer and (positions is None or g.position in positions)
+        ]
+
+################################################################################
     async def add_group_training(self, interaction: Interaction) -> None:
+        
+        trainer = self[interaction.user.id]
+        if trainer is None:
+            log.warning(
+                "Training",
+                f"User {interaction.user.name} ({interaction.user.id}) is not registered."
+            )
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
         
         log.info(
             "Training",
-            f"Requesting creation of new Group Training event."
+            f"User {interaction.user.name} ({interaction.user.id}) is adding a new Group Training event."
         )
+        
+        prompt = U.make_embed(
+            title="Add New Group Training",
+            description="Select the Position(s) being trained for in this Group Training."
+        )
+        view = PositionSelectView(
+            user=interaction.user,
+            options=self.guild.position_manager.select_options(),
+            multi_select=True
+        )
+        
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled Group Training creation.")
+            return
+        
+        positions = [self.guild.position_manager.get_position(p) for p in view.value]
+        pos_string = ", ".join([p.name for p in positions])
+        
+        log.info(
+            "Training",
+            (
+                f"User {interaction.user.name} ({interaction.user.id}) is creating "
+                f"a new Group Training event for {pos_string}."
+            )
+        )
+        
+        group = GroupTraining.new(self, trainer, positions)
+        self._groups.append(group)
 
-        await interaction.respond("Under construction.")
+        await self.guild.log.group_training_created(group)
+        await group.menu(interaction)
         
 ################################################################################
+    async def manage_group_trainings(self, interaction: Interaction) -> None:
+
+        trainer = self[interaction.user.id]
+        if trainer is None:
+            log.warning(
+                "Training",
+                f"User {interaction.user.name} ({interaction.user.id}) is not registered."
+            )
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        current_groups = self.get_group_trainings_by_trainer(trainer)
+        options = [
+            SelectOption(
+                label=g.name or "Unnamed Group Training",
+                description=U.string_clamp(g.pos_string, 90),
+                value=g.id
+            ) for g in current_groups
+        ]
+
+        prompt = U.make_embed(
+            title="Manage Group Trainings",
+            description="Select the Group Training you want to modify."
+        )
+        view = GroupTrainingSelectView(user=interaction.user, options=options)
         
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled Group Training modification.")
+            return
+
+        group = self.get_group_training(view.value)
+
+        log.info(
+            "Training",
+            (
+                f"User {interaction.user.name} ({interaction.user.id}) is modifying "
+                f"their Group Training event {group.id} - {group.name}."
+            )
+        )
+
+        await group.menu(interaction)
+    
+################################################################################
+    def get_group_training(self, group_id: str) -> Optional[GroupTraining]:
+
+        for g in self._groups:
+            if g.id == group_id:
+                return g
+            
+################################################################################

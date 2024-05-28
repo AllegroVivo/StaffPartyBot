@@ -32,6 +32,7 @@ class ChannelManager:
         "_services",
         "_welcome",
         "_notification_channels",
+        "_group_training",
     )
 
 ################################################################################
@@ -47,6 +48,7 @@ class ChannelManager:
         self._services: Optional[ForumChannel] = None
         self._welcome: Optional[TextChannel] = None
         self._notification_channels: List[TextChannel] = []
+        self._group_training: Optional[TextChannel] = None
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -62,6 +64,7 @@ class ChannelManager:
             await self._guild.get_or_fetch_channel(channel_id)
             for channel_id in data[8]
         ] if data[8] else []
+        self._group_training = await self._guild.get_or_fetch_channel(data[9])
         
 ################################################################################
     @property
@@ -161,6 +164,18 @@ class ChannelManager:
         
 ################################################################################
     @property
+    def group_training_channel(self) -> Optional[TextChannel]:
+        
+        return self._group_training
+    
+    @group_training_channel.setter
+    def group_training_channel(self, channel: Optional[TextChannel]) -> None:
+        
+        self._group_training = channel
+        self.update()
+        
+################################################################################
+    @property
     def notification_channels(self) -> List[TextChannel]:
         
         return self._notification_channels
@@ -207,6 +222,11 @@ class ChannelManager:
             EmbedField(
                 name="__Hireable Services__",
                 value=self.services_channel.mention if self.services_channel else "`Not Set`",
+                inline=False
+            ),
+            EmbedField(
+                name="__Group Training__",
+                value=self.group_training_channel.mention if self.group_training_channel else "`Not Set`",
                 inline=False
             ),
             EmbedField(
@@ -274,6 +294,8 @@ class ChannelManager:
                 self.services_channel = channel
             case ChannelPurpose.Welcome:
                 self.welcome_channel = channel
+            case ChannelPurpose.GroupTraining:
+                self.group_training_channel = channel
             case ChannelPurpose.BotNotify:
                 self._notification_channels.append(channel)  # type: ignore
                 self.update()

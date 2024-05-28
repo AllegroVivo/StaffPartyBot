@@ -337,7 +337,7 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE channels SET temp_job = %s, perm_job = %s, venues = %s, "
             "profiles = %s, log_channel = %s, services = %s, welcome = %s, "
-            "notification_channels = %s WHERE guild_id = %s;",
+            "notification_channels = %s, group_training = %s WHERE guild_id = %s;",
             channel_mgr.temp_job_channel.id if channel_mgr.temp_job_channel else None,
             channel_mgr.perm_job_channel.id if channel_mgr.perm_job_channel else None,
             channel_mgr.venues_channel.id if channel_mgr.venues_channel else None,
@@ -345,7 +345,9 @@ class DatabaseUpdater(DBWorkerBranch):
             channel_mgr.log_channel.id if channel_mgr.log_channel else None,
             channel_mgr.services_channel.id if channel_mgr.services_channel else None,
             channel_mgr.welcome_channel.id if channel_mgr.welcome_channel else None,
-            [c.id for c in channel_mgr.notification_channels], channel_mgr.guild_id
+            [c.id for c in channel_mgr.notification_channels], 
+            channel_mgr.group_training_channel.id if channel_mgr.group_training_channel else None,
+            channel_mgr.guild_id
         )
         
 ################################################################################
@@ -367,6 +369,26 @@ class DatabaseUpdater(DBWorkerBranch):
             "WHERE _id = %s;",
             profile.nsfw, profile.rates, profile.style, profile.website,
             profile.discord, profile.thumbnail, profile.main_image, profile.id
+        )
+        
+################################################################################
+    def _update_group_training(self, training: GroupTraining) -> None:
+        
+        self.execute(
+            "UPDATE group_trainings SET name = %s, description = %s, start_time = %s, "
+            "end_time = %s, post_url = %s, completed = %s, paid = %s "
+            "WHERE _id = %s;",
+            training.name, training.description, training.start_time, training.end_time, 
+            training.post_message.jump_url if training.post_message else None, 
+            training.is_completed, training.is_paid, training.id
+        )
+        
+################################################################################
+    def _update_group_training_signup(self, signup: GroupTrainingSignup) -> None:
+        
+        self.execute(
+            "UPDATE group_training_signups SET level = %s WHERE _id = %s;",
+            signup.level.value, signup.id
         )
         
 ################################################################################
@@ -399,6 +421,8 @@ class DatabaseUpdater(DBWorkerBranch):
     channels                = _update_channels
     service                 = _update_service
     service_profile         = _update_service_profile
+    group_training          = _update_group_training
+    group_training_signup   = _update_group_training_signup
     
 ################################################################################
     

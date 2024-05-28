@@ -46,7 +46,8 @@ if TYPE_CHECKING:
         Position,
         JobPosting,
         Profile,
-        Venue
+        Venue,
+        GroupTraining
     )
 ################################################################################
 
@@ -268,6 +269,12 @@ class TUser:
         ]
     
 ################################################################################
+    @property   
+    def unsettled_groups(self) -> List[GroupTraining]:
+            
+        return [gt for gt in self._manager.unpaid_groups if gt.trainer == self]
+    
+################################################################################
     @property
     def unmatched_trainings(self) -> List[Training]:
         
@@ -466,6 +473,11 @@ class TUser:
                 p.position.trainer_pay
                 for p in self.unpaid_trainings
                 if p
+            ] +
+            [
+                gt.trainer_pay
+                for gt in self._manager.unpaid_groups
+                if gt
             ]
         )
     
@@ -1166,7 +1178,7 @@ class TUser:
             f"The training balance for TUser {self.name} ({self.user_id}) is being settled."
         )
 
-        if not self.unpaid_trainings:
+        if not self.unpaid_trainings and not self.unsettled_groups:
             log.warning(
                 "Training",
                 f"No unpaid trainings found for TUser {self.name} ({self.user_id})."
@@ -1198,6 +1210,14 @@ class TUser:
                 f"`{(position.trainer_pay * len(trainings)):,}`\n"
             )
             
+        group_balance = sum([gt.trainer_pay for gt in self.unsettled_groups])
+        
+        group_str = (
+            f"[{len(self.unsettled_groups)}] **Group Trainings** = "
+            f"`{group_balance:,}`\n"
+        )
+        amount += group_balance
+            
         embed = U.make_embed(
             title="Settle Training Balance",
             description=(
@@ -1205,6 +1225,7 @@ class TUser:
                 "following unpaid training balances.\n\n"
 
                 f"{training_str}\n"
+                f"{group_str}\n"
                 
                 "__**Total Amount Due:**__\n"
                 f"`{amount:,}`\n"
@@ -1222,6 +1243,8 @@ class TUser:
         
         for t in self.unpaid_trainings:
             t.trainer_paid = True
+        for gt in self.unsettled_groups:
+            gt.is_paid = True
         self._pay_requested = False
             
         confirm = U.make_embed(
@@ -1371,7 +1394,7 @@ class TUser:
                 "Training",
                 f"No unpaid trainings found for TUser {self.name} ({self.user_id})."
             )
-            # We shouldn't ever reach this, so a generic error is fine
+            # We shouldn't ever reach this, so an inline error is fine
             error = U.make_embed(
                 title="No Unpaid Trainings",
                 description=(
