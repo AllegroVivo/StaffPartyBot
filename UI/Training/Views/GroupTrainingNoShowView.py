@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import List
 
-from discord import Interaction, SelectOption, User
+from discord import Interaction, SelectOption, User, ButtonStyle
 from discord.ui import Select
 
-from UI.Common import FroggeView, CloseMessageButton
-from Utilities import TrainingLevel
-
-if TYPE_CHECKING:
-    pass
+from UI.Common import FroggeView, CloseMessageButton, FroggeButton
 ################################################################################
 
 __all__ = ("GroupTrainingNoShowView",)
@@ -22,6 +18,7 @@ class GroupTrainingNoShowView(FroggeView):
         super().__init__(user, close_on_complete=True)
         
         self.add_item(TraineeSelect(trainees))
+        self.add_item(EveryoneShowedUpButton())
         self.add_item(CloseMessageButton())
         
 ################################################################################
@@ -31,7 +28,7 @@ class TraineeSelect(Select):
         
         if not options:
             options.append(SelectOption(label="None", value="-1"))
-                                   
+        
         super().__init__(
             placeholder="Select any No-Show trainees...",
             options=options,
@@ -51,3 +48,23 @@ class TraineeSelect(Select):
         await self.view.stop()  # type: ignore
     
 ################################################################################
+class EveryoneShowedUpButton(FroggeButton):
+    
+    def __init__(self):
+        
+        super().__init__(
+            style=ButtonStyle.success,
+            label="Everyone Showed Up, There Were 0 No-Shows",
+            disabled=False,
+            row=1
+        )
+        
+    async def callback(self, interaction: Interaction):
+        self.view.value = []
+        self.view.complete = True
+    
+        await interaction.respond("** **", delete_after=0.1)
+        await self.view.stop()  # type: ignore
+        
+################################################################################
+    

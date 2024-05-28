@@ -844,10 +844,94 @@ class TrainingManager:
         await group.menu(interaction)
     
 ################################################################################
+    async def remove_group_training(self, interaction: Interaction) -> None:
+
+        trainer = self[interaction.user.id]
+        if trainer is None:
+            log.warning(
+                "Training",
+                f"User {interaction.user.name} ({interaction.user.id}) is not registered."
+            )
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        current_groups = self.get_group_trainings_by_trainer(trainer)
+        options = [
+            SelectOption(
+                label=g.name or "Unnamed Group Training",
+                description=U.string_clamp(g.pos_string, 90),
+                value=g.id
+            ) for g in current_groups
+        ]
+
+        prompt = U.make_embed(
+            title="Delete Group Training",
+            description="Select the Group Training you want to delete."
+        )
+        view = GroupTrainingSelectView(user=interaction.user, options=options)
+
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled Group Training modification.")
+            return
+
+        group = self.get_group_training(view.value)
+
+        log.info(
+            "Training",
+            (
+                f"User {interaction.user.name} ({interaction.user.id}) is removing "
+                f"their Group Training event {group.id} - {group.name}."
+            )
+        )
+
+        confirm = U.make_embed(
+            title="Delete Group Training",
+            description=(
+                f"Are you sure you want to delete the following Group Training event:\n\n"
+                
+                f"__**Name:**__ `{group.name}`\n"
+                f"__**Position(s):**__ `{group.pos_string}`\n"
+                f"__**Start Time:**__ `{group.start_time}`\n"
+                f"__**Description:**__\n{group.description}"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=confirm, view=view)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled Group Training deletion.")
+            return
+        
+        await self._delete_group_training(group)
+        
+################################################################################
     def get_group_training(self, group_id: str) -> Optional[GroupTraining]:
 
         for g in self._groups:
             if g.id == group_id:
                 return g
             
+################################################################################
+    async def _delete_group_training(self, group: GroupTraining) -> None:
+        
+        notification = U.make_embed(
+            title="Group Training Canceled",
+            description=(
+                f"Group Training event `{group.name}` for positions `{group.pos_string}` "
+                f"has been canceled. Please check back soon for more group training "
+                f"opportunities."
+            )
+        )
+        for signup in group.signups:
+            await signup.user.send(embed=notification)
+
+        self._groups.remove(group)
+        group.delete()
+        
 ################################################################################

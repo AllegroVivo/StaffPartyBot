@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Optional, List, Any, Type, TypeVar, Dict
 
@@ -7,6 +8,7 @@ from discord import Interaction, Embed, EmbedField, Message, NotFound, SelectOpt
 
 from Assets import BotEmojis
 from Classes.Training.GroupTrainingSignup import GroupTrainingSignup
+from UI.Common import TimezoneSelectView, ConfirmCancelView
 from UI.Training import (
     GroupTrainingStatusView,
     GroupTrainingTitleModal,
@@ -15,7 +17,7 @@ from UI.Training import (
     GroupTrainingPickupView,
     GroupTrainingNoShowView
 )
-from UI.Common import TimezoneSelectView, ConfirmCancelView
+from Utilities import Utilities as U, log, SignupLevel, RoleType
 from Utilities.Errors import (
     DateTimeFormatError,
     DateTimeMismatchError,
@@ -24,8 +26,6 @@ from Utilities.Errors import (
     GroupTrainingNotCompleteError,
     NotRegisteredError,
 )
-from Utilities import Utilities as U, log, SignupLevel, RoleType
-from .Training import Training
 
 if TYPE_CHECKING:
     from Classes import TrainingManager, Position, TUser, StaffPartyBot
@@ -56,6 +56,7 @@ class GroupTraining:
     )
     
     REMINDER_THRESHOLD = 30
+    DELETION_THRESHOLD = 3600
     
 ################################################################################
     def __init__(
@@ -243,6 +244,7 @@ class GroupTraining:
     @property
     def positions(self) -> List[Position]:
         
+        self._positions.sort(key=lambda x: x.name)
         return self._positions
     
 ################################################################################
@@ -273,7 +275,7 @@ class GroupTraining:
     @property
     def pos_string(self) -> str:
         
-        return ", ".join(f"`{pos.name}`" for pos in self.positions)
+        return ", ".join(f"{pos.name}" for pos in self.positions)
     
 ################################################################################
     @property
@@ -296,6 +298,12 @@ class GroupTraining:
     def update(self) -> None:
         
         self._mgr.bot.database.update.group_training(self)
+        
+################################################################################
+    def delete(self) -> None:
+        
+        self._mgr.bot.database.delete.group_training(self)
+        self._mgr.groups.remove(self)
         
 ################################################################################
     def get_signup_by_user(self, user: TUser) -> Optional[GroupTrainingSignup]:
@@ -864,12 +872,16 @@ class GroupTraining:
             fields=[
                 EmbedField(
                     name="__Attendees__",
-                    value="* " + "\n* ".join([f"{a.name} ({a.user.name})" for a in attendees]) or "`None`",
+                    value=(
+                        "* " + "\n* ".join([f"{a.name} ({a.user.name})" for a in attendees])
+                    ) if attendees else "`None`",
                     inline=False
                 ),
                 EmbedField(
                     name="__No-Shows__",
-                    value="* " + "\n* ".join([f"{n.name} ({n.user.name})" for n in no_shows]) or "`None`",
+                    value=(
+                        "* " + "\n* ".join([f"{n.name} ({n.user.name})" for n in no_shows])
+                    ) if no_shows else "`None`",
                     inline=False
                 )
             ]
@@ -940,6 +952,19 @@ class GroupTraining:
             description=f"The group training has been completed. {str(BotEmojis.Party)}"
         )
         await interaction.respond(embed=congrats)
+        
+        log.info("Training", "Group training completed successfully, scheduling deletion.")
+        asyncio.create_task(self._delete_group_after_delay())
     
 ################################################################################
-    
+    async def _delete_group_after_delay(self) -> None:
+
+        await asyncio.sleep(self.DELETION_THRESHOLD)
+        
+        await self.post_message.delete()
+        self.delete()
+
+        log.info("Training", "Group training deleted successfully.")
+        
+################################################################################
+        
