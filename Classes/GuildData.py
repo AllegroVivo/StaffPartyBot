@@ -368,46 +368,54 @@ class GuildData:
         
         if not self.channel_manager.welcome_channel:
             return
-        
-        # One minute for role selection
-        await discord.utils.sleep_until(member.joined_at + timedelta(minutes=1))
-        
-        # Get updated member object
-        if get_member := self.parent.get_member(member.id):
-            member = get_member
-        
+
         welcome_message = (
             "# __Welcome to the <a:party_bus:1225557207836393645> "
             "Staff Party Bus!! <a:party_bus:1225557207836393645>__\n\n"
-            
+
             f"Hiya, {member.mention}! I'm the Staff Party Bot, and I'm going to be "
             f"your best friend throughout your time here at the Staff Party Bus!\n\n"
         )
         
         flag = False
-        if self.role_manager.venue_management in member.roles:
-            welcome_message += (
-                "It looks like you've selected the Venue Management role!\n"
-                "You can follow the instructions <#1220087653815291954> to set up "
-                "your venue profile \\o/ <a:bartender:1168135253387378748> \n\n"
-            )
-            flag = True
-        if self.role_manager.staff_unvalidated in member.roles:
-            welcome_message += (
-                "I see you've picked the Staff Pending role!\n"
-                "You can follow the instructions here <#1104515062636478643> to do "
-                "your staff validation and you'll be able to create your staff "
-                "profile afterwards! <a:dancer:1168134583158575175>\n\n"
-            )
-            flag = True
-        if "trainee" in [r.name.lower() for r in member.roles]:
-            welcome_message += (
-                "I see you've selected the Trainee role!\n"
-                "You can follow the instructions here <#1219488746664230974> to "
-                "set up your profile and receive training! <a:greeter:1168134573926912071>"
-            )
-            flag = True
+        attempts = 0
+        while attempts < 5:
+            # One minute for role selection
+            await discord.utils.sleep_until(member.joined_at + timedelta(minutes=1))
             
+            # Get updated member object
+            if get_member := self.parent.get_member(member.id):
+                member = get_member
+            
+            if self.role_manager.venue_management in member.roles:
+                welcome_message += (
+                    "It looks like you've selected the Venue Management role!\n"
+                    "You can follow the instructions <#1220087653815291954> to set up "
+                    "your venue profile \\o/ <a:bartender:1168135253387378748> \n\n"
+                )
+                flag = True
+            if self.role_manager.staff_unvalidated in member.roles:
+                welcome_message += (
+                    "I see you've picked the Staff Pending role!\n"
+                    "You can follow the instructions here <#1104515062636478643> to do "
+                    "your staff validation and you'll be able to create your staff "
+                    "profile afterwards! <a:dancer:1168134583158575175>\n\n"
+                )
+                flag = True
+            if "trainee" in [r.name.lower() for r in member.roles]:
+                welcome_message += (
+                    "I see you've selected the Trainee role!\n"
+                    "You can follow the instructions here <#1219488746664230974> to "
+                    "set up your profile and receive training! <a:greeter:1168134573926912071>"
+                )
+                flag = True
+                
+            if not flag:
+                attempts += 1
+                continue
+            else:
+                break
+                
         if not flag:
             welcome_message += (
                 "It looks like you haven't selected any roles yet! You can do so "
