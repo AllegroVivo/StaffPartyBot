@@ -292,7 +292,7 @@ class GroupTraining:
     @property
     def trainer_pay(self) -> int:
         
-        return sum(pos.trainer_pay for pos in self.positions)
+        return sum((pos.trainer_pay or 0) for pos in self.positions)
     
 ################################################################################
     def update(self) -> None:
