@@ -368,11 +368,11 @@ class GuildData:
         
         if not self.channel_manager.welcome_channel:
             return
-
+    
         welcome_message = (
             "# __Welcome to the <a:party_bus:1225557207836393645> "
             "Staff Party Bus!! <a:party_bus:1225557207836393645>__\n\n"
-
+    
             f"Hiya, {member.mention}! I'm the Staff Party Bot, and I'm going to be "
             f"your best friend throughout your time here at the Staff Party Bus!\n\n"
         )
@@ -412,11 +412,10 @@ class GuildData:
                 )
                 flag = True
                 
-            if not flag:
-                attempts += 1
-                continue
-            else:
+            if flag:
                 break
+            else:
+                attempts += 1
                 
         if not flag:
             welcome_message += (
