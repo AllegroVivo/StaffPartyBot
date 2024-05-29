@@ -460,7 +460,9 @@ class TUser:
         return U.make_embed(
             title=f"User Status for: __{self.name}__",
             description=(
-                f"{U.draw_line(extra=25)}"
+                f"({self.user.display_name})\n"
+                f"({self.user.mention})\n"
+                f"{U.draw_line(text=str(self.user.mention), extra=3)}"
             ),
             fields=fields,
         )
