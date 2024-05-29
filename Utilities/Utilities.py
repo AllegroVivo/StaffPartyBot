@@ -479,6 +479,8 @@ class Utilities:
              1 if dt1 > dt2
         """
         
+        print("Comparing datetimes...")
+        
         def make_tz_aware(dt: Optional[datetime]) -> Optional[datetime]:
             if dt is None:
                 return None
@@ -489,19 +491,28 @@ class Utilities:
 
         dt1_aware = make_tz_aware(dt1)
         dt2_aware = make_tz_aware(dt2)
+        
+        print(f"dt1_aware: {dt1_aware}")
+        print(f"dt2_aware: {dt2_aware}")
 
         if dt1_aware is None and dt2_aware is None:
+            print("Both datetimes are None.")
             return 0
         if dt1_aware is None:
+            print("First datetime is None.")
             return -1
         if dt2_aware is None:
+            print("Second datetime is None.")
             return 1
 
         if dt1_aware < dt2_aware:
+            print("First datetime is earlier.")
             return -1
         elif dt1_aware > dt2_aware:
+            print("First datetime is later.")
             return 1
         else:
+            print("Datetimes are equal.")
             return 0
         
 ################################################################################
