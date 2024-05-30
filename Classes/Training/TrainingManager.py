@@ -290,6 +290,8 @@ class TrainingManager:
         )
         
         for training in tuser.trainings_as_trainee:
+            if training.is_complete:
+                continue
             if training.trainer is not None and training.trainer.accepting_trainee_pings():
                 await training.trainer.notify_of_modified_schedule(training)
                 
