@@ -188,6 +188,11 @@ class RoleManager:
                 name="__Venue Management__",
                 value=self.venue_management.mention if self.venue_management else "`Not Set`",
                 inline=False
+            ),
+            EmbedField(
+                name="__Trainee__",
+                value=self.trainee.mention if self.trainee else "`Not Set`",
+                inline=False
             )
         ]
 
@@ -248,6 +253,8 @@ class RoleManager:
                 self.staff_unvalidated = role
             case RoleType.VenueManagement:
                 self.venue_management = role
+            case RoleType.Trainee:
+                self.trainee = role
             
         log.info("Core", f"Role {_type.proper_name} set to {role.id}.")
         
@@ -275,6 +282,8 @@ class RoleManager:
                 role = self.staff_unvalidated
             case RoleType.VenueManagement:
                 role = self.venue_management
+            case RoleType.Trainee:
+                role = self.trainee
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
@@ -309,6 +318,8 @@ class RoleManager:
                 role = self.staff_unvalidated
             case RoleType.VenueManagement:
                 role = self.venue_management
+            case RoleType.Trainee:
+                role = self.trainee
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
