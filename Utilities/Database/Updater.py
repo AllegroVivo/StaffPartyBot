@@ -320,7 +320,7 @@ class DatabaseUpdater(DBWorkerBranch):
         self.execute(
             "UPDATE roles SET trainer_main = %s, trainer_pending = %s, "
             "trainer_hiatus = %s, staff_main = %s, staff_unvalidated = %s, "
-            "venue_owner = %s, trainee = %s WHERE guild_id = %s;",
+            "venue_owner = %s, trainee = %s, trainee_hiatus = %s WHERE guild_id = %s;",
             role_mgr.trainer_main.id if role_mgr.trainer_main else None,
             role_mgr.trainer_pending.id if role_mgr.trainer_pending else None,
             role_mgr.trainer_hiatus.id if role_mgr.trainer_hiatus else None,
@@ -328,6 +328,7 @@ class DatabaseUpdater(DBWorkerBranch):
             role_mgr.staff_unvalidated.id if role_mgr.staff_unvalidated else None,
             role_mgr.venue_management.id if role_mgr.venue_management else None,
             role_mgr.trainee.id if role_mgr.trainee else None,
+            role_mgr.trainee_hiatus.id if role_mgr.trainee_hiatus else None,
             role_mgr.guild_id
         )
     

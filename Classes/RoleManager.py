@@ -26,6 +26,7 @@ class RoleManager:
         "_staff_unvalidated",
         "_venue_management",
         "_trainee",
+        "_trainee_hiatus"
     )
 
 ################################################################################
@@ -40,6 +41,7 @@ class RoleManager:
         self._staff_unvalidated: Optional[Role] = None
         self._venue_management: Optional[Role] = None
         self._trainee: Optional[Role] = None
+        self._trainee_hiatus: Optional[Role] = None
     
 ################################################################################
     async def _load_all(self, data: Tuple[Any, ...]) -> None:
@@ -53,6 +55,7 @@ class RoleManager:
         self._staff_unvalidated = guild.get_role(data[5]) if data[5] else None
         self._venue_management = guild.get_role(data[6]) if data[6] else None
         self._trainee = guild.get_role(data[7]) if data[7] else None
+        self._trainee_hiatus = guild.get_role(data[8]) if data[8] else None
         
 ################################################################################
     @property
@@ -151,6 +154,18 @@ class RoleManager:
         self.update()
         
 ################################################################################
+    @property
+    def trainee_hiatus(self) -> Optional[Role]:
+        
+        return self._trainee_hiatus
+    
+    @trainee_hiatus.setter
+    def trainee_hiatus(self, role: Optional[Role]) -> None:
+        
+        self._trainee_hiatus = role
+        self.update()
+        
+################################################################################
     def update(self) -> None:
     
         self.bot.database.update.roles(self)
@@ -192,6 +207,11 @@ class RoleManager:
             EmbedField(
                 name="__Trainee__",
                 value=self.trainee.mention if self.trainee else "`Not Set`",
+                inline=False
+            ),
+            EmbedField(
+                name="__Trainee Hiatus__",
+                value=self.trainee_hiatus.mention if self.trainee_hiatus else "`Not Set`",
                 inline=False
             )
         ]
@@ -245,7 +265,7 @@ class RoleManager:
                 self.trainer_main = role
             case RoleType.TrainerPending:
                 self.trainer_pending = role
-            case RoleType.TrainingHiatus:
+            case RoleType.TrainerHiatus:
                 self.trainer_hiatus = role
             case RoleType.StaffMain:
                 self.staff_main = role
@@ -255,6 +275,10 @@ class RoleManager:
                 self.venue_management = role
             case RoleType.Trainee:
                 self.trainee = role
+            case RoleType.TraineeHiatus:
+                self.trainee_hiatus = role
+            case _:
+                raise ValueError(f"Invalid RoleType: {_type}")
             
         log.info("Core", f"Role {_type.proper_name} set to {role.id}.")
         
@@ -274,7 +298,7 @@ class RoleManager:
                 role = self.trainer_main
             case RoleType.TrainerPending:
                 role = self.trainer_pending
-            case RoleType.TrainingHiatus:
+            case RoleType.TrainerHiatus:
                 role = self.trainer_hiatus
             case RoleType.StaffMain:
                 role = self.staff_main
@@ -284,6 +308,8 @@ class RoleManager:
                 role = self.venue_management
             case RoleType.Trainee:
                 role = self.trainee
+            case RoleType.TraineeHiatus:
+                role = self.trainee_hiatus
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 
@@ -310,7 +336,7 @@ class RoleManager:
                 role = self.trainer_main
             case RoleType.TrainerPending:
                 role = self.trainer_pending
-            case RoleType.TrainingHiatus:
+            case RoleType.TrainerHiatus:
                 role = self.trainer_hiatus
             case RoleType.StaffMain:
                 role = self.staff_main
@@ -320,6 +346,8 @@ class RoleManager:
                 role = self.venue_management
             case RoleType.Trainee:
                 role = self.trainee
+            case RoleType.TraineeHiatus:
+                role = self.trainee_hiatus
             case _:
                 raise ValueError(f"Invalid RoleType: {_type}")
 

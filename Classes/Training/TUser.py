@@ -1017,9 +1017,15 @@ class TUser:
                 await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerMain)
             else:
                 await self.guild.role_manager.add_role(interaction.user, RoleType.Trainee)
-            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainingHiatus)
+                
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerHiatus)
+            await self.guild.role_manager.remove_role(interaction.user, RoleType.TraineeHiatus)
         else:
-            await self.guild.role_manager.add_role(interaction.user, RoleType.TrainingHiatus)
+            if self.is_trainer:
+                await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
+            else:
+                await self.guild.role_manager.add_role(interaction.user, RoleType.TraineeHiatus)
+                
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.Trainee)
 

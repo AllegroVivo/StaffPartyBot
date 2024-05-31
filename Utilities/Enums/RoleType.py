@@ -8,13 +8,14 @@ class RoleType(FroggeEnum):
 
     TrainerMain = 1
     TrainerPending = 2
-    TrainingHiatus = 3
+    TrainerHiatus = 3
     StaffMain = 4
     StaffNotValidated = 5
     NewStaff = 6
     # VenuePending = 7  # Don't need this, but keeping here, so I know why it's skipped
     VenueManagement = 8
     Trainee = 9
+    TraineeHiatus = 10
 
 ################################################################################
     @property
@@ -32,6 +33,8 @@ class RoleType(FroggeEnum):
         #     return "Venue Pending"
         elif self.value == 8:
             return "Venue Management"
+        elif self.value == 10:
+            return "Trainee Hiatus"
 
         return self.name.rstrip("Main")
     
