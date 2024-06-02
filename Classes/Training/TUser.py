@@ -1082,24 +1082,34 @@ class TUser:
         check_profile: bool = True
     ) -> bool:
         
+        log.info(
+            "Training",
+            f"TUser {self.name} ({self.user_id}) is checking eligibility for job {job.id}."
+        )
+        
         # Check user and venue mute lists
         if self.user in job.venue.muted_users:
+            log.debug("Training", "User is muted for this venue.")
             return False
         if job.venue in self.muted_venues:
+            log.debug("Training", "Venue is muted for this user.")
             return False
         
         # Check if on hiatus
         if compare_hiatus:
             if self.on_hiatus:
+                log.debug("Training", "User is on hiatus.")
                 return False
 
         if check_profile:
             if not self.profile or self.profile.post_message is None:
+                log.debug("Training", "User has no profile or post message.")
                 return False
     
         # Check if job's data center is in the user's data centers list
         if compare_data_centers and len(self.profile.data_centers) > 0:
             if not any(dc.contains(job.venue.location.data_center) for dc in self.profile.data_centers):
+                log.debug("Training", "User does not have the required data center.")
                 return False
     
         # Check if the user has the linked role for the job position, if applicable
@@ -1108,9 +1118,14 @@ class TUser:
                 try:
                     member = await self.guild.parent.fetch_member(self.user_id)
                 except:
+                    log.error(
+                        "Training",
+                        f"Failed to fetch member for TUser {self.name} ({self.user_id})."
+                    )
                     return False
                 else:
                     if job.position.linked_role not in member.roles:
+                        log.debug("Training", "User does not have the required linked role.")
                         return False
 
         # If comparing schedules, check if the user is available during the job's times
@@ -1121,10 +1136,13 @@ class TUser:
                 if availability.day.value == job_day:
                     start_time, end_time = job.start_time.time(), job.end_time.time()
                     if availability.contains(start_time, end_time):
+                        log.debug("Training", "User is available for the job.")
                         return True
+            log.debug("Training", "User is not available for the job.")
             return False  # If no matching availability was found
     
         # If not comparing schedules or none of the above conditions matched, the user is eligible
+        log.debug("Training", "User is eligible for the job.")
         return True
 
 ################################################################################
