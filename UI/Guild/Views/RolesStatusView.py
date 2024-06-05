@@ -29,6 +29,8 @@ class RolesStatusView(FroggeView):
             StaffMainRoleButton(roles.staff_main),
             StaffUnvalidatedRoleButton(roles.staff_unvalidated),
             VenueManagementButton(roles.venue_management),
+            TraineeRoleButton(roles.trainee),
+            TraineeHiatusRoleButton(roles.trainee_hiatus),
             CloseMessageButton(),
         ]
         for btn in button_list:
@@ -155,6 +157,48 @@ class VenueManagementButton(FroggeButton):
     async def callback(self, interaction):
         await self.view.roles.set_role(interaction, RoleType.VenueManagement)
         self.set_style(self.view.roles.venue_management)
+
+        await self.view.edit_message_helper(
+            interaction, embed=self.view.roles.status(), view=self.view
+        )
+        
+################################################################################
+class TraineeRoleButton(FroggeButton):
+    
+    def __init__(self, cur_role: Optional[Role]):
+        
+        super().__init__(
+            label="Trainee",
+            disabled=False,
+            row=1
+        )
+        
+        self.set_style(cur_role)
+        
+    async def callback(self, interaction):
+        await self.view.roles.set_role(interaction, RoleType.Trainee)
+        self.set_style(self.view.roles.trainee)
+
+        await self.view.edit_message_helper(
+            interaction, embed=self.view.roles.status(), view=self.view
+        )
+        
+################################################################################
+class TraineeHiatusRoleButton(FroggeButton):
+    
+    def __init__(self, cur_role: Optional[Role]):
+        
+        super().__init__(
+            label="Trainee Hiatus",
+            disabled=False,
+            row=1
+        )
+        
+        self.set_style(cur_role)
+        
+    async def callback(self, interaction):
+        await self.view.roles.set_role(interaction, RoleType.TraineeHiatus)
+        self.set_style(self.view.roles.trainee_hiatus)
 
         await self.view.edit_message_helper(
             interaction, embed=self.view.roles.status(), view=self.view
