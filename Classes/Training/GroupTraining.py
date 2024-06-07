@@ -922,17 +922,17 @@ class GroupTraining:
         
         for trainee in attendees:
             await trainee.send(embed=completion_embed)
-            # await self._mgr.guild.role_manager.add_role(trainee.user, RoleType.StaffMain)
+            await self._mgr.guild.role_manager.add_role(trainee.user, RoleType.StaffMain)
         
             self.trainer._pay_requested = False
         
-            # if trainee.profile and trainee.profile.post_message is not None:
-            #     for role in role_list:
-            #         await self._mgr.guild.role_manager.add_role_manual(trainee.user, role)
+            if trainee.profile and trainee.profile.post_message is not None:
+                for role in role_list:
+                    await self._mgr.guild.role_manager.add_role_manual(trainee.user, role)
                     
-            # for training in trainee.trainings_as_trainee:
-            #     if training.position in self.positions and not training.is_complete:
-            #         await training.group_override()
+            for training in trainee.trainings_as_trainee:
+                if training.position in self.positions and not training.is_complete:
+                    await training.group_override()
         
         await self._mgr.guild.log.group_training_no_show_report(self, no_shows)
         await self._mgr.guild.log.group_training_complete_report(self, attendees)
