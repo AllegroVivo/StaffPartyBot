@@ -244,7 +244,8 @@ class GroupTraining:
     @property
     def positions(self) -> List[Position]:
         
-        self._positions.sort(key=lambda x: x.name)
+        if self._positions:
+            self._positions.sort(key=lambda x: x.name)
         return self._positions
     
 ################################################################################
@@ -275,7 +276,11 @@ class GroupTraining:
     @property
     def pos_string(self) -> str:
         
-        return ", ".join(f"{pos.name}" for pos in self.positions)
+        return (
+            ", ".join(f"{pos.name}" for pos in self.positions)
+            if self.positions
+            else "General Training"
+        )
     
 ################################################################################
     @property
@@ -292,7 +297,11 @@ class GroupTraining:
     @property
     def trainer_pay(self) -> int:
         
-        return sum((pos.trainer_pay or 0) for pos in self.positions)
+        return (
+            sum((pos.trainer_pay or 0) for pos in self.positions)
+            if self.positions
+            else 250000
+        )
     
 ################################################################################
     def update(self) -> None:
@@ -900,39 +909,49 @@ class GroupTraining:
         )
         please_wait = await interaction.respond(embed=prompt)
     
-        completion_embed = U.make_embed(
-            title="Training Complete",
-            description=(
-                f"Congratulations! You have completed your training for\n"
-                f"the position(s) of `{self.pos_string}`!\n\n"
-    
-                "__**You are now ready to take on your new role(s)!**__\n\n"
-    
-                "Visit the server and use the `/trainee match` command to find venues "
-                "who can offer you a temporary internship! (The goal of these is to give "
-                "you on-site training without any risk or obligation on your part.)\n\n"
-    
-                "Additionally, you need to run the `/staffing profile` "
-                "command to set up your profile! (Follow the instructions "
-                "at https://discord.com/channels/1104515062187708525/1219788797223374938 "
-                "to get started!)"
-            ),
-        )
+        if self.positions:
+            completion_embed = U.make_embed(
+                title="Training Complete",
+                description=(
+                    f"Congratulations! You have completed your training for\n"
+                    f"the position(s) of `{self.pos_string}`!\n\n"
+        
+                    "__**You are now ready to take on your new role(s)!**__\n\n"
+        
+                    "Visit the server and use the `/trainee match` command to find venues "
+                    "who can offer you a temporary internship! (The goal of these is to give "
+                    "you on-site training without any risk or obligation on your part.)\n\n"
+        
+                    "Additionally, you need to run the `/staffing profile` "
+                    "command to set up your profile! (Follow the instructions "
+                    "at https://discord.com/channels/1104515062187708525/1219788797223374938 "
+                    "to get started!)"
+                ),
+            )
+        else:
+            completion_embed = U.make_embed(
+                title="Training Complete",
+                description=(
+                    f"Congratulations! You have completed your general skill training!\n\n"
+                    
+                    "We hope you found the training helpful and informative!"
+                ),
+            )
         role_list = [pos.linked_role for pos in self.positions]
         
         for trainee in attendees:
             await trainee.send(embed=completion_embed)
-            await self._mgr.guild.role_manager.add_role(trainee.user, RoleType.StaffMain)
-        
             self.trainer._pay_requested = False
-        
-            if trainee.profile and trainee.profile.post_message is not None:
-                for role in role_list:
-                    await self._mgr.guild.role_manager.add_role_manual(trainee.user, role)
-                    
-            for training in trainee.trainings_as_trainee:
-                if training.position in self.positions and not training.is_complete:
-                    await training.group_override()
+            
+            if self.positions:
+                await self._mgr.guild.role_manager.add_role(trainee.user, RoleType.StaffMain)
+                if trainee.profile and trainee.profile.post_message is not None:
+                    for role in role_list:
+                        await self._mgr.guild.role_manager.add_role_manual(trainee.user, role)
+                        
+                for training in trainee.trainings_as_trainee:
+                    if training.position in self.positions and not training.is_complete:
+                        await training.group_override()
         
         await self._mgr.guild.log.group_training_no_show_report(self, no_shows)
         await self._mgr.guild.log.group_training_complete_report(self, attendees)

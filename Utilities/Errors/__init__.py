@@ -1,6 +1,4 @@
 from .AboutMeNotSet import AboutMeNotSetError
-from .GroupTrainingNotComplete import GroupTrainingNotCompleteError
-from .PayAlreadyRequested import PayAlreadyRequestedError
 from .AvailabilityNotComplete import AvailabilityNotCompleteError
 from .BotUserNotAllowed import BotUserNotAllowedError
 from .CannotEditPosting import CannotEditPostingError
@@ -12,11 +10,13 @@ from .DateTimeFormat import DateTimeFormatError
 from .DateTimeMismatch import DateTimeMismatchError
 from .ExceedsMaxLength import ExceedsMaxLengthError
 from .ExperienceExists import ExperienceExistsError
+from .GroupTrainingNotComplete import GroupTrainingNotCompleteError
 from .HeightInput import HeightInputError
 from .IneligibleForJob import IneligibleForJobError
 from .InsufficientPermissions import InsufficientPermissionsError
 from .InvalidColor import InvalidColorError
 from .InvalidLocation import InvalidLocationValueError
+from .InvalidPositionSelection import InvalidPositionSelectionError
 from .InvalidSalaryError import InvalidSalaryError
 from .InvalidWorldName import InvalidWorldNameError
 from .JobPostingNotFound import JobPostingNotFoundError
@@ -26,11 +26,13 @@ from .NoAvailableUsersRemoval import NoAvailableUsersRemovalError
 from .NoTrainingsError import NoTrainingsError
 from .NoVenuesFound import NoVenuesFoundError
 from .NotRegistered import NotRegisteredError
+from .PayAlreadyRequested import PayAlreadyRequestedError
 from .PositionExists import PositionExistsError
 from .PositionNotFound import PositionNotFoundError
 from .PostingNotComplete import PostingNotCompleteError
 from .ProfileChannelNotSet import ProfileChannelNotSetError
 from .ProfileExport import ProfileExportError
+from .ProfileIncomplete import ProfileIncompleteError
 from .ServiceNotFound import ServiceNotFoundError
 from .TimeRange import TimeRangeError
 from .TooManyImages import TooManyImagesError
@@ -43,5 +45,4 @@ from .VenueImportError import VenueImportError
 from .VenueImportNotFound import VenueImportNotFoundError
 from .VenuePendingApproval import VenuePendingApprovalError
 from .VenueProfileNotComplete import VenueProfileNotCompleteError
-from .ProfileIncomplete import ProfileIncompleteError
 ################################################################################

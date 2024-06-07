@@ -36,7 +36,8 @@ from Utilities import (
     RPLevel,
     NSFWPreference,
     VenueForumTag,
-    log
+    log,
+    InvalidPositionSelectionError,
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
@@ -764,13 +765,16 @@ class TrainingManager:
             f"User {interaction.user.name} ({interaction.user.id}) is adding a new Group Training event."
         )
         
+        pos_options = [SelectOption(label="General Training", value="general_training")]
+        pos_options.extend(self.guild.position_manager.select_options())
+        
         prompt = U.make_embed(
             title="Add New Group Training",
             description="Select the Position(s) being trained for in this Group Training."
         )
         view = PositionSelectView(
             user=interaction.user,
-            options=self.guild.position_manager.select_options(),
+            options=pos_options,
             multi_select=True
         )
         
@@ -781,8 +785,24 @@ class TrainingManager:
             log.debug("Training", "User cancelled Group Training creation.")
             return
         
-        positions = [self.guild.position_manager.get_position(p) for p in view.value]
-        pos_string = ", ".join([p.name for p in positions])
+        if "general_training" in view.value:
+            if len(view.value) > 1:
+                log.warning(
+                    "Training",
+                    (
+                        f"User {interaction.user.name} ({interaction.user.id}) attempted "
+                        f"to create a General Training event with other positions."
+                    )
+                )
+                error = InvalidPositionSelectionError()
+                await interaction.respond(embed=error, ephemeral=True)
+                return
+            else:
+                positions = []
+                pos_string = "General Training"
+        else:
+            positions = [self.guild.position_manager.get_position(p) for p in view.value]
+            pos_string = ", ".join([p.name for p in positions])
         
         log.info(
             "Training",
