@@ -1006,11 +1006,11 @@ class JobPosting:
         notify = U.make_embed(
             title="Job Accepted",
             description=(
-                f"__**Position**__\n\n"
+                f"__**Position**__\n"
                 f"`{self.position.name}`\n"
                 f"*({self.venue.name})*\n\n"
                 
-                f"__**Picked Up By**__\n\n"
+                f"__**Picked Up By**__\n"
                 f"`{self.candidate.name}`\n"
                 f"{self.candidate.user.mention}\n"
             )

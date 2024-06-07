@@ -129,10 +129,8 @@ class CompleteTrainingButton(FroggeButton):
         )
 
     async def callback(self, interaction: Interaction) -> None:
-        await self.view.group.complete(interaction)
-        
-        await self.view.edit_message_helper(
-            interaction, embed=self.view.group.status(), view=self.view
-        )
+        if await self.view.group.complete(interaction):
+            self.view.complete = True
+            await self.view.stop()  # type: ignore
 
 ################################################################################

@@ -1029,7 +1029,6 @@ class TUser:
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerMain)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.Trainee)
 
-        if not self.on_hiatus:
             for t in self.trainings_as_trainer:
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
@@ -1082,7 +1081,7 @@ class TUser:
         check_profile: bool = True
     ) -> bool:
         
-        log.info(
+        log.debug(
             "Training",
             f"TUser {self.name} ({self.user_id}) is checking eligibility for job {job.id}."
         )
