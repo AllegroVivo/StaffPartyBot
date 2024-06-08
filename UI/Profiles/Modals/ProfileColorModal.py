@@ -27,7 +27,7 @@ class ProfileColorModal(FroggeModal):
                 value=(
                     "Enter the 6-character HEX code for your desired profile accent color.\n"
                     "Google Color Picker:\n"
-                    "https://g.co/kgs/psoVFb"
+                    "https://g.co/kgs/2xSTQ7H"
                 ),
                 required=False
             )
