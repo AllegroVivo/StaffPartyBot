@@ -27,6 +27,7 @@ class Training:
         "_trainer",
         "_overrides",
         "_paid",
+        "_complete",
     )
 
 ################################################################################
@@ -37,7 +38,8 @@ class Training:
         trainee: TUser,
         trainer: Optional[TUser] = None,
         overrides: Optional[Dict[str, RequirementLevel]] = None,
-        paid: bool = False
+        paid: bool = False,
+        complete: bool = False
     ) -> None:
 
         self._id: str = _id
@@ -48,6 +50,7 @@ class Training:
 
         self._overrides: Dict[str, RequirementLevel] = overrides or {}
         self._paid: bool = paid
+        self._complete: bool = complete
 
 ################################################################################
     @classmethod
@@ -75,7 +78,7 @@ class Training:
             for requirement_id, level in override_data
         }
 
-        return cls(data[0], position, trainee, trainer, overrides, data[5])
+        return cls(data[0], position, trainee, trainer, overrides, data[5], data[6])
 
 ################################################################################
     def __eq__(self, other: Training) -> bool:
@@ -146,7 +149,7 @@ class Training:
     @property
     def is_complete(self) -> bool:
         
-        return (
+        return self._complete or (
             0 < len(self._position.all_requirements) == len(self._overrides)
             and all(
                 level == RequirementLevel.Complete

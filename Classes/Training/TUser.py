@@ -1030,6 +1030,8 @@ class TUser:
             await self.guild.role_manager.remove_role(interaction.user, RoleType.Trainee)
 
             for t in self.trainings_as_trainer:
+                if t.is_complete:
+                    continue
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
                 

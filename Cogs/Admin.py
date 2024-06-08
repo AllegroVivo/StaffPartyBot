@@ -338,6 +338,19 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].bulk_update_menu(ctx.interaction)
         
+################################################################################
+    @admin.command(
+        name="temp",
+    )
+    async def temp(self, ctx: ApplicationContext) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        
+        for training in guild.training_manager.all_trainings:
+            if training.is_complete:
+                training._complete = True
+                training.update()
+        
 ################################################################################           
 def setup(bot: "StaffPartyBot") -> None:
 

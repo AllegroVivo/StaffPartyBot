@@ -102,9 +102,9 @@ class DatabaseInserter(DBWorkerBranch):
         new_id = self.generate_id()
         
         self.execute(
-            "INSERT INTO trainings (_id, guild_id, user_id, position) "
-            "VALUES (%s, %s, %s, %s);",
-            new_id, guild_id, user_id, pos_id
+            "INSERT INTO trainings (_id, guild_id, user_id, position, is_complete) "
+            "VALUES (%s, %s, %s, %s, %s);",
+            new_id, guild_id, user_id, pos_id, False
         )
         
         return new_id
