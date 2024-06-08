@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Optional, List, Any, Type, TypeVar, Dict
 
@@ -57,7 +56,6 @@ class GroupTraining:
     )
     
     REMINDER_THRESHOLD = 30
-    DELETION_THRESHOLD = 3600
     
 ################################################################################
     def __init__(
@@ -983,17 +981,11 @@ class GroupTraining:
         await interaction.respond(embed=congrats)
         
         log.info("Training", "Group training completed successfully, scheduling deletion.")
-        asyncio.create_task(self._delete_group_after_delay())
+        await self.post_message.delete()
+
+        log.info("Training", "Group training post deleted successfully.")
         
         return True
     
-################################################################################
-    async def _delete_group_after_delay(self) -> None:
-
-        await asyncio.sleep(self.DELETION_THRESHOLD)
-        await self.post_message.delete()
-        
-        log.info("Training", "Group training post deleted successfully.")
-        
 ################################################################################
         
