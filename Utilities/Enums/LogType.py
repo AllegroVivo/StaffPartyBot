@@ -22,5 +22,6 @@ class LogType(FroggeEnum):
     GroupTrainingCreated = 17
     GroupTrainingNoShow = 18
     GroupTrainingComplete = 19
+    DMsDisabled = 20
 
 ################################################################################

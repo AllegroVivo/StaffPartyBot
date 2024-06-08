@@ -24,5 +24,6 @@ LOG_COLORS: Dict[LogType, FroggeColor] = {
     LogType.GroupTrainingCreated: FroggeColor.lavender_blush(),
     LogType.GroupTrainingNoShow: FroggeColor.medium_red(),
     LogType.GroupTrainingComplete: FroggeColor.forest_green(),
+    LogType.DMsDisabled: FroggeColor.indian_red()
 }
 ################################################################################

@@ -4,7 +4,7 @@ from datetime import datetime, time
 from typing import TYPE_CHECKING, List, Optional, Type, TypeVar, Any, Dict, Tuple, Union
 
 import pytz
-from discord import User, Embed, EmbedField, Interaction, SelectOption, Member
+from discord import User, Embed, EmbedField, Interaction, SelectOption, Member, Forbidden
 from discord.ext.pages import Page
 
 from Assets import BotEmojis
@@ -1154,6 +1154,12 @@ class TUser:
         
         try:
             await self.user.send(*args, **kwargs)
+        except Forbidden:
+            log.warning(
+                "Training",
+                f"User {self.name} ({self.user_id}) has DMs disabled."
+            )
+            await self.guild.log.dms_disabled(self.user)
         except Exception as ex:
             log.critical(
                 "Training",

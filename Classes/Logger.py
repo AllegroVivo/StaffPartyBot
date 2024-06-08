@@ -480,4 +480,18 @@ class Logger:
         await self._log(embed, LogType.GroupTrainingComplete)
 
 ################################################################################
+    async def dms_disabled(self, user: User) -> None:
+        
+        embed = U.make_embed(
+            title="DMs Disabled!",
+            description=(
+                f"{user.mention} has disabled DMs! Please contact them to "
+                f"have this resolved."
+            ),
+            timestamp=True
+        )
+        
+        await self._log(embed, LogType.DMsDisabled)
+
+################################################################################
         
