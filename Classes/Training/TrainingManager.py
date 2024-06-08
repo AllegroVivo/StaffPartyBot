@@ -953,7 +953,6 @@ class TrainingManager:
         for signup in group.signups:
             await signup.user.send(embed=notification)
 
-        self._groups.remove(group)
         group.delete()
         
 ################################################################################
