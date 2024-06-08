@@ -60,10 +60,11 @@ class ChannelManager:
         self._log = await self._guild.get_or_fetch_channel(data[5])
         self._services = await self._guild.get_or_fetch_channel(data[6])
         self._welcome = await self._guild.get_or_fetch_channel(data[7])
-        self._notification_channels = [
+        notification_channels = [
             await self._guild.get_or_fetch_channel(channel_id)
             for channel_id in data[8]
         ] if data[8] else []
+        self._notification_channels = [n for n in notification_channels if n is not None]
         self._group_training = await self._guild.get_or_fetch_channel(data[9])
         
 ################################################################################
