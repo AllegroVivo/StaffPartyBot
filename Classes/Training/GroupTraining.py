@@ -981,11 +981,9 @@ class GroupTraining:
     async def _delete_group_after_delay(self) -> None:
 
         await asyncio.sleep(self.DELETION_THRESHOLD)
-        
         await self.post_message.delete()
-        self.delete()
-
-        log.info("Training", "Group training deleted successfully.")
+        
+        log.info("Training", "Group training post deleted successfully.")
         
 ################################################################################
         
