@@ -37,7 +37,7 @@ class Requirement:
     @classmethod
     def new(cls: Type[R], mgr: PositionManager, position: str, description: str) -> R:
 
-        log.info("Training", f"Creating new requirement for position {position} in guild {mgr.guild_id}")
+        log.info("Positions", f"Creating new requirement for position {position} in guild {mgr.guild_id}")
 
         new_id = mgr.bot.database.insert.requirement(mgr.guild_id, position, description)
         return cls(mgr.bot, new_id, position, description)
