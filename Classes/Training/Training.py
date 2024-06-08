@@ -426,6 +426,8 @@ class Training:
             await self.manager.guild.role_manager.add_role_manual(
                 self.trainee.user, self.position.linked_role
             )
+            
+        await self.manager.guild.log.training_completed(self)
     
 ################################################################################
     async def group_override(self) -> None:
