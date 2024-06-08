@@ -340,14 +340,16 @@ class Admin(Cog):
         
 ################################################################################
     @admin.command(
-        name="temp",
+        name="temp_cmd",
+        description="A temporary command for testing purposes."
     )
-    async def temp(self, ctx: ApplicationContext) -> None:
+    async def temp_command(self, ctx: ApplicationContext) -> None:
 
         guild = self.bot[ctx.guild_id]
         
         for training in guild.training_manager.all_trainings:
             if training.is_complete:
+                print(f"Training {training.id} is complete.")
                 training._complete = True
                 training.update()
         
