@@ -53,6 +53,7 @@ class GroupTraining:
         "_reminder_sent",
         "_completed",
         "_paid",
+        "_attended",
     )
     
     REMINDER_THRESHOLD = 30
@@ -88,6 +89,7 @@ class GroupTraining:
         
         self._signups: List[GroupTrainingSignup] = kwargs.get("signups") or []
         self._msg: Optional[Message] = kwargs.get("post_message")
+        self._attended: List[TUser] = kwargs.get("attended") or []
         
 ################################################################################
     @classmethod
@@ -141,6 +143,8 @@ class GroupTraining:
         
         self._completed = data["training"][9]
         self._paid = data["training"][10]
+        
+        self._attended = [await mgr.guild.get_or_fetch_user(user) for user in data["training"][11]]
         
         return self
     
@@ -274,6 +278,12 @@ class GroupTraining:
     
 ################################################################################
     @property
+    def attended_users(self) -> List[TUser]:
+        
+        return self._attended
+    
+################################################################################
+    @property
     def pos_string(self) -> str:
         
         return (
@@ -301,7 +311,7 @@ class GroupTraining:
             sum((pos.trainer_pay or 0) for pos in self.positions)
             if self.positions
             else 250000
-        )
+        ) * len(self.attended_users)
     
 ################################################################################
     def update(self) -> None:
@@ -873,7 +883,7 @@ class GroupTraining:
             return False
         
         no_shows = [self._mgr[int(user_id)] for user_id in view.value]
-        attendees = [s.user for s in self.signups if s.user not in no_shows]
+        self._attended = [s.user for s in self.signups if s.user not in no_shows]
         
         prompt = U.make_embed(
             title="Complete Group Training",
@@ -882,8 +892,8 @@ class GroupTraining:
                 EmbedField(
                     name="__Attendees__",
                     value=(
-                        "* " + "\n* ".join([f"{a.name} ({a.user.name})" for a in attendees])
-                    ) if attendees else "`None`",
+                        "* " + "\n* ".join([f"{a.name} ({a.user.name})" for a in self.attended_users])
+                    ) if self.attended_users else "`None`",
                     inline=False
                 ),
                 EmbedField(
@@ -939,7 +949,7 @@ class GroupTraining:
             )
         role_list = [pos.linked_role for pos in self.positions]
         
-        for trainee in attendees:
+        for trainee in self.attended_users:
             await trainee.send(embed=completion_embed)
             self.trainer._pay_requested = False
             
@@ -954,7 +964,7 @@ class GroupTraining:
                         await training.group_override()
         
         await self._mgr.guild.log.group_training_no_show_report(self, no_shows)
-        await self._mgr.guild.log.group_training_complete_report(self, attendees)
+        await self._mgr.guild.log.group_training_complete_report(self, self._attended)
         
         self.is_completed = True
         

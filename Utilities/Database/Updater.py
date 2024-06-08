@@ -377,11 +377,12 @@ class DatabaseUpdater(DBWorkerBranch):
         
         self.execute(
             "UPDATE group_trainings SET name = %s, description = %s, start_time = %s, "
-            "end_time = %s, post_url = %s, completed = %s, paid = %s "
+            "end_time = %s, post_url = %s, completed = %s, paid = %s, attended = %s "
             "WHERE _id = %s;",
             training.name, training.description, training.start_time, training.end_time, 
             training.post_message.jump_url if training.post_message else None, 
-            training.is_completed, training.is_paid, training.id
+            training.is_completed, training.is_paid, 
+            [user.user_id for user in training.attended_users], training.id
         )
         
 ################################################################################
