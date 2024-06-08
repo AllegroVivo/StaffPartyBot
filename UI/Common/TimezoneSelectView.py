@@ -26,7 +26,7 @@ class TimezoneSelect(Select):
     def __init__(self):
                                    
         super().__init__(
-            placeholder="Select a timezone for this job posting...",
+            placeholder="Select a timezone...",
             options=Timezone.select_options(),
             min_values=1,
             max_values=1,
