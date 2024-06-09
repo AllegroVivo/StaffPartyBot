@@ -265,7 +265,7 @@ class Admin(Cog):
         name="roles_report",
         description="Generate a report of selected roles applied to all members in the server."
     )
-    async def test(
+    async def roles_report(
         self, 
         ctx: ApplicationContext,
         r1: Option(
@@ -338,22 +338,7 @@ class Admin(Cog):
 
         await self.bot[ctx.guild_id].bulk_update_menu(ctx.interaction)
         
-################################################################################
-    @admin.command(
-        name="temp_cmd",
-        description="A temporary command for testing purposes."
-    )
-    async def temp_command(self, ctx: ApplicationContext) -> None:
-
-        guild = self.bot[ctx.guild_id]
-        
-        for training in guild.training_manager.all_trainings:
-            if training.is_complete:
-                print(f"Training {training.id} is complete.")
-                training._complete = True
-                training.update()
-        
-################################################################################           
+################################################################################          
 def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Admin(bot))
