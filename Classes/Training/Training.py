@@ -149,13 +149,7 @@ class Training:
     @property
     def is_complete(self) -> bool:
         
-        return self._complete or (
-            0 < len(self._position.all_requirements) == len(self._overrides)
-            and all(
-                level == RequirementLevel.Complete
-                for level in self._overrides.values()
-            )
-        )
+        return self._complete
     
 ################################################################################
     def delete(self) -> None:
