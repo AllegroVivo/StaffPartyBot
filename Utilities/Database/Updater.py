@@ -100,7 +100,7 @@ class DatabaseUpdater(DBWorkerBranch):
             "UPDATE trainings SET trainer = %s, trainer_paid = %s, is_complete = %s "
             "WHERE _id = %s;",
             None if training.trainer is None else training.trainer.user_id,
-            training.trainer_paid, training._complete, training.id
+            training.trainer_paid, training.is_complete, training.id
         )
 
         for requirement_id, level in training.requirement_overrides.items():
