@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from discord import Interaction, User, ButtonStyle
 from discord.ui import Button
 
-from UI.Common import FroggeView
+from UI.Common import FroggeView, CloseMessageButton
 
 if TYPE_CHECKING:
     from Classes import Training
@@ -21,6 +21,7 @@ class TrainerDashboardButtonView(FroggeView):
         super().__init__(user, close_on_complete=True)
 
         self.add_item(EditTrainingButton(training))
+        self.add_item(CloseMessageButton())
         
 ################################################################################
 class EditTrainingButton(Button):
