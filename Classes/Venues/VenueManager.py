@@ -710,6 +710,18 @@ class VenueManager:
         msg = await interaction.followup.send("Please wait...")
         payload = await self.bot.veni_client.get_all_venues()
         
+        payload_ids = [v.id for v in payload]
+        venue_ids = [v.id for v in self.venues]
+        
+        for venue_id in venue_ids:
+            if venue_id not in payload_ids:
+                log.info(
+                    "Venues",
+                    f"Venue {venue_id} not found in bulk payload. Deleting..."
+                )
+                venue = self[venue_id]
+                await venue.delete()
+        
         count = 0
         for venue in self.venues:
             for vdata in payload:
