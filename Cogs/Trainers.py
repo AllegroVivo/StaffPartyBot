@@ -86,6 +86,25 @@ class Trainers(Cog):
         await guild.training_manager.group_training_menu(ctx.interaction)
         
 ################################################################################
+    @trainer.command(
+        name="acquire_trainee",
+        description="Pick up all trainings for a specific trainee."
+    )
+    async def acquire_trainee(
+        self, 
+        ctx: ApplicationContext,
+        user: Option(
+            SlashCommandOptionType.user,
+            name="user",
+            description="The trainee to acquire.",
+            required=True
+        )
+    ) -> None:
+
+        guild = self.bot[ctx.guild_id]
+        await guild.training_manager.acquire_trainee(ctx.interaction, user)
+        
+################################################################################
 def setup(bot: "StaffPartyBot") -> None:
 
     bot.add_cog(Trainers(bot))

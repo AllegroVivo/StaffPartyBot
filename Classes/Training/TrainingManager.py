@@ -38,6 +38,7 @@ from Utilities import (
     VenueForumTag,
     log,
     InvalidPositionSelectionError,
+    NoTrainingsError,
 )
 from .SignUpMessage import SignUpMessage
 from .TUser import TUser
@@ -954,5 +955,113 @@ class TrainingManager:
             await signup.user.send(embed=notification)
 
         group.delete()
+
+################################################################################
+    async def acquire_trainee(self, interaction: Interaction, user: User) -> None:
         
+        log.info(
+            "Training",
+            f"{interaction.user.display_name} ({interaction.user.id}) requesting "
+            f"to acquire user {user.name} ({user.id}) as a trainee."
+        )
+        
+        trainer = self[interaction.user.id]
+        trainee = self[user.id]
+        
+        if trainer is None or trainee is None:
+            log.debug(
+                "Training",
+                f"User {interaction.user.name} ({interaction.user.id}) or user "
+                f"{user.name} ({user.id}) is not registered"
+            )
+            error = NotRegisteredError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        if len(trainee.unmatched_trainings) <= 0:
+            log.debug("Training", "User has no unmatched trainings.")
+            error = NoTrainingsError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+        
+        prompt = U.make_embed(
+            title="__Acquire Trainee__",
+            description=(
+                f"Are you sure you want to acquire {user.display_name} ({user.mention}) "
+                f"as a trainee?\n\n"
+                
+                "This action will pair you to all trainings that you're eligible to teach."
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view, ephemeral=True)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled trainee acquisition.")
+            return
+        
+        unmatched_positions = [t.position for t in trainee.unmatched_trainings]
+        qualifications = [q.position for q in trainer.qualifications]
+        common_positions = set(unmatched_positions).intersection(set(qualifications))
+        pos_string = ", ".join([f"`{p.name}`" for p in common_positions])
+        
+        prompt = U.make_embed(
+            title="__Acquire Trainee__",
+            description=(
+                f"Acquiring {user.display_name} ({user.mention}) as a trainee.\n\n"
+                
+                "The following positions have been matched:\n"
+                f"{pos_string}"
+            )
+        )
+        view = ConfirmCancelView(interaction.user)
+        
+        await interaction.respond(embed=prompt, view=view, ephemeral=True)
+        await view.wait()
+        
+        if not view.complete or view.value is False:
+            log.debug("Training", "User cancelled trainee acquisition.")
+            return
+        
+        for training in trainee.unmatched_trainings:
+            if training.position in common_positions:
+                await training.set_trainer(trainer, False)
+                
+        trainee_confirm = U.make_embed(
+            title="__Training Acquired!__",
+            description=(
+                f"{interaction.user.display_name} ({interaction.user.mention}) "
+                f"has been acquired your training(s) in the following positions!\n\n"
+                
+                f"{pos_string}\n\n"
+                
+                "Please check your `/trainee profile` for more information."
+            )
+        )
+        if not await trainee.send(embed=trainee_confirm):
+            log.warning(
+                "Training",
+                f"Failed to send training acquisition confirmation to {trainee.name} ({trainee.user_id})."
+            )
+            warning = U.make_embed(
+                title="Failed to Send Message",
+                description=(
+                    f"Failed to send training acquisition confirmation to {trainee.mention}. "
+                    "Please notify them manually."
+                )
+            )
+            await interaction.respond(embed=warning, ephemeral=True)
+                
+        trainer_confirm = U.make_embed(
+            title="__Trainee Acquired!__",
+            description=(
+                f"{user.display_name} ({user.mention}) has been acquired as a trainee.\n\n"
+                
+                "Please check your dashboard for more information."
+            )
+        )
+        await interaction.respond(embed=trainer_confirm, ephemeral=True)
+
 ################################################################################

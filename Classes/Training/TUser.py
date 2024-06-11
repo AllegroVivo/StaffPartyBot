@@ -1152,7 +1152,7 @@ class TUser:
         await self._bg_check.menu(interaction)
 
 ################################################################################
-    async def send(self, *args, **kwargs) -> None:
+    async def send(self, *args, **kwargs) -> bool:
         
         try:
             await self.user.send(*args, **kwargs)
@@ -1162,6 +1162,7 @@ class TUser:
                 f"User {self.name} ({self.user_id}) has DMs disabled."
             )
             await self.guild.log.dms_disabled(self.user)
+            return False
         except Exception as ex:
             log.critical(
                 "Training",
@@ -1170,6 +1171,9 @@ class TUser:
                     f"send message to {self.name} ({self.user_id}).\n{ex}"
                 )
             )
+            return False
+        else:
+            return True
 
 ################################################################################
     async def mute_venue(self, interaction: Interaction, venue: Venue) -> None:

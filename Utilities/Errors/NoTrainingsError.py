@@ -11,9 +11,9 @@ class NoTrainingsError(ErrorMessage):
     def __init__(self):
 
         super().__init__(
-            title="No Trainings Available",
-            message="You have not picked up any trainees yet.",
-            solution="Pick up trainees by checking the `#handshake` channel."
+            title="No Trainings Registered",
+            message="The provided trainee has no available trainings.",
+            solution="Ensure the trainee has registered for training before trying to acquire them."
         )
 
 ################################################################################
