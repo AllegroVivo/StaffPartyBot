@@ -313,15 +313,9 @@ class Training:
         
         req_ids = view.value[0]
         level = view.value[1]
-        
-        print(req_ids, level)
-
-        print(f"{len(req_ids)} + {len(self.requirement_overrides)} == {len(self.position.requirements)}")
-        print(f"{level == RequirementLevel.Complete}")
-        print(f"{all(req_level == RequirementLevel.Complete for req_level in self.requirement_overrides.values())}")
 
         if (
-            (len(req_ids) + len(self.requirement_overrides)) == len(self.position.requirements)
+            (len(req_ids) + len(self.requirement_overrides)) == len(self.position.all_requirements)
             and level == RequirementLevel.Complete
             and all(req_level == RequirementLevel.Complete for req_level in self.requirement_overrides.values())
         ):
