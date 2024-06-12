@@ -129,7 +129,7 @@ class CompleteTrainingButton(FroggeButton):
         )
 
     async def callback(self, interaction: Interaction) -> None:
-        if await self.view.group.zzcomplete(interaction):
+        if await self.view.group.on_complete(interaction):
             self.view.complete = True
             await self.view.stop()  # type: ignore
 

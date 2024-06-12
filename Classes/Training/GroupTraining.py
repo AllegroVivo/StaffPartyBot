@@ -847,7 +847,7 @@ class GroupTraining:
             self._reminder_sent = True
             
 ################################################################################
-    async def complete(self, interaction: Interaction) -> bool:
+    async def on_complete(self, interaction: Interaction) -> bool:
         
         prompt = U.make_embed(
             title="Complete Group Training",
