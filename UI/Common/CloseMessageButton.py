@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import Union, Optional
 
 from discord import ButtonStyle, Interaction, Member, User
 from discord.ext.pages import Paginator
 from discord.ui import Button
 
 from .FroggeView import FroggeView
-
-if TYPE_CHECKING:
-    pass
 ################################################################################
 
 __all__ = (
@@ -20,12 +17,12 @@ __all__ = (
 ################################################################################
 class CloseMessageButton(Button):
 
-    def __init__(self) -> None:
+    def __init__(self, row: Optional[int] = 4) -> None:
         super().__init__(
             style=ButtonStyle.success,
             label="Close Message",
             disabled=False,
-            row=4
+            row=row
         )
 
     async def callback(self, interaction: Interaction):
@@ -36,7 +33,7 @@ class CloseMessageButton(Button):
         await interaction.response.edit_message()
 
         if isinstance(self.view, Paginator):
-            await self.view.cancel()
+            await self.view.cancel(page=self.view.pages[self.view.current_page])
         else:
             await self.view.stop()  # type: ignore
 

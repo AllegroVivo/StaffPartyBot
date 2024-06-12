@@ -21,7 +21,7 @@ class TrainerDashboardButtonView(FroggeView):
         super().__init__(user, close_on_complete=True)
 
         self.add_item(EditTrainingButton(training))
-        self.add_item(CloseMessageButton())
+        self.add_item(CloseMessageButton(3))
         
 ################################################################################
 class EditTrainingButton(Button):
