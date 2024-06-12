@@ -65,10 +65,10 @@ class Admin(Cog):
 
 ################################################################################
     @admin.command(
-        name="add_venue",
-        description="Add a new venue to the system."
+        name="import_venue",
+        description="Import a new venue into the system."
     )
-    async def add_venue(
+    async def import_venue(
         self,
         ctx: ApplicationContext,
         name: Option(
@@ -80,13 +80,13 @@ class Admin(Cog):
         user: Option(
             SlashCommandOptionType.user,
             name="user",
-            description="The initial user to add to the venue's authorized user list.",
+            description="One of the venue's Owner/Manager contacts.",
             required=True
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.venue_manager.add_venue(ctx.interaction, name, user)
+        await guild.venue_manager.admin_import(ctx.interaction, name, user)
         
 ################################################################################
     @admin.command(

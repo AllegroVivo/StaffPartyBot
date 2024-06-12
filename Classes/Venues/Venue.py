@@ -424,8 +424,10 @@ class Venue:
         return self._mutes
     
 ################################################################################
-    @property
-    def complete(self) -> bool:
+    def complete(self, rp_bypass: bool = False) -> bool:
+        
+        if rp_bypass:
+            return self._name is not None
         
         return all([
             self._name,
@@ -930,7 +932,7 @@ class Venue:
         self._schedule.append(VenueHours.new(self, weekday, open_time, close_time))
 
 ################################################################################
-    async def post(self, interaction: Interaction, channel: Optional[ForumChannel]) -> None:
+    async def post(self, interaction: Interaction, channel: Optional[ForumChannel], rp_bypass: bool = False) -> None:
         
         log.info(
             "Venues",
@@ -948,7 +950,7 @@ class Venue:
                 return
             channel = self._mgr.post_channel
         
-        if not self.complete:
+        if not self.complete(rp_bypass):
             log.warning(
                 "Venues",
                 f"Attempted to post incomplete venue {self.name} ({self.id})."

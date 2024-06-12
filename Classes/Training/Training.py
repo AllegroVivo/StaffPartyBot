@@ -6,6 +6,7 @@ from discord import EmbedField, Interaction, User, Embed, SelectOption
 from discord.ext.pages import Page
 
 from Assets import BotEmojis
+from UI.Common import ConfirmCancelView
 from UI.Training import TrainerDashboardButtonView, TrainingUpdateView
 from Utilities import Utilities as U, RequirementLevel, log, RoleType
 
@@ -313,8 +314,57 @@ class Training:
         req_ids = view.value[0]
         level = view.value[1]
         
-        for _id in req_ids:
-            self._overrides[_id] = level
+        print(req_ids, level)
+
+        print(f"{len(req_ids)} + {len(self.requirement_overrides)} == {len(self.position.requirements)}")
+        print(f"{level == RequirementLevel.Complete}")
+        print(f"{all(req_level == RequirementLevel.Complete for req_level in self.requirement_overrides.values())}")
+
+        if (
+            (len(req_ids) + len(self.requirement_overrides)) == len(self.position.requirements)
+            and level == RequirementLevel.Complete
+            and all(req_level == RequirementLevel.Complete for req_level in self.requirement_overrides.values())
+        ):
+        
+            log.info(
+                "Training",
+                (
+                    f"Training for {self._trainee.name} ({self.position.name}) "
+                    f"can be marked as complete."
+                )
+            )
+            prompt = U.make_embed(
+                title="__Complete Training__",
+                description=(
+                    "Are you sure you want to mark this training as complete?\n\n"
+                    "This action is irreversible and will close the training."
+                )
+            )
+            view = ConfirmCancelView(interaction.user)
+            
+            await interaction.respond(embed=prompt, view=view)
+            await view.wait()
+            
+            if not view.complete or view.value is False:
+                log.debug("Training", "Training completion canceled.")
+                return
+            
+            self._complete = True
+            
+        log.info(
+            "Training",
+            (
+                f"Requirements for Training: {self.id} - {self._trainee.name} "
+                f"({self.position.name}) have been updated."
+            )
+        )
+        
+        if level == RequirementLevel.Incomplete:
+            for _id in req_ids:
+                self._overrides.pop(_id, None)
+        else:
+            for _id in req_ids:
+                self._overrides[_id] = level
         self.update()
         
         if self.is_complete:

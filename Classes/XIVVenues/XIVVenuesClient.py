@@ -23,6 +23,7 @@ class XIVVenuesClient:
     load_dotenv()
     
     if os.getenv("DEBUG") == "True":
+        # URL_BASE = "https://api.ffxivvenues.dev/venue"
         URL_BASE = "https://api.ffxivvenues.com/venue"
     else:
         URL_BASE = "https://api.ffxivvenues.com/venue"

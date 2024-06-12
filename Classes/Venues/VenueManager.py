@@ -110,30 +110,96 @@ class VenueManager:
                 return venue
     
 ################################################################################
-    async def add_venue(self, interaction: Interaction, name: str, user: User) -> None:
-        
-        venue = self.get_venue(name)
-        if venue is not None:
+    async def admin_import(self, interaction: Interaction, name: str, user: User) -> None:
+
+        log.info(
+            "Venues",
+            f"Importing venue {name} for user {interaction.user.id}..."
+        )
+
+        exists = self.get_venue(name)
+        if exists:
+            log.warning("Venues", f"Venue {name} already exists.")
             error = VenueExistsError(name)
             await interaction.respond(embed=error, ephemeral=True)
             return
-        
-        venue = Venue.new(self, name)
-        venue.add_user(user)
-        self._venues.append(venue)
-        
-        confirm = U.make_embed(
-            title="Venue Added",
+
+        final_line = f"Are you sure you want to import venue __`{name}`__?"
+        prompt = U.make_embed(
+            title="Confirm Venue Import",
             description=(
-                f"Venue `{name}` has been added to the bot.\n\n"
-                
-                "You can assign additional authorized users to this\n"
-                "venue using the `/admin venue_user` command."
+                "The following venue information will be imported from the "
+                "XIV Venues listing into this server, so long as the provided Discord "
+                "user is listed as a manager for the venue.\n\n"
+
+                "* Manager List\n"
+                "* Banner Image\n"
+                "* Description\n"
+                "* Location\n"
+                "* Website\n"
+                "* Discord\n"
+                "* Hiring Status\n"
+                "* SFW Status\n"
+                "* Tags\n"
+                "* Mare ID\n"
+                "* Mare Password\n"
+                "* Normal Operating Schedule\n"
+                "*(Schedule overrides are not imported.)*\n"
+                f"{U.draw_line(text=final_line, extra=-2)}\n"
+                f"{final_line}"
             )
         )
-        
-        await interaction.respond(embed=confirm, ephemeral=True)
+        view = ConfirmCancelView(interaction.user)
+
+        await interaction.respond(embed=prompt, view=view)
+        await view.wait()
+
+        if not view.complete or view.value is False:
+            log.debug("Venues", "User cancelled venue import.")
+            return
+
+        msg = await interaction.followup.send("Please wait...")
+
+        results = [
+            v for v in
+            await self.bot.veni_client.get_venues_by_manager(user.id)
+            if v.name.lower() == name.lower()
+        ]
+
+        await msg.delete()
+
+        if len(results) == 0:
+            error = VenueImportNotFoundError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        if len(results) > 1:
+            error = VenueImportError()
+            await interaction.respond(embed=error, ephemeral=True)
+            return
+
+        xiv_venue = results[0]
+        venue = Venue.new(self, xiv_venue.name)
+        await venue.update_from_xiv_venue(interaction, xiv_venue)
+        self._venues.append(venue)
+
         await self.guild.log.venue_created(venue)
+
+        log.info(
+            "Venues",
+            f"Venue {name} imported successfully."
+        )
+
+        await venue.post(interaction, self.post_channel, True)
+        
+        confirm = U.make_embed(
+            title="__Venue Imported__",
+            description=(
+                f"Venue `{name}` has been successfully imported.\n\n"
+                "Please review the venue information and make any necessary changes."
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
 
 ################################################################################
     async def add_user(
@@ -605,6 +671,7 @@ class VenueManager:
             f"Venue {name} imported successfully."
         )
         
+        await venue.post(interaction, self.post_channel, True)
         await venue.menu(interaction)
     
 ################################################################################
@@ -711,16 +778,16 @@ class VenueManager:
         payload = await self.bot.veni_client.get_all_venues()
         
         payload_ids = [v.id for v in payload]
-        venue_ids = [v._xiv_id for v in self.venues]
+        venue_ids = { v.id: v._xiv_id for v in self.venues }
         
-        for venue_id in venue_ids:
+        for _id, venue_id in venue_ids.items():
             if venue_id not in payload_ids:
                 log.info(
                     "Venues",
                     f"Venue {venue_id} not found in bulk payload. Deleting..."
                 )
-                venue = self[venue_id]
-                await venue.delete()
+                if venue := self[_id]:
+                    await venue.delete()
         
         count = 0
         for venue in self.venues:
@@ -735,13 +802,17 @@ class VenueManager:
         
         confirm = U.make_embed(
             title="Bulk Update Complete",
-            description=f"Successfully updated {count} venues."
+            description=(
+                f"Successfully updated **[{count}]** venues.\n"
+                f"Deleted **[{len(venue_ids) - count}]** venues."
+            )
         )
         await interaction.respond(embed=confirm)
         
         log.info(
             "Venues",
-            f"Bulk update completed. {count} venues updated."
+            f"Bulk update completed. [{count}] venues updated, "
+            f"[{len(venue_ids) - count}] venues deleted."
         )
         
 ################################################################################
