@@ -195,8 +195,9 @@ class Logger:
         embed = U.make_embed(
             title="Training Completed!",
             description=(
-                f"{training.position.name} training for `{training.trainee.name}` has been\n"
-                f"completed by `{training.trainer.name}`!"
+                f"`{training.position.name}` training for `{training.trainee.name}` "
+                f"({training.trainee.user.mention}) has been\n"
+                f"completed by `{training.trainer.name}` ({training.trainer.user.mention})!"
             ),
             timestamp=True
         )
