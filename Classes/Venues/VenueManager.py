@@ -711,7 +711,7 @@ class VenueManager:
         payload = await self.bot.veni_client.get_all_venues()
         
         payload_ids = [v.id for v in payload]
-        venue_ids = [v.id for v in self.venues]
+        venue_ids = [v._xiv_id for v in self.venues]
         
         for venue_id in venue_ids:
             if venue_id not in payload_ids:
