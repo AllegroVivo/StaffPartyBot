@@ -50,7 +50,7 @@ class GuildData:
     #     "_itinerary_mgr",
     # )
     
-    RESTART_TIME = 5  # minutes
+    RESTART_TIME = 6  # minutes
 
 ################################################################################
     def __init__(self, bot: StaffPartyBot, parent: Guild):
