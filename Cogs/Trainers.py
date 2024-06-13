@@ -68,12 +68,12 @@ class Trainers(Cog):
             SlashCommandOptionType.user,
             name="user",
             description="The user whose profile to view.",
-            required=True
+            required=False
         )
     ) -> None:
 
         guild = self.bot[ctx.guild_id]
-        await guild.training_manager.trainee_profile(ctx.interaction, user)
+        await guild.training_manager.trainee_profile(ctx.interaction, user or None)
         
 ################################################################################
     @trainer.command(

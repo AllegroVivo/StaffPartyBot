@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections import defaultdict
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, Any, Dict, Tuple
 
@@ -14,7 +15,7 @@ from discord import (
     Member,
     SelectOption
 )
-from discord.ext.pages import Page
+from discord.ext.pages import Page, PageGroup
 
 from .GroupTraining import GroupTraining
 from UI.Common import ConfirmCancelView, Frogginator
@@ -563,8 +564,16 @@ class TrainingManager:
         await tuser.start_bg_check(interaction)
 
 ################################################################################
-    async def trainee_profile(self, interaction: Interaction, user: User) -> None:
+    async def trainee_profile(self, interaction: Interaction, user: Optional[User]) -> None:
         
+        if user is None:
+            log.info(
+                "Training",
+                f"Requesting all trainee profiles for user {interaction.user.name} ({interaction.user.id})."
+            )
+            await self.all_trainee_profiles(interaction)
+            return
+            
         log.info(
             "Training",
             f"Requesting profile for user {user.name} ({user.id})."
@@ -1080,4 +1089,41 @@ class TrainingManager:
         )
         await interaction.respond(embed=trainer_confirm, ephemeral=True)
 
+################################################################################
+    async def all_trainee_profiles(self, interaction: Interaction) -> None:
+        
+        log.info(
+            "Training",
+            f"Requesting all trainee profiles for user {interaction.user.name} ({interaction.user.id})."
+        )
+        
+        unmatched_trainees = [t.trainee for t in self.unmatched_trainings]
+        unmatched_trainees.sort(key=lambda t: t.name)
+
+        # Create a defaultdict with lists as the default factory
+        trainees_dict = defaultdict(list)
+        
+        # Collate trainees into the dictionary
+        for trainee in unmatched_trainees:
+            first_letter = trainee.name[0].upper()  # Get the first letter and convert to uppercase
+            if trainee in trainees_dict[first_letter]:
+                continue
+            trainees_dict[first_letter].append(trainee)
+        
+        # Convert defaultdict to a regular dict if needed
+        trainees_dict = dict(trainees_dict)
+        
+        def make_page_group(letter: str, trainees: List[TUser]) -> PageGroup:
+            pages = [Page(embeds=[t.user_status()]) for t in trainees]
+            return PageGroup(pages=pages, label=letter.upper())
+        
+        page_groups = [
+            make_page_group(letter, trainees_dict[letter]) 
+            for letter in trainees_dict.keys()
+        ]
+        page_groups.sort(key=lambda x: x.label)
+        
+        frogginator = Frogginator(pages=page_groups, show_menu=True)
+        await frogginator.respond(interaction, ephemeral=True)
+    
 ################################################################################
