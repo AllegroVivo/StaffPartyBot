@@ -606,6 +606,19 @@ class TrainingManager:
                 unpaid_trainer_dict[t.trainer.user_id][t.position.name].append(t)
             except KeyError:
                 unpaid_trainer_dict[t.trainer.user_id][t.position.name] = [t]
+                
+        unpaid_groups = [
+            g
+            for g in self.groups
+            if g.is_complete and not g.is_paid
+        ]
+        for g in unpaid_groups:
+            if g.trainer.user_id not in unpaid_trainer_dict:
+                unpaid_trainer_dict[g.trainer.user_id] = {}
+            try:
+                unpaid_trainer_dict[g.trainer.user_id]["Group Training"].append(g)
+            except KeyError:
+                unpaid_trainer_dict[g.trainer.user_id]["Group Training"] = [g]
 
         embed = U.make_embed(
             title="Unpaid Trainer Report",
@@ -628,8 +641,11 @@ class TrainingManager:
             amount = 0
             
             for pos, tlist in trainings.items():
-                position = self.guild.position_manager.get_position_by_name(pos)
-                x = len(tlist) * position.trainer_pay
+                if pos == "Group Training":
+                    x = sum([g.trainer_pay for g in tlist])
+                else:
+                    position = self.guild.position_manager.get_position_by_name(pos)
+                    x = len(tlist) * position.trainer_pay
                 amount += x
                 value += f"[{len(tlist)}] **{pos}** = `{x:,}`\n"
                 
@@ -640,7 +656,7 @@ class TrainingManager:
                     inline=False
                 )
             )
-            if len(fields) >= 10:
+            if len(fields) >= 5:
                 embed_copy = embed.copy()
                 embed_copy.fields = fields
                 pages.append(Page(embeds=[embed_copy]))

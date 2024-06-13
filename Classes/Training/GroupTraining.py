@@ -142,7 +142,8 @@ class GroupTraining:
         self._completed = data["training"][9]
         self._paid = data["training"][10]
         
-        self._attended = [await mgr.guild.get_or_fetch_user(user) for user in data["training"][11]]
+        attended_users = [await mgr.guild.get_or_fetch_user(user) for user in data["training"][11]]
+        self._attended = [mgr[u.id] for u in attended_users if u is not None]
         
         return self
     
