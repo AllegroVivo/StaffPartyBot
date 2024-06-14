@@ -123,7 +123,8 @@ class CompleteTrainingButton(FroggeButton):
         super().__init__(
             style=ButtonStyle.success,
             label="Complete Training",
-            disabled=U.compare_datetimes(start_time, datetime.now()) != -1,
+            # disabled=U.compare_datetimes(start_time, datetime.now()) != -1,
+            disabled=False,
             row=1,
             emoji=BotEmojis.Check
         )

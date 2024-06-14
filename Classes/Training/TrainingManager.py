@@ -194,7 +194,7 @@ class TrainingManager:
     @property
     def unpaid_groups(self) -> List[GroupTraining]:
         
-        return [g for g in self._groups if not g.is_paid]
+        return [g for g in self._groups if g.is_complete and not g.is_paid]
     
 ################################################################################
     @property
@@ -213,6 +213,11 @@ class TrainingManager:
     def guild_id(self) -> int:
         
         return self._guild.guild_id
+    
+################################################################################
+    def get_unpaid_groups_by_trainer(self, trainer: TUser) -> List[GroupTraining]:
+        
+        return [g for g in self._groups if g.trainer == trainer and not g.is_paid]
     
 ################################################################################
     async def _add_tuser(self, interaction: Interaction, user: User) -> bool:

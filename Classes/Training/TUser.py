@@ -478,7 +478,7 @@ class TUser:
             ] +
             [
                 gt.trainer_pay
-                for gt in self._manager.unpaid_groups
+                for gt in self._manager.get_unpaid_groups_by_trainer(self)
                 if gt
             ]
         )
