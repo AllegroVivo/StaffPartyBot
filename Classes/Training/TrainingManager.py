@@ -767,15 +767,11 @@ class TrainingManager:
         await view.wait()
 
 ################################################################################
-    def get_group_trainings_by_trainer(
-        self, 
-        trainer: TUser, 
-        positions: Optional[List[Position]] = None
-    ) -> List[GroupTraining]:
+    def get_group_trainings_by_trainer(self, trainer: TUser, ) -> List[GroupTraining]:
 
         return [
             g for g in self._groups 
-            if g.trainer == trainer and (positions is None or g.position in positions)
+            if g.trainer == trainer and not g.is_completed
         ]
 
 ################################################################################
