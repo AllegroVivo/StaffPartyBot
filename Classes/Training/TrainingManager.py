@@ -767,7 +767,7 @@ class TrainingManager:
         await view.wait()
 
 ################################################################################
-    def get_group_trainings_by_trainer(self, trainer: TUser, ) -> List[GroupTraining]:
+    def get_group_trainings_by_trainer(self, trainer: TUser) -> List[GroupTraining]:
 
         return [
             g for g in self._groups 
