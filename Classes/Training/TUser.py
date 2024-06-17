@@ -1020,6 +1020,12 @@ class TUser:
                 
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerHiatus)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TraineeHiatus)
+
+            for t in self.trainings_as_trainee:
+                if t.is_complete or t.trainer is None:
+                    continue
+                await t.trainer.notify_of_trainee_hiatus(t)
+                t.reset()
         else:
             if self.is_trainer:
                 await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
@@ -1069,6 +1075,29 @@ class TUser:
             (
                 f"TUser {self.name} ({self.user_id}) has been notified of a trainer hiatus. "
                 f"Trainer: {training.trainer.name} ({training.trainer.user_id})."
+            )
+        )
+
+################################################################################
+    async def notify_of_trainee_hiatus(self, training: Training) -> None:
+
+        notification = U.make_embed(
+            title="Trainee On Hiatus",
+            description=(
+                f"{training.trainee.name} has gone on hiatus and is\n"
+                f"unable to continue training in `{training.position.name}`.\n\n"
+                
+                "We just wanted to let you know~ ♥\n"
+                f"{U.draw_line(extra=43)}"
+            )
+        )
+        await self.send(embed=notification)
+        
+        log.info(
+            "Training",
+            (
+                f"TUser {self.name} ({self.user_id}) has been notified of a trainee hiatus. "
+                f"Trainee: {training.trainee.name} ({training.trainee.user_id})."
             )
         )
 
