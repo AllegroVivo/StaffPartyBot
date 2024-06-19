@@ -982,9 +982,9 @@ class GroupTraining:
         await interaction.respond(embed=congrats)
         
         log.info("Training", "Group training completed successfully, scheduling deletion.")
-        await self.post_message.delete()
-
-        log.info("Training", "Group training post deleted successfully.")
+        if self.post_message is not None:
+            await self.post_message.delete()
+            log.info("Training", "Group training post deleted successfully.")
         
         return True
     
