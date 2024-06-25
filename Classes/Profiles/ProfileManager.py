@@ -41,7 +41,7 @@ class ProfileManager:
         for p in self._profiles:
             await p._update_post_components()
         
-################################################################################    
+################################################################################
     def __getitem__(self, user_id: int) -> Optional[Profile]:
         
         for p in self._profiles:

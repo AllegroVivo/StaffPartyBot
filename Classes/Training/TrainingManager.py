@@ -958,6 +958,15 @@ class TrainingManager:
             return
         
         await self._delete_group_training(group)
+
+        confirm = U.make_embed(
+            title="Group Training Canceled",
+            description=(
+                f"Group Training event `{group.name}` for positions `{group.pos_string}` "
+                f"has been canceled. The signup message has been removed."
+            )
+        )
+        await interaction.respond(embed=confirm, ephemeral=True)
         
 ################################################################################
     def get_group_training(self, group_id: str) -> Optional[GroupTraining]:
@@ -979,6 +988,12 @@ class TrainingManager:
         )
         for signup in group.signups:
             await signup.user.send(embed=notification)
+
+        if group.post_message is not None:
+            try:
+                await group.post_message.delete()
+            except NotFound:
+                pass
 
         group.delete()
 
