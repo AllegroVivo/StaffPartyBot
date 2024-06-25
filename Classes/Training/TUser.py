@@ -952,7 +952,7 @@ class TUser:
         frogginator = Frogginator(pages)
         
         await frogginator.respond(interaction)
-        await frogginator.goto_page(cur_page)
+        # await frogginator.goto_page(cur_page)
         await frogginator.wait()
     
 ################################################################################
@@ -1020,12 +1020,7 @@ class TUser:
                 
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TrainerHiatus)
             await self.guild.role_manager.remove_role(interaction.user, RoleType.TraineeHiatus)
-
-            for t in self.trainings_as_trainee:
-                if t.is_complete or t.trainer is None:
-                    continue
-                await t.trainer.notify_of_trainee_hiatus(t)
-                t.reset()
+            
         else:
             if self.is_trainer:
                 await self.guild.role_manager.add_role(interaction.user, RoleType.TrainerHiatus)
@@ -1040,6 +1035,15 @@ class TUser:
                     continue
                 await t.trainee.notify_of_trainer_hiatus(t)
                 t.reset()
+
+            for t in self.trainings_as_trainee:
+                if t.is_complete or t.trainer is None:
+                    continue
+                await t.trainer.notify_of_trainee_hiatus(t)
+                t.reset()
+                
+            for gt in self.unsettled_groups:
+                await self._manager._delete_group_training(gt)
                 
         self._details.toggle_hiatus()
         
@@ -1435,6 +1439,10 @@ class TUser:
             
         for t in self.trainings_as_trainee:
             await self.training_manager.remove_training(t.id)
+            deleted += 1
+            
+        for gt in self.unsettled_groups:
+            await self._manager._delete_group_training(gt)
             deleted += 1
             
         log.info(
