@@ -708,11 +708,20 @@ class VenueManager:
         
         for v in self.venues:
             if member in v.authorized_users:
-                if len(v.authorized_users) == 1:
+                print(v.name)
+                flag = False
+                for u in v.authorized_users:
+                    print(u.name, u.id)
+                    if self.guild.parent.get_member(u.id) is not None:
+                        print("Member exists")
+                        flag = True
+                        break
+
+                if not flag:
+                    print("No members present")
                     await v.delete()
                     return True
-                else:
-                    v.remove_user(member._user)
+                print("Members present")
         
         return False
 
