@@ -92,6 +92,7 @@ class ProfileManager:
         
         for profile in self._profiles:
             if profile.user.id == member.id:
+                await profile.post_message.delete()
                 self._profiles.remove(profile)
                 return True
 
@@ -126,8 +127,13 @@ class ProfileManager:
 
         count = 0
         for profile in self._profiles:
-            await profile._update_post_components()
-            count += 1
+            member = self.guild.parent.get_member(profile.user.id)
+            if member is not None:
+                await profile._update_post_components()
+                count += 1
+            else:
+                await profile.post_message.delete()
+                self._profiles.remove(profile)
 
         await msg.delete()
 
