@@ -50,7 +50,7 @@ class VenueHours:
     ) -> VH:
         
         parent.bot.database.insert.venue_hours(parent, day, open_time, close_time, interval_type.value, interval_arg)
-        return cls(parent, day=day, open=open_time, close=close_time)
+        return cls(parent, day=day, open=open_time, close=close_time, interval_type=interval_type, interval_arg=interval_arg)
     
 ################################################################################
     @classmethod
