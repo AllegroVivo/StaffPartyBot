@@ -132,7 +132,8 @@ class ProfileManager:
                 await profile._update_post_components()
                 count += 1
             else:
-                await profile.post_message.delete()
+                if profile.post_message:
+                    await profile.post_message.delete()
                 self._profiles.remove(profile)
 
         await msg.delete()
