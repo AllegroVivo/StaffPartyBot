@@ -61,7 +61,7 @@ class VenueHours:
             day=Weekday(data[2]),
             open=data[3],
             close=data[4],
-            interval_type=XIVIntervalType(data[5]),
+            interval_type=XIVIntervalType(data[5]) if data[5] else None,
             interval_arg=data[6]
         )
     
