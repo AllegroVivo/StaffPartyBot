@@ -1,4 +1,5 @@
 from .ChannelPurpose import ChannelPurpose
+from .XIVIntervalType import XIVIntervalType
 from .SignupLevel import SignupLevel
 from .MentionableType import MentionableType
 from .Clan import Clan

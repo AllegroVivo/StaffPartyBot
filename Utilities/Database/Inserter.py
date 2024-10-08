@@ -183,13 +183,17 @@ class DatabaseInserter(DBWorkerBranch):
         venue: Venue,
         day: Weekday, 
         start: time, 
-        end: time
+        end: time,
+        interval_type: Optional[int],
+        interval_arg: Optional[int]
     ) -> None:
         
         self.execute(
             "INSERT INTO venue_hours (venue_id, guild_id, weekday, "
-            "open_time, close_time) VALUES (%s, %s, %s, %s, %s);",
-            venue.id, venue.guild_id, day.value, start, end
+            "open_time, close_time, interval_type, interval_arg) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s);",
+            venue.id, venue.guild_id, day.value, start, end, interval_type,
+            interval_arg
         )
         
 ################################################################################

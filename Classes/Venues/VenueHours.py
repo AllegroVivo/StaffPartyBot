@@ -4,7 +4,7 @@ import pytz
 from datetime import time
 from typing import TYPE_CHECKING, TypeVar, Any, Tuple, Type
 
-from Utilities import Utilities as U, Weekday
+from Utilities import Utilities as U, Weekday, XIVIntervalType
 
 if TYPE_CHECKING:
     from Classes import Venue, XIVScheduleComponent
@@ -22,6 +22,8 @@ class VenueHours:
         "_day",
         "_open",
         "_close",
+        "_interval_type",
+        "_interval_arg",
     )
 
 ################################################################################
@@ -32,12 +34,22 @@ class VenueHours:
         self._day: Weekday = kwargs.pop("day")
         self._open: time = kwargs.pop("open")
         self._close: time = kwargs.pop("close")
+        self._interval_type: XIVIntervalType = kwargs.pop("interval_type")
+        self._interval_arg: int = kwargs.pop("interval_arg")
     
 ################################################################################
     @classmethod
-    def new(cls: Type[VH], parent: Venue, day: Weekday, open_time: time, close_time: time) -> VH:
+    def new(
+        cls: Type[VH],
+        parent: Venue,
+        day: Weekday,
+        open_time: time,
+        close_time: time,
+        interval_type: XIVIntervalType,
+        interval_arg: int
+    ) -> VH:
         
-        parent.bot.database.insert.venue_hours(parent, day, open_time, close_time)
+        parent.bot.database.insert.venue_hours(parent, day, open_time, close_time, interval_type.value, interval_arg)
         return cls(parent, day=day, open=open_time, close=close_time)
     
 ################################################################################
@@ -48,7 +60,9 @@ class VenueHours:
             parent,
             day=Weekday(data[2]),
             open=data[3],
-            close=data[4]
+            close=data[4],
+            interval_type=XIVIntervalType(data[5]),
+            interval_arg=data[6]
         )
     
 ################################################################################
@@ -59,7 +73,7 @@ class VenueHours:
         open_time = time(hour=xiv.utc.start.hour, minute=xiv.utc.start.minute, tzinfo=pytz.utc)
         close_time = time(hour=xiv.utc.end.hour, minute=xiv.utc.end.minute, tzinfo=pytz.utc)
         
-        return VenueHours.new(parent, day, open_time, close_time)
+        return VenueHours.new(parent, day, open_time, close_time, XIVIntervalType(xiv.interval.type), xiv.interval.arg)
     
 ################################################################################
     @property
@@ -73,7 +87,19 @@ class VenueHours:
         
         return self._day
     
-################################################################################    
+################################################################################
+    @property
+    def interval_type(self) -> XIVIntervalType:
+
+        return self._interval_type
+
+################################################################################
+    @property
+    def interval_arg(self) -> int:
+
+        return self._interval_arg
+
+################################################################################
     @property
     def open_time(self) -> time:
         

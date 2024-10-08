@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, Type, TypeVar, Any, Dict
 from .XIVTimeResolution import XIVTimeResolution
 from .XIVTime import XIVTime
 from .XIVUTCTime import XIVUTCTime
+from .XIVTimeInterval import XIVTimeInterval
 
 if TYPE_CHECKING:
     pass
@@ -35,7 +36,7 @@ class XIVScheduleComponent:
         self.day: str = kwargs.pop("day")
         self.start: XIVTime = kwargs.pop("start")
         self.end: XIVTime = kwargs.pop("end")
-        self.interval: int = kwargs.pop("interval")
+        self.interval: XIVTimeInterval = kwargs.pop("interval")
         self.location: Optional[str] = kwargs.pop("location")
         self.resolution: XIVTimeResolution = kwargs.pop("resolution")
         self.utc: XIVUTCTime = kwargs.pop("utc")
@@ -49,7 +50,7 @@ class XIVScheduleComponent:
             day=data.get("day"),
             start=XIVTime.from_data(data.get("start")),
             end=XIVTime.from_data(data.get("end")) if data.get("end") else None,
-            interval=data.get("interval"),
+            interval=XIVTimeInterval.from_data(data.get("interval")),
             location=data.get("location"),
             resolution=XIVTimeResolution.from_data(data.get("resolution")),
             utc=XIVUTCTime.from_data(data.get("utc"))

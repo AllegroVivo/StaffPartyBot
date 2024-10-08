@@ -19,8 +19,8 @@ class XIVTimeInterval:
 ################################################################################
     def __init__(self, **kwargs):
         
-        self.type: int = kwargs.get("type", 0)
-        self.arg: int = kwargs.get("arg", 0)
+        self.type: int = kwargs.pop("type")
+        self.arg: int = kwargs.pop("arg")
         
 ################################################################################
     @classmethod

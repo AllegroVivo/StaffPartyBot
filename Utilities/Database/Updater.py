@@ -221,10 +221,10 @@ class DatabaseUpdater(DBWorkerBranch):
     def _update_venue_hours(self, hours: VenueHours) -> None:
         
         self.execute(
-            "UPDATE venue_hours SET open_time = %s, close_time = %s "
-            "WHERE venue_id = %s AND weekday = %s;",
+            "UPDATE venue_hours SET open_time = %s, close_time = %s, "
+            "interval_type = %s, interval_arg = %s WHERE venue_id = %s AND weekday = %s;",
             hours.open_time, hours.close_time, hours.venue_id,
-            hours.day.value
+            hours.day.value, hours.interval_type.value, hours.interval_arg
         )
         
 ################################################################################
