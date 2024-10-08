@@ -674,7 +674,6 @@ class Venue:
             VenueHours.from_xiv_schedule(self, h) 
             for h in venue.schedule
         ]
-        self._interval = venue.schedule.interval
         
         self.update()
         
