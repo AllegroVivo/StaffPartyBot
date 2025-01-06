@@ -361,6 +361,9 @@ class JobPosting:
             f"`{self._user.name}`\n"
             f"({self._user.mention})\n\n"
 
+            "__**Venue Address:**\n"
+            f"`{self._venue.location.format()}`\n\n"
+
             "__**Job Description:**__\n"
             f"{job_desc}\n\n"
             
@@ -391,6 +394,9 @@ class JobPosting:
             "__**Venue Contact:**__\n"
             f"`{self._user.name}`\n"
             f"({self._user.mention})\n\n"
+            
+            "__**Venue Address:**__\n"
+            f"`{self._venue.location.format()}`\n\n"
 
             "__**Job Description:**__\n"
             f"{job_desc}\n"
